@@ -32,5 +32,5 @@
 *.app
 
 # Everything in .out
-out/*.o
+out/*
 !out/.keep
