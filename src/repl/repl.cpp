@@ -80,7 +80,6 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
     shared_ptr<SExpr> varVal =
         eval(dynamic_pointer_cast<SExprs>(sExprs->rest)->first, env);
     env->symTable.insert(make_pair(varName, varVal));
-
     return varVal;
   } else if (sym && sym->val == "set!") {
     sExprs = dynamic_pointer_cast<SExprs>(sExprs->rest);
@@ -88,8 +87,10 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
     shared_ptr<SExpr> varVal =
         eval(dynamic_pointer_cast<SExprs>(sExprs->rest)->first, env);
     env->symTable[varName] = varVal;
-
     return varVal;
+  } else if (sym && sym->val == "quote") {
+    sExprs = dynamic_pointer_cast<SExprs>(sExprs->rest);
+    return sExprs->first;
   } else if (sym && sym->val == "if") {
     sExprs = dynamic_pointer_cast<SExprs>(sExprs->rest);
     shared_ptr<BoolAtom> test =
@@ -100,7 +101,6 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
         dynamic_pointer_cast<SExprs>(
             dynamic_pointer_cast<SExprs>(sExprs->rest)->rest)
             ->first;
-
     return (test->val) ? eval(conseq, env) : eval(alt, env);
   } else if (sym && sym->val == "lambda") {
     sExprs = dynamic_pointer_cast<SExprs>(sExprs->rest);
@@ -114,6 +114,7 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   }
   shared_ptr<ClosureAtom> closure =
       dynamic_pointer_cast<ClosureAtom>(eval(sExprs->first, env));
+
   return (*closure)(dynamic_pointer_cast<SExprs>(sExprs->rest), env);
 }
 
