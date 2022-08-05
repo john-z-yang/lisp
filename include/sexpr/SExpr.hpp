@@ -4,6 +4,9 @@
 #include <iostream>
 #include <string>
 
+using std::ostream;
+using std::string;
+
 class SExpr {
 public:
   enum Type { NIL, SYM, NUM, BOOL, SEXPRS, CLOSURE };
@@ -12,9 +15,9 @@ public:
 
   SExpr(SExpr::Type type);
 
-  virtual std::string toString() const = 0;
-  friend std::ostream &operator<<(std::ostream &o, const SExpr &sExpr);
+  virtual string toString() const = 0;
+  friend ostream &operator<<(ostream &o, const SExpr &sExpr);
 };
 
-std::ostream &operator<<(std::ostream &o, const SExpr &sExpr);
+ostream &operator<<(ostream &o, const SExpr &sExpr);
 #endif

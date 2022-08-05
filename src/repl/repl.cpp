@@ -8,9 +8,22 @@
 #include "../../include/sexpr/SExpr.hpp"
 #include "../../include/sexpr/SymAtom.hpp"
 
-std::vector<std::string> tokenize(std::string expression) {
-  std::vector<std::string> tokens;
-  std::string token;
+using std::all_of;
+using std::cin;
+using std::cout;
+using std::dynamic_pointer_cast;
+using std::endl;
+using std::getline;
+using std::make_pair;
+using std::make_shared;
+using std::shared_ptr;
+using std::stoi;
+using std::string;
+using std::vector;
+
+vector<string> tokenize(string expression) {
+  vector<string> tokens;
+  string token;
   for (const char c : expression) {
     if (c == '(' || c == ')' || c == ' ') {
       if (!token.empty()) {
@@ -18,10 +31,10 @@ std::vector<std::string> tokenize(std::string expression) {
         token = "";
       }
       if (c != ' ') {
-        tokens.push_back(std::string(1, c));
+        tokens.push_back(string(1, c));
       }
     } else {
-      token += std::string(1, c);
+      token += string(1, c);
     }
   }
   if (!token.empty()) {
@@ -30,97 +43,92 @@ std::vector<std::string> tokenize(std::string expression) {
   return tokens;
 }
 
-std::shared_ptr<SExprs> parse(std::vector<std::string> tokens) {
+shared_ptr<SExprs> parse(vector<string> tokens) {
   auto it = tokens.begin() + 1;
   return parse(it);
 }
 
-std::shared_ptr<SExprs> parse(std::vector<std::string>::iterator &it) {
-  std::string token = *it;
+shared_ptr<SExprs> parse(vector<string>::iterator &it) {
+  string token = *it;
   it += 1;
   if (token == ")") {
     return nullptr;
   } else if (token == "(") {
-    std::shared_ptr<SExpr> first = parse(it);
-    return std::make_shared<SExprs>(first, parse(it));
-  } else if (std::all_of(token.begin(), token.end(), ::isdigit)) {
-    std::shared_ptr<IntAtom> first =
-        std::make_shared<IntAtom>(std::stoi(token));
-    return std::make_shared<SExprs>(first, parse(it));
+    shared_ptr<SExpr> first = parse(it);
+    return make_shared<SExprs>(first, parse(it));
+  } else if (all_of(token.begin(), token.end(), ::isdigit)) {
+    shared_ptr<IntAtom> first = make_shared<IntAtom>(stoi(token));
+    return make_shared<SExprs>(first, parse(it));
   }
-  std::shared_ptr<SymAtom> first = std::make_shared<SymAtom>(token);
-  return std::make_shared<SExprs>(first, parse(it));
+  shared_ptr<SymAtom> first = make_shared<SymAtom>(token);
+  return make_shared<SExprs>(first, parse(it));
 }
 
-std::shared_ptr<SExpr> eval(std::shared_ptr<SExpr> sExpr,
-                            std::shared_ptr<Env> env) {
+shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   if (!sExpr || sExpr->type == SExpr::Type::NUM ||
       sExpr->type == SExpr::Type::BOOL) {
     return sExpr;
   } else if (sExpr->type == SExpr::Type::SYM) {
-    return env->find(std::dynamic_pointer_cast<SymAtom>(sExpr)->val);
+    return env->find(dynamic_pointer_cast<SymAtom>(sExpr)->val);
   }
-  std::shared_ptr<SExprs> sExprs = std::dynamic_pointer_cast<SExprs>(sExpr);
-  std::shared_ptr<SymAtom> sym =
-      std::dynamic_pointer_cast<SymAtom>(sExprs->first);
+  shared_ptr<SExprs> sExprs = dynamic_pointer_cast<SExprs>(sExpr);
+  shared_ptr<SymAtom> sym = dynamic_pointer_cast<SymAtom>(sExprs->first);
   if (sym && sym->val == "define") {
-    sExprs = std::dynamic_pointer_cast<SExprs>(sExprs->rest);
-    std::string varName =
-        std::dynamic_pointer_cast<SymAtom>(sExprs->first)->val;
-    std::shared_ptr<SExpr> varVal =
-        eval(std::dynamic_pointer_cast<SExprs>(sExprs->rest)->first, env);
-    env->symTable.insert(std::make_pair(varName, varVal));
+    sExprs = dynamic_pointer_cast<SExprs>(sExprs->rest);
+    string varName = dynamic_pointer_cast<SymAtom>(sExprs->first)->val;
+    shared_ptr<SExpr> varVal =
+        eval(dynamic_pointer_cast<SExprs>(sExprs->rest)->first, env);
+    env->symTable.insert(make_pair(varName, varVal));
 
     return varVal;
   } else if (sym && sym->val == "set!") {
-    sExprs = std::dynamic_pointer_cast<SExprs>(sExprs->rest);
-    std::string varName =
-        std::dynamic_pointer_cast<SymAtom>(sExprs->first)->val;
-    std::shared_ptr<SExpr> varVal =
-        eval(std::dynamic_pointer_cast<SExprs>(sExprs->rest)->first, env);
+    sExprs = dynamic_pointer_cast<SExprs>(sExprs->rest);
+    string varName = dynamic_pointer_cast<SymAtom>(sExprs->first)->val;
+    shared_ptr<SExpr> varVal =
+        eval(dynamic_pointer_cast<SExprs>(sExprs->rest)->first, env);
     env->symTable[varName] = varVal;
 
     return varVal;
   } else if (sym && sym->val == "if") {
-    std::shared_ptr<BoolAtom> test = std::dynamic_pointer_cast<BoolAtom>(
-        eval(std::dynamic_pointer_cast<SExprs>(sExprs->rest)->first, env));
-    std::shared_ptr<SExpr> conseq =
-        std::dynamic_pointer_cast<SExprs>(
-            std::dynamic_pointer_cast<SExprs>(sExprs->rest)->rest)
+    shared_ptr<BoolAtom> test = dynamic_pointer_cast<BoolAtom>(
+        eval(dynamic_pointer_cast<SExprs>(sExprs->rest)->first, env));
+    shared_ptr<SExpr> conseq =
+        dynamic_pointer_cast<SExprs>(
+            dynamic_pointer_cast<SExprs>(sExprs->rest)->rest)
             ->first;
-    std::shared_ptr<SExpr> alt =
-        std::dynamic_pointer_cast<SExprs>(
-            std::dynamic_pointer_cast<SExprs>(
-                std::dynamic_pointer_cast<SExprs>(sExprs->rest)->rest)
+    shared_ptr<SExpr> alt =
+        dynamic_pointer_cast<SExprs>(
+            dynamic_pointer_cast<SExprs>(
+                dynamic_pointer_cast<SExprs>(sExprs->rest)->rest)
                 ->rest)
             ->first;
 
     return (test->val) ? eval(conseq, env) : eval(alt, env);
   } else if (sym && sym->val == "lambda") {
-    std::shared_ptr<SExprs> argNames = std::dynamic_pointer_cast<SExprs>(
-        std::dynamic_pointer_cast<SExprs>(sExprs->rest)->first);
-    std::shared_ptr<SExpr> body = std::dynamic_pointer_cast<SExpr>(
-        std::dynamic_pointer_cast<SExprs>(
-            std::dynamic_pointer_cast<SExprs>(sExprs->rest)->rest)
+    shared_ptr<SExprs> argNames = dynamic_pointer_cast<SExprs>(
+        dynamic_pointer_cast<SExprs>(sExprs->rest)->first);
+    shared_ptr<SExpr> body = dynamic_pointer_cast<SExpr>(
+        dynamic_pointer_cast<SExprs>(
+            dynamic_pointer_cast<SExprs>(sExprs->rest)->rest)
             ->first);
 
-    return std::make_shared<ClosureAtom>(
-        [body](std::shared_ptr<Env> env) { return eval(body, env); }, env,
-        argNames, false);
+    return make_shared<ClosureAtom>(
+        [body](shared_ptr<Env> env) { return eval(body, env); }, env, argNames,
+        false);
   }
-  std::shared_ptr<ClosureAtom> closure =
-      std::dynamic_pointer_cast<ClosureAtom>(eval(sExprs->first, env));
-  return (*closure)(std::dynamic_pointer_cast<SExprs>(sExprs->rest), env);
+  shared_ptr<ClosureAtom> closure =
+      dynamic_pointer_cast<ClosureAtom>(eval(sExprs->first, env));
+  return (*closure)(dynamic_pointer_cast<SExprs>(sExprs->rest), env);
 }
 
 void repl() {
-  std::shared_ptr<Env> env = std::make_shared<Env>();
+  shared_ptr<Env> env = make_shared<Env>();
   initEnv(env);
 
   while (true) {
-    std::cout << "lisp> ";
-    std::string input;
-    std::getline(std::cin, input);
-    std::cout << *eval(parse(tokenize(input)), env) << std::endl;
+    cout << "lisp> ";
+    string input;
+    getline(cin, input);
+    cout << *eval(parse(tokenize(input)), env) << endl;
   }
 }

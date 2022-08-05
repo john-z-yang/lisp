@@ -1,5 +1,7 @@
 #include "../../include/sexpr/SymAtom.hpp"
 
-SymAtom::SymAtom(std::string val) : Atom(SExpr::Type::SYM), val(val) {}
+using std::string;
 
-std::string SymAtom::toString() const { return val; }
+SymAtom::SymAtom(string val) : Atom(SExpr::Type::SYM), val(val) {}
+
+string SymAtom::toString() const { return val; }

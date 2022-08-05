@@ -3,13 +3,15 @@
 
 #include "Atom.hpp"
 
+using std::string;
+
 class SymAtom : public Atom {
 public:
-  const std::string val;
+  const string val;
 
-  SymAtom(std::string val);
+  SymAtom(string val);
 
-  std::string toString() const;
+  string toString() const;
 };
 
 #endif

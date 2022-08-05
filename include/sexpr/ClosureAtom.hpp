@@ -6,25 +6,27 @@
 #include "../../include/sexpr/SExprs.hpp"
 #include "../../include/sexpr/SymAtom.hpp"
 
+using std::function;
+using std::shared_ptr;
+
 class ClosureAtom : public Atom {
-  typedef std::function<std::shared_ptr<SExpr>(std::shared_ptr<Env>)> Proc;
+  typedef function<shared_ptr<SExpr>(shared_ptr<Env>)> Proc;
 
 public:
   Proc proc;
-  const std::shared_ptr<SExprs> argNames;
-  std::shared_ptr<Env> outerEnv;
+  const shared_ptr<SExprs> argNames;
+  shared_ptr<Env> outerEnv;
   const bool capture;
 
-  ClosureAtom(Proc proc, std::shared_ptr<Env> outerEnv,
-              const std::shared_ptr<SExprs> argNames, const bool capture);
+  ClosureAtom(Proc proc, shared_ptr<Env> outerEnv,
+              const shared_ptr<SExprs> argNames, const bool capture);
 
-  std::shared_ptr<Env> bindArgs(std::shared_ptr<SExprs> argVals,
-                                std::shared_ptr<Env> curEnv);
+  shared_ptr<Env> bindArgs(shared_ptr<SExprs> argVals, shared_ptr<Env> curEnv);
 
-  std::shared_ptr<SExpr> operator()(std::shared_ptr<SExprs> argVals,
-                                    std::shared_ptr<Env> curEnv);
+  shared_ptr<SExpr> operator()(shared_ptr<SExprs> argVals,
+                               shared_ptr<Env> curEnv);
 
-  std::string toString() const;
+  string toString() const;
 };
 
 #endif

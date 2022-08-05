@@ -5,14 +5,16 @@
 
 #include "SExpr.hpp"
 
+using std::shared_ptr;
+
 class SExprs : public SExpr {
 public:
-  std::shared_ptr<SExpr> first;
-  std::shared_ptr<SExpr> rest;
+  shared_ptr<SExpr> first;
+  shared_ptr<SExpr> rest;
 
-  SExprs(std::shared_ptr<SExpr> first, std::shared_ptr<SExpr> rest);
+  SExprs(shared_ptr<SExpr> first, shared_ptr<SExpr> rest);
 
-  std::string toString() const;
+  string toString() const;
 };
 
 #endif

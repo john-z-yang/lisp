@@ -8,13 +8,17 @@
 #include "../sexpr/SExpr.hpp"
 #include "../sexpr/SExprs.hpp"
 
-std::vector<std::string> tokenize(std::string expression);
+using std::shared_ptr;
+using std::string;
+using std::vector;
 
-std::shared_ptr<SExprs> parse(std::vector<std::string>);
+vector<string> tokenize(string expression);
 
-std::shared_ptr<SExprs> parse(std::vector<std::string>::iterator &it);
+shared_ptr<SExprs> parse(vector<string>);
 
-std::shared_ptr<SExpr> eval(std::shared_ptr<SExpr>, std::shared_ptr<Env>);
+shared_ptr<SExprs> parse(vector<string>::iterator &it);
+
+shared_ptr<SExpr> eval(shared_ptr<SExpr>, shared_ptr<Env>);
 
 void repl();
 

@@ -3,13 +3,15 @@
 
 #include "Atom.hpp"
 
+using std::string;
+
 class BoolAtom : public Atom {
 public:
   const bool val;
 
   BoolAtom(const bool val);
 
-  std::string toString() const;
+  string toString() const;
 };
 
 #endif

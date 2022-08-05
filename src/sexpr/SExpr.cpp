@@ -1,7 +1,9 @@
 #include "../../include/sexpr/SExpr.hpp"
 
+using std::ostream;
+
 SExpr::SExpr(SExpr::Type type) : type(type) {}
 
-std::ostream &operator<<(std::ostream &o, const SExpr &sExpr) {
+ostream &operator<<(ostream &o, const SExpr &sExpr) {
   return o << sExpr.toString();
 }

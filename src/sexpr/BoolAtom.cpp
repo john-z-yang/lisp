@@ -1,5 +1,7 @@
 #include "../../include/sexpr/BoolAtom.hpp"
 
+using std::string;
+
 BoolAtom::BoolAtom(const bool val) : Atom(SExpr::Type::BOOL), val(val) {}
 
-std::string BoolAtom::toString() const { return (val) ? "#t" : "#f"; }
+string BoolAtom::toString() const { return (val) ? "#t" : "#f"; }

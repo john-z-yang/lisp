@@ -5,17 +5,21 @@
 
 #include "../sexpr/SExpr.hpp"
 
+using std::map;
+using std::shared_ptr;
+using std::string;
+
 class Env {
 public:
-  std::map<std::string, std::shared_ptr<SExpr>> symTable;
-  const std::shared_ptr<Env> outer;
+  map<string, shared_ptr<SExpr>> symTable;
+  const shared_ptr<Env> outer;
 
   Env();
-  Env(const std::shared_ptr<Env> outer);
+  Env(const shared_ptr<Env> outer);
 
-  std::shared_ptr<SExpr> find(std::string name);
+  shared_ptr<SExpr> find(string name);
 };
 
-void initEnv(std::shared_ptr<Env> env);
+void initEnv(shared_ptr<Env> env);
 
 #endif

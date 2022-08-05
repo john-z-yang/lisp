@@ -8,18 +8,20 @@
 #include "../sexpr/SExpr.hpp"
 #include "./Env.hpp"
 
-std::shared_ptr<SExpr> lispQuit(std::shared_ptr<Env> env);
+using std::shared_ptr;
 
-std::shared_ptr<SExpr> lispAbs(std::shared_ptr<Env> env);
+shared_ptr<SExpr> lispQuit(shared_ptr<Env> env);
 
-std::shared_ptr<SExpr> lispAdd(std::shared_ptr<Env> env);
+shared_ptr<SExpr> lispAbs(shared_ptr<Env> env);
 
-std::shared_ptr<SExpr> lispSub(std::shared_ptr<Env> env);
+shared_ptr<SExpr> lispAdd(shared_ptr<Env> env);
 
-std::shared_ptr<SExpr> lispMult(std::shared_ptr<Env> env);
+shared_ptr<SExpr> lispSub(shared_ptr<Env> env);
 
-std::shared_ptr<SExpr> lispEq(std::shared_ptr<Env> env);
+shared_ptr<SExpr> lispMult(shared_ptr<Env> env);
 
-std::shared_ptr<SExpr> lispDisplay(std::shared_ptr<Env> env);
+shared_ptr<SExpr> lispEq(shared_ptr<Env> env);
+
+shared_ptr<SExpr> lispDisplay(shared_ptr<Env> env);
 
 #endif
