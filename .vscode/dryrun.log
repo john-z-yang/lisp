@@ -1,0 +1,5 @@
+make --dry-run --keep-going --print-directory
+make: Entering directory `/Users/john/workspace/lisp'
+g++ -std=c++11 out/main.o out/repl.o out/functions.o out/Env.o out/SymAtom.o out/SExprs.o out/SExpr.o out/IntAtom.o out/ClosureAtom.o out/BoolAtom.o out/Atom.o -o out/lisp
+make: Leaving directory `/Users/john/workspace/lisp'
+ 
