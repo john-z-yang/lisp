@@ -90,27 +90,22 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
 
     return varVal;
   } else if (sym && sym->val == "if") {
-    shared_ptr<BoolAtom> test = dynamic_pointer_cast<BoolAtom>(
-        eval(dynamic_pointer_cast<SExprs>(sExprs->rest)->first, env));
+    sExprs = dynamic_pointer_cast<SExprs>(sExprs->rest);
+    shared_ptr<BoolAtom> test =
+        dynamic_pointer_cast<BoolAtom>(eval(sExprs->first, env));
     shared_ptr<SExpr> conseq =
-        dynamic_pointer_cast<SExprs>(
-            dynamic_pointer_cast<SExprs>(sExprs->rest)->rest)
-            ->first;
+        dynamic_pointer_cast<SExprs>(sExprs->rest)->first;
     shared_ptr<SExpr> alt =
         dynamic_pointer_cast<SExprs>(
-            dynamic_pointer_cast<SExprs>(
-                dynamic_pointer_cast<SExprs>(sExprs->rest)->rest)
-                ->rest)
+            dynamic_pointer_cast<SExprs>(sExprs->rest)->rest)
             ->first;
 
     return (test->val) ? eval(conseq, env) : eval(alt, env);
   } else if (sym && sym->val == "lambda") {
-    shared_ptr<SExprs> argNames = dynamic_pointer_cast<SExprs>(
-        dynamic_pointer_cast<SExprs>(sExprs->rest)->first);
+    sExprs = dynamic_pointer_cast<SExprs>(sExprs->rest);
+    shared_ptr<SExprs> argNames = dynamic_pointer_cast<SExprs>(sExprs->first);
     shared_ptr<SExpr> body = dynamic_pointer_cast<SExpr>(
-        dynamic_pointer_cast<SExprs>(
-            dynamic_pointer_cast<SExprs>(sExprs->rest)->rest)
-            ->first);
+        dynamic_pointer_cast<SExprs>(sExprs->rest)->first);
 
     return make_shared<ClosureAtom>(
         [body](shared_ptr<Env> env) { return eval(body, env); }, env, argNames,
