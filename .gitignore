@@ -34,3 +34,4 @@
 # Everything in .out
 out/*
 !out/.keep
+.vscode/*
