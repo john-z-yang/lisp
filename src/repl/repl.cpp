@@ -5,6 +5,7 @@
 #include "../../include/sexpr/BoolAtom.hpp"
 #include "../../include/sexpr/ClosureAtom.hpp"
 #include "../../include/sexpr/IntAtom.hpp"
+#include "../../include/sexpr/NilAtom.hpp"
 #include "../../include/sexpr/SExpr.hpp"
 #include "../../include/sexpr/SymAtom.hpp"
 
@@ -43,16 +44,16 @@ vector<string> tokenize(string expression) {
   return tokens;
 }
 
-shared_ptr<SExprs> parse(vector<string> tokens) {
+shared_ptr<SExpr> parse(vector<string> tokens) {
   auto it = tokens.begin() + 1;
   return parse(it);
 }
 
-shared_ptr<SExprs> parse(vector<string>::iterator &it) {
+shared_ptr<SExpr> parse(vector<string>::iterator &it) {
   string token = *it;
   it += 1;
   if (token == ")") {
-    return nullptr;
+    return make_shared<NilAtom>();
   } else if (token == "(") {
     shared_ptr<SExpr> first = parse(it);
     return make_shared<SExprs>(first, parse(it));
@@ -65,7 +66,7 @@ shared_ptr<SExprs> parse(vector<string>::iterator &it) {
 }
 
 shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
-  if (!sExpr || sExpr->type == SExpr::Type::NUM ||
+  if (sExpr->type == SExpr::Type::NIL || sExpr->type == SExpr::Type::NUM ||
       sExpr->type == SExpr::Type::BOOL) {
     return sExpr;
   } else if (sExpr->type == SExpr::Type::SYM) {

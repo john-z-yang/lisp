@@ -14,9 +14,9 @@ using std::vector;
 
 vector<string> tokenize(string expression);
 
-shared_ptr<SExprs> parse(vector<string>);
+shared_ptr<SExpr> parse(vector<string>);
 
-shared_ptr<SExprs> parse(vector<string>::iterator &it);
+shared_ptr<SExpr> parse(vector<string>::iterator &it);
 
 shared_ptr<SExpr> eval(shared_ptr<SExpr>, shared_ptr<Env>);
 

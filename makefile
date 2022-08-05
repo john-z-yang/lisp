@@ -1,8 +1,8 @@
 CXX = g++
 CXXFLAGS = -std=c++11
 
-out/lisp: out/main.o out/repl.o out/functions.o out/Env.o out/SymAtom.o out/SExprs.o out/SExpr.o out/IntAtom.o out/ClosureAtom.o out/BoolAtom.o out/Atom.o
-	$(CXX) $(CXXFLAGS) out/main.o out/repl.o out/functions.o out/Env.o out/SymAtom.o out/SExprs.o out/SExpr.o out/IntAtom.o out/ClosureAtom.o out/BoolAtom.o out/Atom.o -o out/lisp
+out/lisp: out/main.o out/repl.o out/functions.o out/Env.o out/SymAtom.o out/SExprs.o out/SExpr.o out/NilAtom.o out/IntAtom.o out/ClosureAtom.o out/BoolAtom.o out/Atom.o
+	$(CXX) $(CXXFLAGS) out/main.o out/repl.o out/functions.o out/Env.o out/SymAtom.o out/SExprs.o out/SExpr.o out/NilAtom.o out/IntAtom.o out/ClosureAtom.o out/BoolAtom.o out/Atom.o -o out/lisp
 
 out/main.o: src/repl/main.cpp
 	$(CXX) $(CXXFLAGS) -c src/repl/main.cpp -o out/main.o
@@ -24,6 +24,9 @@ out/SExprs.o: src/sexpr/SExprs.cpp
 
 out/SExpr.o: src/sexpr/SExpr.cpp
 	$(CXX) $(CXXFLAGS) -c src/sexpr/SExpr.cpp -o out/SExpr.o
+
+out/NilAtom.o: src/sexpr/NilAtom.cpp
+	$(CXX) $(CXXFLAGS) -c src/sexpr/NilAtom.cpp -o out/NilAtom.o
 
 out/IntAtom.o: src/sexpr/IntAtom.cpp
 	$(CXX) $(CXXFLAGS) -c src/sexpr/IntAtom.cpp -o out/IntAtom.o

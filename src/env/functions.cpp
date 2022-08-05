@@ -1,5 +1,6 @@
 #include "../../include/env/functions.hpp"
 #include "../../include/sexpr/BoolAtom.hpp"
+#include "../../include/sexpr/NilAtom.hpp"
 
 using std::cout;
 using std::dynamic_pointer_cast;
@@ -45,5 +46,5 @@ shared_ptr<SExpr> lispEq(shared_ptr<Env> env) {
 
 shared_ptr<SExpr> lispDisplay(shared_ptr<Env> env) {
   cout << *env->find("display_oprand") << endl;
-  return nullptr;
+  return make_shared<NilAtom>();
 }
