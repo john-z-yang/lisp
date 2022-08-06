@@ -1,6 +1,7 @@
 #include "../../include/env/functions.hpp"
 #include "../../include/sexpr/BoolAtom.hpp"
 #include "../../include/sexpr/NilAtom.hpp"
+#include "../../include/sexpr/SExprs.hpp"
 
 using std::cout;
 using std::dynamic_pointer_cast;
@@ -95,4 +96,16 @@ shared_ptr<SExpr> lispAnd(shared_ptr<Env> env) {
 shared_ptr<SExpr> lispOr(shared_ptr<Env> env) {
   return make_shared<BoolAtom>(BoolAtom::cast(env->find("or_lhs")) ||
                                BoolAtom::cast(env->find("or_rhs")));
+}
+
+shared_ptr<SExpr> lispCons(shared_ptr<Env> env) {
+  return make_shared<SExprs>(env->find("cons_lhs"), env->find("cons_rhs"));
+}
+
+shared_ptr<SExpr> lispCar(shared_ptr<Env> env) {
+  return dynamic_pointer_cast<SExprs>(env->find("car_oprand"))->first;
+}
+
+shared_ptr<SExpr> lispCdr(shared_ptr<Env> env) {
+  return dynamic_pointer_cast<SExprs>(env->find("cdr_oprand"))->rest;
 }

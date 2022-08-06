@@ -111,4 +111,19 @@ void initEnv(shared_ptr<Env> env) {
                                      dynamic_pointer_cast<SExprs>(
                                          parse(tokenize("(or_lhs or_rhs)"))),
                                      true)));
+  env->symTable.insert(make_pair(
+      "cons", make_shared<ClosureAtom>(lispCons, env,
+                                       dynamic_pointer_cast<SExprs>(parse(
+                                           tokenize("(cons_lhs cons_rhs)"))),
+                                       true)));
+  env->symTable.insert(make_pair(
+      "car", make_shared<ClosureAtom>(
+                 lispCar, env,
+                 dynamic_pointer_cast<SExprs>(parse(tokenize("(car_oprand)"))),
+                 true)));
+  env->symTable.insert(make_pair(
+      "cdr", make_shared<ClosureAtom>(
+                 lispCdr, env,
+                 dynamic_pointer_cast<SExprs>(parse(tokenize("(cdr_oprand)"))),
+                 true)));
 }
