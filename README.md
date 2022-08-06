@@ -46,12 +46,6 @@ Tests are defined in the `tests` directory. Each test suite is a pair of `.in` (
 
 Expected behaviour
 ```lisp
-lisp> (define list (lambda lis lis))
-<closure>
-lisp> (list 1 2 3)
-(1, (2, (3, ())))
-lisp> (list (+ 1 2) 2 3)
-(3, (2, (3, ())))
 lisp> (define map (lambda (fn lis) (if (null? lis) () (cons (fn (car lis)) (map fn (cdr lis))))))
 <closure>
 lisp> (define range (lambda (a b) (if (= a b) (quote ()) (cons a (range (+ a 1) b)))))
@@ -65,9 +59,6 @@ Farewell.
 ```
 `cons.in`
 ```lisp
-(define list (lambda lis lis))
-(list 1 2 3)
-(list (+ 1 2) 2 3)
 (define map (lambda (fn lis) (if (null? lis) () (cons (fn (car lis)) (map fn (cdr lis))))))
 (define range (lambda (a b) (if (= a b) (quote ()) (cons a (range (+ a 1) b)))))
 (define fib (lambda (n) (if (= n 1) 1 (if (= n 2) 1 (+ (fib (- n 1)) (fib (- n 2)))))))
@@ -76,9 +67,6 @@ Farewell.
 ```
 `cons.expect`
 ```lisp
-lisp> <closure>
-lisp> (1, (2, (3, ())))
-lisp> (3, (2, (3, ())))
 lisp> <closure>
 lisp> <closure>
 lisp> <closure>
