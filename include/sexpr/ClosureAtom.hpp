@@ -14,17 +14,19 @@ class ClosureAtom : public Atom {
 
 public:
   Proc proc;
-  const shared_ptr<SExprs> argNames;
-  shared_ptr<Env> outerEnv;
+  const shared_ptr<Env> outerEnv;
+  const shared_ptr<SExpr> argNames;
   const bool capture;
 
-  ClosureAtom(Proc proc, shared_ptr<Env> outerEnv,
-              const shared_ptr<SExprs> argNames, const bool capture);
+  ClosureAtom(Proc proc, const shared_ptr<Env> outerEnv,
+              const shared_ptr<SExpr> argNames, const bool capture);
 
-  shared_ptr<Env> bindArgs(shared_ptr<SExprs> argVals, shared_ptr<Env> curEnv);
+  std::shared_ptr<SExpr> evalArgs(shared_ptr<SExpr> args,
+                                  shared_ptr<Env> curEnv);
 
-  shared_ptr<SExpr> operator()(shared_ptr<SExprs> argVals,
-                               shared_ptr<Env> curEnv);
+  shared_ptr<Env> bindArgs(shared_ptr<SExpr> args, shared_ptr<Env> curEnv);
+
+  shared_ptr<SExpr> operator()(shared_ptr<SExpr> args, shared_ptr<Env> curEnv);
 
   string toString() const;
 };

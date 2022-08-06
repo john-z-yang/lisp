@@ -104,7 +104,7 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
     return (test->val) ? eval(conseq, env) : eval(alt, env);
   } else if (sym && sym->val == "lambda") {
     sExprs = dynamic_pointer_cast<SExprs>(sExprs->rest);
-    shared_ptr<SExprs> argNames = dynamic_pointer_cast<SExprs>(sExprs->first);
+    shared_ptr<SExpr> argNames = dynamic_pointer_cast<SExpr>(sExprs->first);
     shared_ptr<SExpr> body = dynamic_pointer_cast<SExpr>(
         dynamic_pointer_cast<SExprs>(sExprs->rest)->first);
 
@@ -114,8 +114,7 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   }
   shared_ptr<ClosureAtom> closure =
       dynamic_pointer_cast<ClosureAtom>(eval(sExprs->first, env));
-
-  return (*closure)(dynamic_pointer_cast<SExprs>(sExprs->rest), env);
+  return (*closure)(sExprs->rest, env);
 }
 
 void repl() {

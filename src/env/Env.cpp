@@ -4,6 +4,7 @@
 #include "../../include/env/functions.hpp"
 #include "../../include/repl/repl.hpp"
 #include "../../include/sexpr/ClosureAtom.hpp"
+#include "../../include/sexpr/NilAtom.hpp"
 #include "../../include/sexpr/SExpr.hpp"
 #include "../../include/sexpr/SExprs.hpp"
 
@@ -33,7 +34,8 @@ shared_ptr<SExpr> Env::find(string name) {
 
 void initEnv(shared_ptr<Env> env) {
   env->symTable.insert(make_pair(
-      "quit", make_shared<ClosureAtom>(lispQuit, env, nullptr, true)));
+      "quit",
+      make_shared<ClosureAtom>(lispQuit, env, make_shared<NilAtom>(), true)));
   env->symTable.insert(make_pair(
       "display", make_shared<ClosureAtom>(lispDisplay, env,
                                           dynamic_pointer_cast<SExprs>(parse(
