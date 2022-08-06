@@ -8,15 +8,14 @@ using std::shared_ptr;
 using std::string;
 
 class BoolAtom : public Atom {
-private:
-  bool cast(const shared_ptr<SExpr> sExpr);
-
 public:
   const bool val;
 
   BoolAtom(const bool val);
 
   BoolAtom(const shared_ptr<SExpr> sExpr);
+
+  static bool cast(const shared_ptr<SExpr> sExpr);
 
   string toString() const;
 };

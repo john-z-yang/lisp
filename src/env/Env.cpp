@@ -64,4 +64,39 @@ void initEnv(shared_ptr<Env> env) {
                lispEq, env,
                dynamic_pointer_cast<SExprs>(parse(tokenize("(eq_lhs eq_rhs)"))),
                true)));
+  env->symTable.insert(make_pair(
+      ">", make_shared<ClosureAtom>(
+               lispGt, env,
+               dynamic_pointer_cast<SExprs>(parse(tokenize("(gt_lhs gt_rhs)"))),
+               true)));
+  env->symTable.insert(make_pair(
+      ">=", make_shared<ClosureAtom>(lispGteq, env,
+                                     dynamic_pointer_cast<SExprs>(parse(
+                                         tokenize("(gteq_lhs gteq_rhs)"))),
+                                     true)));
+  env->symTable.insert(make_pair(
+      "<", make_shared<ClosureAtom>(
+               lispLt, env,
+               dynamic_pointer_cast<SExprs>(parse(tokenize("(lt_lhs lt_rhs)"))),
+               true)));
+  env->symTable.insert(make_pair(
+      "<=", make_shared<ClosureAtom>(lispLteq, env,
+                                     dynamic_pointer_cast<SExprs>(parse(
+                                         tokenize("(lteq_lhs lteq_rhs)"))),
+                                     true)));
+  env->symTable.insert(make_pair(
+      "not", make_shared<ClosureAtom>(
+                 lispNot, env,
+                 dynamic_pointer_cast<SExprs>(parse(tokenize("(not_operand)"))),
+                 true)));
+  env->symTable.insert(make_pair(
+      "and", make_shared<ClosureAtom>(lispAnd, env,
+                                      dynamic_pointer_cast<SExprs>(
+                                          parse(tokenize("(and_lhs and_rhs)"))),
+                                      true)));
+  env->symTable.insert(make_pair(
+      "or", make_shared<ClosureAtom>(lispOr, env,
+                                     dynamic_pointer_cast<SExprs>(
+                                         parse(tokenize("(or_lhs or_rhs)"))),
+                                     true)));
 }
