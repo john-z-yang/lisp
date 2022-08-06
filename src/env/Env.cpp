@@ -60,6 +60,16 @@ void initEnv(shared_ptr<Env> env) {
                                         parse(tokenize("(mult_lhs mult_rhs)"))),
                                     true)));
   env->symTable.insert(make_pair(
+      "/", make_shared<ClosureAtom>(lispDiv, env,
+                                    dynamic_pointer_cast<SExprs>(
+                                        parse(tokenize("(div_lhs div_rhs)"))),
+                                    true)));
+  env->symTable.insert(make_pair(
+      "%", make_shared<ClosureAtom>(lispMod, env,
+                                    dynamic_pointer_cast<SExprs>(
+                                        parse(tokenize("(mod_lhs mod_rhs)"))),
+                                    true)));
+  env->symTable.insert(make_pair(
       "=", make_shared<ClosureAtom>(
                lispEq, env,
                dynamic_pointer_cast<SExprs>(parse(tokenize("(eq_lhs eq_rhs)"))),

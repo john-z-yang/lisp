@@ -22,6 +22,10 @@ shared_ptr<SExpr> lispSub(shared_ptr<Env> env);
 
 shared_ptr<SExpr> lispMult(shared_ptr<Env> env);
 
+shared_ptr<SExpr> lispDiv(shared_ptr<Env> env);
+
+shared_ptr<SExpr> lispMod(shared_ptr<Env> env);
+
 shared_ptr<SExpr> lispEq(shared_ptr<Env> env);
 
 shared_ptr<SExpr> lispGt(shared_ptr<Env> env);

@@ -41,6 +41,18 @@ shared_ptr<SExpr> lispMult(shared_ptr<Env> env) {
       dynamic_pointer_cast<IntAtom>(env->find("mult_rhs"))->val);
 }
 
+shared_ptr<SExpr> lispDiv(shared_ptr<Env> env) {
+  return make_shared<IntAtom>(
+      dynamic_pointer_cast<IntAtom>(env->find("div_lhs"))->val /
+      dynamic_pointer_cast<IntAtom>(env->find("div_rhs"))->val);
+}
+
+shared_ptr<SExpr> lispMod(shared_ptr<Env> env) {
+  return make_shared<IntAtom>(
+      dynamic_pointer_cast<IntAtom>(env->find("mod_lhs"))->val %
+      dynamic_pointer_cast<IntAtom>(env->find("mod_rhs"))->val);
+}
+
 shared_ptr<SExpr> lispEq(shared_ptr<Env> env) {
   return make_shared<BoolAtom>(
       (dynamic_pointer_cast<IntAtom>(env->find("eq_lhs"))->val ==
