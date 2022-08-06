@@ -31,7 +31,11 @@
 *.out
 *.app
 
+# .DS_Store
+.DS_Store
+
 # Everything in .out
 out/*
 !out/.keep
 .vscode/*
+tests/*.out
