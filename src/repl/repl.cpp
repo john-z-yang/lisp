@@ -94,7 +94,7 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   } else if (sym && sym->val == "if") {
     sExprs = dynamic_pointer_cast<SExprs>(sExprs->rest);
     shared_ptr<BoolAtom> test =
-        dynamic_pointer_cast<BoolAtom>(eval(sExprs->first, env));
+        std::make_shared<BoolAtom>(eval(sExprs->first, env));
     shared_ptr<SExpr> conseq =
         dynamic_pointer_cast<SExprs>(sExprs->rest)->first;
     shared_ptr<SExpr> alt =
