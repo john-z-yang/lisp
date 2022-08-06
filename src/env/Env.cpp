@@ -126,4 +126,9 @@ void initEnv(shared_ptr<Env> env) {
                  lispCdr, env,
                  dynamic_pointer_cast<SExprs>(parse(tokenize("(cdr_oprand)"))),
                  true)));
+  env->symTable.insert(make_pair(
+      "null?", make_shared<ClosureAtom>(lispIsNull, env,
+                                        dynamic_pointer_cast<SExprs>(
+                                            parse(tokenize("(null?_oprand)"))),
+                                        true)));
 }

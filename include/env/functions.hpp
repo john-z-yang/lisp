@@ -48,4 +48,6 @@ shared_ptr<SExpr> lispCar(shared_ptr<Env> env);
 
 shared_ptr<SExpr> lispCdr(shared_ptr<Env> env);
 
+shared_ptr<SExpr> lispIsNull(shared_ptr<Env> env);
+
 #endif

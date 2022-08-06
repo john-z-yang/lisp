@@ -109,3 +109,8 @@ shared_ptr<SExpr> lispCar(shared_ptr<Env> env) {
 shared_ptr<SExpr> lispCdr(shared_ptr<Env> env) {
   return dynamic_pointer_cast<SExprs>(env->find("cdr_oprand"))->rest;
 }
+
+shared_ptr<SExpr> lispIsNull(shared_ptr<Env> env) {
+  return make_shared<BoolAtom>(env->find("null?_oprand")->type ==
+                               SExpr::Type::NIL);
+}
