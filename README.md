@@ -29,8 +29,8 @@ Run the program.
 
 ```shell-session
 foo@bar:~$ out/lisp
-lisp> (quote (Hello Word!))
-(Hello, (Word!, ()))
+lisp> (quote (Hello World!))
+(Hello, (World!, ()))
 lisp> (quit)
 Farewell.
 ```
