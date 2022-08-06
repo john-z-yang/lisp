@@ -99,7 +99,7 @@ void initEnv(shared_ptr<Env> env) {
   env->symTable.insert(make_pair(
       "not", make_shared<ClosureAtom>(
                  lispNot, env,
-                 dynamic_pointer_cast<SExprs>(parse(tokenize("(not_operand)"))),
+                 dynamic_pointer_cast<SExprs>(parse(tokenize("(not_oprand)"))),
                  true)));
   env->symTable.insert(make_pair(
       "and", make_shared<ClosureAtom>(lispAnd, env,
