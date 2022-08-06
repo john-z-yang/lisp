@@ -5,9 +5,7 @@ using std::shared_ptr;
 using std::string;
 
 bool BoolAtom::cast(const shared_ptr<SExpr> sExpr) {
-  if (sExpr->type == SExpr::Type::NIL) {
-    return false;
-  } else if (sExpr->type == SExpr::Type::BOOL) {
+  if (sExpr->type == SExpr::Type::BOOL) {
     return dynamic_pointer_cast<BoolAtom>(sExpr)->val;
   }
   return true;
