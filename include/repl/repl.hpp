@@ -14,11 +14,13 @@ using std::vector;
 
 vector<string> tokenize(string expression);
 
-shared_ptr<SExpr> parse(vector<string>);
+shared_ptr<SExpr> parseAtom(string token);
 
 shared_ptr<SExpr> parse(vector<string>::iterator &it);
 
-shared_ptr<SExpr> eval(shared_ptr<SExpr>, shared_ptr<Env>);
+shared_ptr<SExpr> parse(vector<string> tokens);
+
+shared_ptr<SExpr> eval(shared_ptr<SExpr> SExpr, shared_ptr<Env> env);
 
 void repl();
 

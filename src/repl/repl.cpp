@@ -44,9 +44,13 @@ vector<string> tokenize(string expression) {
   return tokens;
 }
 
-shared_ptr<SExpr> parse(vector<string> tokens) {
-  auto it = tokens.begin() + 1;
-  return parse(it);
+shared_ptr<SExpr> parseAtom(string token) {
+  if (all_of(token.begin(), token.end(), ::isdigit) ||
+      (token[0] == '-' && token.length() > 1 &&
+       all_of(token.begin() + 1, token.end(), ::isdigit))) {
+    return make_shared<IntAtom>(stoi(token));
+  }
+  return make_shared<SymAtom>(token);
 }
 
 shared_ptr<SExpr> parse(vector<string>::iterator &it) {
@@ -57,14 +61,16 @@ shared_ptr<SExpr> parse(vector<string>::iterator &it) {
   } else if (token == "(") {
     shared_ptr<SExpr> first = parse(it);
     return make_shared<SExprs>(first, parse(it));
-  } else if (all_of(token.begin(), token.end(), ::isdigit) ||
-             (token[0] == '-' && token.length() > 1 &&
-              all_of(token.begin() + 1, token.end(), ::isdigit))) {
-    shared_ptr<IntAtom> first = make_shared<IntAtom>(stoi(token));
-    return make_shared<SExprs>(first, parse(it));
   }
-  shared_ptr<SymAtom> first = make_shared<SymAtom>(token);
-  return make_shared<SExprs>(first, parse(it));
+  return make_shared<SExprs>(parseAtom(token), parse(it));
+}
+
+shared_ptr<SExpr> parse(vector<string> tokens) {
+  if (tokens.size() == 1) {
+    return parseAtom(tokens.front());
+  }
+  auto it = tokens.begin() + 1;
+  return parse(it);
 }
 
 shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
@@ -127,6 +133,8 @@ void repl() {
     cout << "lisp> ";
     string input;
     getline(cin, input);
-    cout << *eval(parse(tokenize(input)), env) << endl;
+    if (!std::all_of(input.begin(), input.end(), isspace)) {
+      cout << *eval(parse(tokenize(input)), env) << endl;
+    }
   }
 }

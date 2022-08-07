@@ -40,27 +40,37 @@ out/BoolAtom.o: src/sexpr/BoolAtom.cpp
 out/Atom.o: src/sexpr/Atom.cpp
 	$(CXX) $(CXXFLAGS) -c src/sexpr/Atom.cpp -o out/Atom.o
 
-test: testHof testRecur testCons testCombine testSet
-	
+test: testParse testHof testCons testRecur testCombine testSet
+
+testParse: out/lisp tests/parse.in tests/parse.expect
+	out/lisp < tests/parse.in > tests/parse.out
+	diff tests/parse.expect tests/parse.out
+	rm tests/parse.out
+
 testHof: out/lisp tests/hof.in tests/hof.expect
 	out/lisp < tests/hof.in > tests/hof.out
 	diff tests/hof.expect tests/hof.out
+	rm tests/hof.out
 
 testCons: out/lisp tests/cons.in tests/cons.expect
 	out/lisp < tests/cons.in > tests/cons.out
 	diff tests/cons.expect tests/cons.out
+	rm tests/cons.out
 
 testRecur: out/lisp tests/recur.in tests/recur.expect
 	out/lisp < tests/recur.in > tests/recur.out
 	diff tests/recur.expect tests/recur.out
+	rm tests/recur.out
 
 testCombine: out/lisp tests/combine.in tests/combine.expect
 	out/lisp < tests/combine.in > tests/combine.out
 	diff tests/combine.expect tests/combine.out
+	rm tests/combine.out
 
 testSet: out/lisp tests/set.in tests/set.expect
 	out/lisp < tests/set.in > tests/set.out
 	diff tests/set.expect tests/set.out
+	rm tests/set.out
 
 clean:
 	rm out/lisp out/*.o tests/*.out
