@@ -57,7 +57,9 @@ shared_ptr<SExpr> parse(vector<string>::iterator &it) {
   } else if (token == "(") {
     shared_ptr<SExpr> first = parse(it);
     return make_shared<SExprs>(first, parse(it));
-  } else if (all_of(token.begin(), token.end(), ::isdigit)) {
+  } else if (all_of(token.begin(), token.end(), ::isdigit) ||
+             (token[0] == '-' && token.length() > 1 &&
+              all_of(token.begin() + 1, token.end(), ::isdigit))) {
     shared_ptr<IntAtom> first = make_shared<IntAtom>(stoi(token));
     return make_shared<SExprs>(first, parse(it));
   }
