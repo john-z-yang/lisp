@@ -30,7 +30,7 @@ Run the program.
 ```console
 foo@bar:~$ out/lisp
 lisp> (quote (Hello World!))
-(Hello, (World!, ()))
+(Hello World!)
 lisp> (quit)
 Farewell.
 ```
