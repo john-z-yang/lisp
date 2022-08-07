@@ -79,7 +79,7 @@ Tests are defined in the `tests` directory. Each test suite is a pair of `.in` (
 
 ### Sample test suite (`combine`)
 
-Expected behaviour
+Behaviour we want
 ```lisp
 lisp> (define list (lambda lis lis))
 <closure>
