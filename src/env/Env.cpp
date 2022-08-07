@@ -32,6 +32,19 @@ shared_ptr<SExpr> Env::find(string name) {
   return outer->find(name);
 }
 
+void Env::set(string name, shared_ptr<SExpr> val) {
+  auto it = symTable.find(name);
+  if (it != symTable.end()) {
+    symTable[name] = val;
+    return;
+  }
+  if (!outer) {
+    cerr << "Fatal: symbol \"" << name << "\" is undefined" << endl;
+    exit(EXIT_FAILURE);
+  }
+  outer->set(name, val);
+}
+
 void initEnv(shared_ptr<Env> env) {
   env->symTable.insert(make_pair(
       "quit",

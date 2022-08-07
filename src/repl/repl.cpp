@@ -76,18 +76,18 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   shared_ptr<SymAtom> sym = dynamic_pointer_cast<SymAtom>(sExprs->first);
   if (sym && sym->val == "define") {
     sExprs = dynamic_pointer_cast<SExprs>(sExprs->rest);
-    string varName = dynamic_pointer_cast<SymAtom>(sExprs->first)->val;
-    shared_ptr<SExpr> varVal =
+    string name = dynamic_pointer_cast<SymAtom>(sExprs->first)->val;
+    shared_ptr<SExpr> val =
         eval(dynamic_pointer_cast<SExprs>(sExprs->rest)->first, env);
-    env->symTable.insert(make_pair(varName, varVal));
-    return varVal;
+    env->symTable.insert(make_pair(name, val));
+    return val;
   } else if (sym && sym->val == "set!") {
     sExprs = dynamic_pointer_cast<SExprs>(sExprs->rest);
-    string varName = dynamic_pointer_cast<SymAtom>(sExprs->first)->val;
-    shared_ptr<SExpr> varVal =
+    string name = dynamic_pointer_cast<SymAtom>(sExprs->first)->val;
+    shared_ptr<SExpr> val =
         eval(dynamic_pointer_cast<SExprs>(sExprs->rest)->first, env);
-    env->symTable[varName] = varVal;
-    return varVal;
+    env->set(name, val);
+    return val;
   } else if (sym && sym->val == "quote") {
     sExprs = dynamic_pointer_cast<SExprs>(sExprs->rest);
     return sExprs->first;

@@ -17,7 +17,9 @@ public:
   Env();
   Env(const shared_ptr<Env> outer);
 
-  shared_ptr<SExpr> find(string name);
+  shared_ptr<SExpr> find(string symbol);
+
+  void set(string symbol, shared_ptr<SExpr> val);
 };
 
 void initEnv(shared_ptr<Env> env);
