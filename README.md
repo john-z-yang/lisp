@@ -49,7 +49,7 @@ Farewell.
 ## Built-In Functions and Operators
 | Name      | Arguments    | Description                                                             |
 | --------- | ------------ | ----------------------------------------------------------------------- |
-| `quit`    | `Nil`        | Quit the session                                                        |
+| `quit`    |              | Quit the session                                                        |
 | `display` | `arg`        | Print `arg` to `std::cout`, returns `(quote ())`                        |
 | `abs`     | `arg`        | Returns \|`arg`\|                                                       |
 | `+`       | `lhs`, `rhs` | Returns `lhs` + `rhs`                                                   |
