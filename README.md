@@ -34,6 +34,18 @@ lisp> (quote (Hello World!))
 lisp> (quit)
 Farewell.
 ```
+## Supported Syntax
+
+| Syntax                                                        | Description                                                                                                                                                                         |
+| :------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| *(`define` sym expr)*                                         | Evaluate *expr*, associate symbol *sym* to the result in current lexical scope                                                                                                      |
+| *(`set!` sym expr)*                                           | Evaluate *expr*, find the closest lexical scope where *sym* is defined, updates symbol *sym* to the result.                                                                         |
+| *(`quote` expr)*                                              | Returns *expr*.                                                                                                                                                                     |
+| *(`if` (expr<sub>1</sub>) expr<sub>2</sub> expr<sub>3</sub>)* | Evaluate *expr<sub>1</sub>*, if the result is *truthy* (aka not `#t`), returns *expr<sub>1</sub>*; otherwise returns *expr<sub>3</sub>*.                                            |
+| *(`lambda` (Sym<sub>1</sub> ... Sym<sub>n</sub>) expr)*       | Returns a `ClosureAtom`, it accepts Sym<sub>1</sub> ... Sym<sub>n</sub> as arguments and *expr* as body. When invoked, parameters are bound to Sym<sub>1</sub> ... Sym<sub>n</sub>. |
+| *(`lambda` sym expr)*                                         | Returns a `ClosureAtom`, it accepts arbitary number of arguments and *expr* as body.                                                                                                |
+| *(`closure` expr<sub>1</sub> ... expr<sub>n</sub>)*           | Evaluates *expr<sub>1</sub> ... expr<sub>n</sub>*, invoke `closure` with the results bound to its parameter                                                                         |
+
 
 ## Running the tests
 
@@ -42,27 +54,27 @@ make test
 ```
 Tests are defined in the `tests` directory. Each test suite is a pair of `.in` (input) and `.expect` (expected output) files. The test definition in makefile generates a `.out` file with the `.in` file and diff it against the `.expect` file.
 
-### Sample test suite (`cons`)
+### Sample test suite (`combine`)
 
 Expected behaviour
 ```lisp
-lisp> (define map (lambda (fn lis) (if (null? lis) () (cons (fn (car lis)) (map fn (cdr lis))))))
+lisp> (define list (lambda lis lis))
 <closure>
-lisp> (define range (lambda (a b) (if (= a b) (quote ()) (cons a (range (+ a 1) b)))))
+lisp> (define combine (lambda (f) (lambda (x y) (if (null? x) (quote ()) (f (list (car x) (car y)) ((combine f) (cdr x) (cdr y)))))))
 <closure>
-lisp> (define fib (lambda (n) (if (= n 1) 1 (if (= n 2) 1 (+ (fib (- n 1)) (fib (- n 2)))))))
+lisp> (define zip (combine cons))
 <closure>
-lisp> (map fib (range 1 13))
-(1, (1, (2, (3, (5, (8, (13, (21, (34, (55, (89, (144, ()))))))))))))
+lisp> (zip (list 1 2 3 4) (list 5 6 7 8))
+((1, (5, ())), ((2, (6, ())), ((3, (7, ())), ((4, (8, ())), ()))))
 lisp> (quit)
 Farewell.
 ```
 `cons.in`
 ```lisp
-(define map (lambda (fn lis) (if (null? lis) () (cons (fn (car lis)) (map fn (cdr lis))))))
-(define range (lambda (a b) (if (= a b) (quote ()) (cons a (range (+ a 1) b)))))
-(define fib (lambda (n) (if (= n 1) 1 (if (= n 2) 1 (+ (fib (- n 1)) (fib (- n 2)))))))
-(map fib (range 1 13))
+(define list (lambda lis lis))
+(define combine (lambda (f) (lambda (x y) (if (null? x) (quote ()) (f (list (car x) (car y)) ((combine f) (cdr x) (cdr y)))))))
+(define zip (combine cons))
+(zip (list 1 2 3 4) (list 5 6 7 8))
 (quit)
 ```
 `cons.expect`
@@ -70,7 +82,7 @@ Farewell.
 lisp> <closure>
 lisp> <closure>
 lisp> <closure>
-lisp> (1, (1, (2, (3, (5, (8, (13, (21, (34, (55, (89, (144, ()))))))))))))
+lisp> ((1, (5, ())), ((2, (6, ())), ((3, (7, ())), ((4, (8, ())), ()))))
 lisp> Farewell.
 ```
 
