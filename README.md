@@ -38,10 +38,10 @@ Farewell.
 
 | Syntax                                                        | Description                                                                                                                                                                                            |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| *(`define` sym expr)*                                         | Evaluate *expr*, associate symbol *sym* to the result in current lexical scope.                                                                                                                        |
-| *(`set!` sym expr)*                                           | Evaluate *expr*, find the closest lexical scope where *sym* is defined, updates symbol *sym* to the result.                                                                                            |
+| *(`define` sym expr)*                                         | Evaluate *expr*, binds symbol *sym* to the result in current lexical scope.                                                                                                                            |
+| *(`set!` sym expr)*                                           | Evaluate *expr*, find the closest lexical scope where *sym* is defined, binds symbol *sym* to the result.                                                                                              |
 | *(`quote` expr)*                                              | Returns *expr*.                                                                                                                                                                                        |
-| *(`if` (expr<sub>1</sub>) expr<sub>2</sub> expr<sub>3</sub>)* | Evaluate *expr<sub>1</sub>*, if the result is *truthy* (aka not `#t`), returns *expr<sub>1</sub>*; otherwise, returns *expr<sub>3</sub>*.                                                              |
+| *(`if` (expr<sub>1</sub>) expr<sub>2</sub> expr<sub>3</sub>)* | Evaluate *expr<sub>1</sub>*, if the result is *truthy* (aka not `#t`), evalulate *expr<sub>2</sub>* and returns the result; otherwise, evalulate *expr<sub>3</sub>* and returns the result.            |
 | *(`lambda` (Sym<sub>1</sub> ... Sym<sub>n</sub>) expr)*       | Returns a `ClosureAtom`, the `ClosureAtom` accepts *Sym<sub>1</sub> ... Sym<sub>n</sub>* as arguments and *expr* as body. When invoked, parameters are bound to *Sym<sub>1</sub> ... Sym<sub>n</sub>*. |
 | *(`lambda` sym expr)*                                         | Returns a `ClosureAtom`, the `ClosureAtom` accepts arbitary number of arguments and *expr* as body. When invoked, parameters are bound to *Sym* as a `cons` list.                                      |
 | *(`closure` expr<sub>1</sub> ... expr<sub>n</sub>)*           | Evaluates *expr<sub>1</sub> ... expr<sub>n</sub>*, invoke `closure` with the results bound to its parameter                                                                                            |
@@ -51,7 +51,7 @@ Farewell.
 | --------- | ------------ | ----------------------------------------------------------------------- |
 | `quit`    | `Nil`        | Quit the session                                                        |
 | `display` | `arg`        | Print `arg` to `std::cout`, returns `(quote ())`                        |
-| `abs`     | `arg`        | Returns \| `arg` \|                                                     |
+| `abs`     | `arg`        | Returns \|`arg`\|                                                       |
 | `+`       | `lhs`, `rhs` | Returns `lhs` + `rhs`                                                   |
 | `-`       | `lhs`, `rhs` | Returns `lhs` - `rhs`                                                   |
 | `*`       | `lhs`, `rhs` | Returns `lhs` × `rhs`                                                   |
