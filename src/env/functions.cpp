@@ -89,8 +89,8 @@ shared_ptr<SExpr> lispNot(shared_ptr<Env> env) {
 }
 
 shared_ptr<SExpr> lispAnd(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(BoolAtom::cast(env->find("or_lhs")) &&
-                               BoolAtom::cast(env->find("or_rhs")));
+  return make_shared<BoolAtom>(BoolAtom::cast(env->find("and_lhs")) &&
+                               BoolAtom::cast(env->find("and_rhs")));
 }
 
 shared_ptr<SExpr> lispOr(shared_ptr<Env> env) {
