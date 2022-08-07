@@ -43,7 +43,7 @@ Farewell.
 | *(`quote` expr)*                                              | Returns *expr*.                                                                                                                                                                                        |
 | *(`if` (expr<sub>1</sub>) expr<sub>2</sub> expr<sub>3</sub>)* | Evaluate *expr<sub>1</sub>*, if the result is *truthy* (aka not `#t`), returns *expr<sub>1</sub>*; otherwise, returns *expr<sub>3</sub>*.                                                              |
 | *(`lambda` (Sym<sub>1</sub> ... Sym<sub>n</sub>) expr)*       | Returns a `ClosureAtom`, the `ClosureAtom` accepts *Sym<sub>1</sub> ... Sym<sub>n</sub>* as arguments and *expr* as body. When invoked, parameters are bound to *Sym<sub>1</sub> ... Sym<sub>n</sub>*. |
-| *(`lambda` sym expr)*                                         | Returns a `ClosureAtom`, the `ClosureAtom` accepts arbitary number of arguments and *expr* as body.                                                                                                    |
+| *(`lambda` sym expr)*                                         | Returns a `ClosureAtom`, the `ClosureAtom` accepts arbitary number of arguments and *expr* as body. When invoked, parameters are bound to *Sym* as a `cons` list.                                      |
 | *(`closure` expr<sub>1</sub> ... expr<sub>n</sub>)*           | Evaluates *expr<sub>1</sub> ... expr<sub>n</sub>*, invoke `closure` with the results bound to its parameter                                                                                            |
 
 ## Built-In Functions and Operators
