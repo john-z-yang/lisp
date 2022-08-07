@@ -88,7 +88,7 @@ lisp> (define combine (lambda (f) (lambda (x y) (if (null? x) (quote ()) (f (lis
 lisp> (define zip (combine cons))
 <closure>
 lisp> (zip (list 1 2 3 4) (list 5 6 7 8))
-((1, (5, ())), ((2, (6, ())), ((3, (7, ())), ((4, (8, ())), ()))))
+((1 5) (2 6) (3 7) (4 8))
 lisp> (quit)
 Farewell.
 ```
@@ -105,7 +105,7 @@ Farewell.
 lisp> <closure>
 lisp> <closure>
 lisp> <closure>
-lisp> ((1, (5, ())), ((2, (6, ())), ((3, (7, ())), ((4, (8, ())), ()))))
+lisp> ((1 5) (2 6) (3 7) (4 8))
 lisp> Farewell.
 ```
 `makefile`
