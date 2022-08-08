@@ -47,101 +47,81 @@ void Env::set(string name, shared_ptr<SExpr> val) {
 
 void initEnv(shared_ptr<Env> env) {
   env->symTable.insert(make_pair(
-      "quit",
-      make_shared<ClosureAtom>(lispQuit, env, make_shared<NilAtom>(), true)));
+      "quit", make_shared<ClosureAtom>(lispQuit, env, make_shared<NilAtom>())));
   env->symTable.insert(make_pair(
       "display", make_shared<ClosureAtom>(lispDisplay, env,
                                           dynamic_pointer_cast<SExprs>(parse(
-                                              tokenize("(display_oprand)"))),
-                                          true)));
+                                              tokenize("(display_oprand)"))))));
   env->symTable.insert(make_pair(
-      "abs", make_shared<ClosureAtom>(
-                 lispAdd, env,
-                 dynamic_pointer_cast<SExprs>(parse(tokenize("(abs_oprand)"))),
-                 true)));
+      "abs", make_shared<ClosureAtom>(lispAdd, env,
+                                      dynamic_pointer_cast<SExprs>(
+                                          parse(tokenize("(abs_oprand)"))))));
   env->symTable.insert(make_pair(
       "+", make_shared<ClosureAtom>(lispAdd, env,
-                                    dynamic_pointer_cast<SExprs>(
-                                        parse(tokenize("(add_lhs add_rhs)"))),
-                                    true)));
+                                    dynamic_pointer_cast<SExprs>(parse(
+                                        tokenize("(add_lhs add_rhs)"))))));
   env->symTable.insert(make_pair(
       "-", make_shared<ClosureAtom>(lispSub, env,
-                                    dynamic_pointer_cast<SExprs>(
-                                        parse(tokenize("(sub_lhs sub_rhs)"))),
-                                    true)));
+                                    dynamic_pointer_cast<SExprs>(parse(
+                                        tokenize("(sub_lhs sub_rhs)"))))));
   env->symTable.insert(make_pair(
       "*", make_shared<ClosureAtom>(lispMult, env,
-                                    dynamic_pointer_cast<SExprs>(
-                                        parse(tokenize("(mult_lhs mult_rhs)"))),
-                                    true)));
+                                    dynamic_pointer_cast<SExprs>(parse(
+                                        tokenize("(mult_lhs mult_rhs)"))))));
   env->symTable.insert(make_pair(
       "/", make_shared<ClosureAtom>(lispDiv, env,
-                                    dynamic_pointer_cast<SExprs>(
-                                        parse(tokenize("(div_lhs div_rhs)"))),
-                                    true)));
+                                    dynamic_pointer_cast<SExprs>(parse(
+                                        tokenize("(div_lhs div_rhs)"))))));
   env->symTable.insert(make_pair(
       "%", make_shared<ClosureAtom>(lispMod, env,
+                                    dynamic_pointer_cast<SExprs>(parse(
+                                        tokenize("(mod_lhs mod_rhs)"))))));
+  env->symTable.insert(make_pair(
+      "=", make_shared<ClosureAtom>(lispEq, env,
                                     dynamic_pointer_cast<SExprs>(
-                                        parse(tokenize("(mod_lhs mod_rhs)"))),
-                                    true)));
+                                        parse(tokenize("(eq_lhs eq_rhs)"))))));
   env->symTable.insert(make_pair(
-      "=", make_shared<ClosureAtom>(
-               lispEq, env,
-               dynamic_pointer_cast<SExprs>(parse(tokenize("(eq_lhs eq_rhs)"))),
-               true)));
-  env->symTable.insert(make_pair(
-      ">", make_shared<ClosureAtom>(
-               lispGt, env,
-               dynamic_pointer_cast<SExprs>(parse(tokenize("(gt_lhs gt_rhs)"))),
-               true)));
+      ">", make_shared<ClosureAtom>(lispGt, env,
+                                    dynamic_pointer_cast<SExprs>(
+                                        parse(tokenize("(gt_lhs gt_rhs)"))))));
   env->symTable.insert(make_pair(
       ">=", make_shared<ClosureAtom>(lispGteq, env,
                                      dynamic_pointer_cast<SExprs>(parse(
-                                         tokenize("(gteq_lhs gteq_rhs)"))),
-                                     true)));
+                                         tokenize("(gteq_lhs gteq_rhs)"))))));
   env->symTable.insert(make_pair(
-      "<", make_shared<ClosureAtom>(
-               lispLt, env,
-               dynamic_pointer_cast<SExprs>(parse(tokenize("(lt_lhs lt_rhs)"))),
-               true)));
+      "<", make_shared<ClosureAtom>(lispLt, env,
+                                    dynamic_pointer_cast<SExprs>(
+                                        parse(tokenize("(lt_lhs lt_rhs)"))))));
   env->symTable.insert(make_pair(
       "<=", make_shared<ClosureAtom>(lispLteq, env,
                                      dynamic_pointer_cast<SExprs>(parse(
-                                         tokenize("(lteq_lhs lteq_rhs)"))),
-                                     true)));
+                                         tokenize("(lteq_lhs lteq_rhs)"))))));
   env->symTable.insert(make_pair(
-      "not", make_shared<ClosureAtom>(
-                 lispNot, env,
-                 dynamic_pointer_cast<SExprs>(parse(tokenize("(not_oprand)"))),
-                 true)));
+      "not", make_shared<ClosureAtom>(lispNot, env,
+                                      dynamic_pointer_cast<SExprs>(
+                                          parse(tokenize("(not_oprand)"))))));
   env->symTable.insert(make_pair(
       "and", make_shared<ClosureAtom>(lispAnd, env,
-                                      dynamic_pointer_cast<SExprs>(
-                                          parse(tokenize("(and_lhs and_rhs)"))),
-                                      true)));
+                                      dynamic_pointer_cast<SExprs>(parse(
+                                          tokenize("(and_lhs and_rhs)"))))));
   env->symTable.insert(make_pair(
       "or", make_shared<ClosureAtom>(lispOr, env,
                                      dynamic_pointer_cast<SExprs>(
-                                         parse(tokenize("(or_lhs or_rhs)"))),
-                                     true)));
+                                         parse(tokenize("(or_lhs or_rhs)"))))));
   env->symTable.insert(make_pair(
       "cons", make_shared<ClosureAtom>(lispCons, env,
                                        dynamic_pointer_cast<SExprs>(parse(
-                                           tokenize("(cons_lhs cons_rhs)"))),
-                                       true)));
+                                           tokenize("(cons_lhs cons_rhs)"))))));
   env->symTable.insert(make_pair(
-      "car", make_shared<ClosureAtom>(
-                 lispCar, env,
-                 dynamic_pointer_cast<SExprs>(parse(tokenize("(car_oprand)"))),
-                 true)));
+      "car", make_shared<ClosureAtom>(lispCar, env,
+                                      dynamic_pointer_cast<SExprs>(
+                                          parse(tokenize("(car_oprand)"))))));
   env->symTable.insert(make_pair(
-      "cdr", make_shared<ClosureAtom>(
-                 lispCdr, env,
-                 dynamic_pointer_cast<SExprs>(parse(tokenize("(cdr_oprand)"))),
-                 true)));
+      "cdr", make_shared<ClosureAtom>(lispCdr, env,
+                                      dynamic_pointer_cast<SExprs>(
+                                          parse(tokenize("(cdr_oprand)"))))));
   env->symTable.insert(make_pair(
       "null?", make_shared<ClosureAtom>(lispIsNull, env,
-                                        dynamic_pointer_cast<SExprs>(
-                                            parse(tokenize("(null?_oprand)"))),
-                                        true)));
+                                        dynamic_pointer_cast<SExprs>(parse(
+                                            tokenize("(null?_oprand)"))))));
 }

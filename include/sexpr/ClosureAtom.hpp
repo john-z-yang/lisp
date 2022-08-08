@@ -16,10 +16,9 @@ public:
   Proc proc;
   const shared_ptr<Env> outerEnv;
   const shared_ptr<SExpr> argNames;
-  const bool capture;
 
   ClosureAtom(Proc proc, const shared_ptr<Env> outerEnv,
-              const shared_ptr<SExpr> argNames, const bool capture);
+              const shared_ptr<SExpr> argNames);
 
   std::shared_ptr<SExpr> evalArgs(shared_ptr<SExpr> args,
                                   shared_ptr<Env> curEnv);

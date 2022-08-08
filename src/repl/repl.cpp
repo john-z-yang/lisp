@@ -117,8 +117,7 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
         dynamic_pointer_cast<SExprs>(sExprs->rest)->first);
 
     return make_shared<ClosureAtom>(
-        [body](shared_ptr<Env> env) { return eval(body, env); }, env, argNames,
-        false);
+        [body](shared_ptr<Env> env) { return eval(body, env); }, env, argNames);
   }
   shared_ptr<ClosureAtom> closure =
       dynamic_pointer_cast<ClosureAtom>(eval(sExprs->first, env));

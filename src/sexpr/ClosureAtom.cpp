@@ -8,13 +8,13 @@ using std::shared_ptr;
 using std::string;
 
 ClosureAtom::ClosureAtom(Proc proc, const shared_ptr<Env> outerEnv,
-                         const shared_ptr<SExpr> argNames, const bool capture)
+                         const shared_ptr<SExpr> argNames)
     : Atom(SExpr::Type::CLOSURE), proc(proc), argNames(argNames),
-      outerEnv(outerEnv), capture(capture) {}
+      outerEnv(outerEnv) {}
 
 shared_ptr<Env> ClosureAtom::bindArgs(shared_ptr<SExpr> args,
                                       shared_ptr<Env> curEnv) {
-  shared_ptr<Env> env = std::make_shared<Env>(capture ? curEnv : outerEnv);
+  shared_ptr<Env> env = std::make_shared<Env>(outerEnv);
   if (argNames->type == SExpr::Type::NIL) {
     return env;
   }
