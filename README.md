@@ -36,15 +36,17 @@ Farewell.
 ```
 ## Supported Syntax
 
-| Syntax                                                        | Description                                                                                                                                                                                            |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| *(`define` sym expr)*                                         | Evaluate *expr*, binds symbol *sym* to the result in current lexical scope.                                                                                                                            |
-| *(`set!` sym expr)*                                           | Evaluate *expr*, find the closest lexical scope where *sym* is defined, binds symbol *sym* to the result.                                                                                              |
-| *(`quote` expr)*                                              | Returns *expr*.                                                                                                                                                                                        |
-| *(`if` (expr<sub>1</sub>) expr<sub>2</sub> expr<sub>3</sub>)* | Evaluate *expr<sub>1</sub>*, if the result is *truthy* (aka not `#t`), evalulate *expr<sub>2</sub>* and returns the result; otherwise, evalulate *expr<sub>3</sub>* and returns the result.            |
-| *(`lambda` (Sym<sub>1</sub> ... Sym<sub>n</sub>) expr)*       | Returns a `ClosureAtom`, the `ClosureAtom` accepts *Sym<sub>1</sub> ... Sym<sub>n</sub>* as arguments and *expr* as body. When invoked, parameters are bound to *Sym<sub>1</sub> ... Sym<sub>n</sub>*. |
-| *(`lambda` sym expr)*                                         | Returns a `ClosureAtom`, the `ClosureAtom` accepts arbitary number of arguments and *expr* as body. When invoked, parameters are bound to *Sym* as a `cons` list.                                      |
-| *(`closure` expr<sub>1</sub> ... expr<sub>n</sub>)*           | Evaluates *expr<sub>1</sub> ... expr<sub>n</sub>*, invoke `closure` with the results bound to its parameter                                                                                            |
+| Syntax                                                                          | Description                                                                                                                                                                                                 |
+| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| *symbol*                                                                        | Return the value that *sybmol* is bound to in the closest lexical scope.                                                                                                                                    |
+| *number*                                                                        | Return the *number*.                                                                                                                                                                                        |
+| *(`define` symbol expression)*                                                  | Evaluate *expression*, bind *symbol* to the result in current lexical scope.                                                                                                                                |
+| *(`set!` symbol expression)*                                                    | Evaluate *expression*, find the closest lexical scope where *symbol* is bound, re-bind *symbol* to the result.                                                                                              |
+| *(`quote` expression)*                                                          | Return *expression* without evaluating it.                                                                                                                                                                  |
+| *(`if` (expression<sub>1</sub>) expression<sub>2</sub> expression<sub>3</sub>)* | Evaluate *expression<sub>1</sub>*, if the result is *truthy* (aka not `#t`), evalulate *expression<sub>2</sub>* and return the result; otherwise, evalulate *expression<sub>3</sub>* and return the result. |
+| *(`lambda` (symbol<sub>1</sub> ... symbol<sub>n</sub>) expression)*             | Return a `ClosureAtom` that accepts *n* arguments. When invoked, bind parameters to *Symbol<sub>1</sub> ... Symbol<sub>n</sub>*, evalulate *expression* and return the result.                              |
+| *(`lambda` symbol expression)*                                                  | Return a `ClosureAtom` that accepts arbitary number of arguments. When invoked, bind parameters to *Symbol* as a list, evalulate *expression* and return the result.                                        |
+| *(`closure` expression<sub>1</sub> ... expression<sub>n</sub>)*                 | Evaluates *expression<sub>1</sub> ... expression<sub>n</sub>*, invoke `closure` with the results.                                                                                                           |
 
 ## Built-In Functions and Operators
 | Name      | Arguments    | Description                                                             |
@@ -66,8 +68,8 @@ Farewell.
 | `and`     | `lhs`, `rhs` | Returns `lhs` ∧ `rhs`                                                   |
 | `or`      | `lhs`, `rhs` | Returns `lhs` ∨ `rhs`                                                   |
 | `cons`    | `lhs`, `rhs` | Returns a pair where first element is `lhs` and second element is `rhs` |
-| `car`     | `arg`        | Returns the first element of `arg`                                      |
-| `cdr`     | `arg`        | Returns the second element of `arg`                                     |
+| `car`     | `pair`       | Returns the first element of `pair`                                     |
+| `cdr`     | `pair`       | Returns the second element of `pair`                                    |
 | `null?`   | `arg`        | Returns `#t` if `arg` is `(quote ())`; otherwise `#f`                   |
 
 ## Running the tests
