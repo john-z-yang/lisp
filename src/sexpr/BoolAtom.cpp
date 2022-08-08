@@ -1,7 +1,6 @@
+#include "../../include/sexpr/BoolAtom.hpp"
 #include <memory>
 #include <string>
-
-#include "../../include/sexpr/BoolAtom.hpp"
 
 using std::dynamic_pointer_cast;
 using std::shared_ptr;

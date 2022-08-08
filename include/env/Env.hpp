@@ -1,11 +1,10 @@
 #ifndef LISP_INCLUDE_ENV_ENV_HPP_
 #define LISP_INCLUDE_ENV_ENV_HPP_
 
+#include "../sexpr/SExpr.hpp"
 #include <map>
 #include <memory>
 #include <string>
-
-#include "../sexpr/SExpr.hpp"
 
 using std::map;
 using std::shared_ptr;

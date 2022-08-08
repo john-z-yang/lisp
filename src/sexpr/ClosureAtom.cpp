@@ -1,9 +1,8 @@
+#include "../../include/sexpr/ClosureAtom.hpp"
+#include "../../include/repl/repl.hpp"
+#include "../../include/sexpr/NilAtom.hpp"
 #include <memory>
 #include <string>
-
-#include "../../include/repl/repl.hpp"
-#include "../../include/sexpr/ClosureAtom.hpp"
-#include "../../include/sexpr/NilAtom.hpp"
 
 using std::dynamic_pointer_cast;
 using std::make_shared;

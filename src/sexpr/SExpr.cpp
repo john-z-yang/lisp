@@ -1,6 +1,5 @@
-#include <iostream>
-
 #include "../../include/sexpr/SExpr.hpp"
+#include <iostream>
 
 using std::ostream;
 

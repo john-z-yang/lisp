@@ -1,13 +1,12 @@
 #ifndef LISP_INCLUDE_SEXPR_CLOSUREATOM_H_
 #define LISP_INCLUDE_SEXPR_CLOSUREATOM_H_
 
-#include <functional>
-#include <memory>
-
 #include "../../include/env/Env.hpp"
 #include "../../include/sexpr/Atom.hpp"
 #include "../../include/sexpr/SExprs.hpp"
 #include "../../include/sexpr/SymAtom.hpp"
+#include <functional>
+#include <memory>
 
 using std::function;
 using std::shared_ptr;

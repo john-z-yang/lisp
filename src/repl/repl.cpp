@@ -1,13 +1,6 @@
-#include <algorithm>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
+#include "../../include/repl/repl.hpp"
 #include "../../include/env/Env.hpp"
 #include "../../include/env/functions.hpp"
-#include "../../include/repl/repl.hpp"
 #include "../../include/sexpr/Atom.hpp"
 #include "../../include/sexpr/BoolAtom.hpp"
 #include "../../include/sexpr/ClosureAtom.hpp"
@@ -15,6 +8,12 @@
 #include "../../include/sexpr/NilAtom.hpp"
 #include "../../include/sexpr/SExpr.hpp"
 #include "../../include/sexpr/SymAtom.hpp"
+#include <algorithm>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 using std::all_of;
 using std::cin;

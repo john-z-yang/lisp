@@ -1,6 +1,5 @@
-#include <string>
-
 #include "../../include/sexpr/NilAtom.hpp"
+#include <string>
 
 using std::string;
 

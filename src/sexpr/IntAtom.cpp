@@ -1,6 +1,5 @@
-#include <string>
-
 #include "../../include/sexpr/IntAtom.hpp"
+#include <string>
 
 using std::string;
 using std::to_string;

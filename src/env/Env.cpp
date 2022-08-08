@@ -1,8 +1,3 @@
-#include <iostream>
-#include <memory>
-#include <string>
-#include <utility>
-
 #include "../../include/env/Env.hpp"
 #include "../../include/env/functions.hpp"
 #include "../../include/repl/repl.hpp"
@@ -10,6 +5,10 @@
 #include "../../include/sexpr/NilAtom.hpp"
 #include "../../include/sexpr/SExpr.hpp"
 #include "../../include/sexpr/SExprs.hpp"
+#include <iostream>
+#include <memory>
+#include <string>
+#include <utility>
 
 using std::cerr;
 using std::dynamic_pointer_cast;

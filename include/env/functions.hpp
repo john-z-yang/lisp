@@ -1,11 +1,10 @@
 #ifndef LISP_INCLUDE_ENV_FUNCTIONS_HPP_
 #define LISP_INCLUDE_ENV_FUNCTIONS_HPP_
 
-#include <memory>
-
 #include "../sexpr/IntAtom.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "./Env.hpp"
+#include <memory>
 
 using std::shared_ptr;
 

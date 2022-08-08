@@ -1,10 +1,9 @@
-#include <iostream>
-#include <memory>
-
 #include "../../include/env/functions.hpp"
 #include "../../include/sexpr/BoolAtom.hpp"
 #include "../../include/sexpr/NilAtom.hpp"
 #include "../../include/sexpr/SExprs.hpp"
+#include <iostream>
+#include <memory>
 
 using std::cout;
 using std::dynamic_pointer_cast;

@@ -1,13 +1,12 @@
 #ifndef LISP_INCLUD_REPL_REPL
 #define LISP_INCLUD_REPL_REPL
 
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "../env/Env.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "../sexpr/SExprs.hpp"
+#include <memory>
+#include <string>
+#include <vector>
 
 using std::shared_ptr;
 using std::string;

@@ -1,9 +1,8 @@
 #ifndef LISP_INCLUDE_SEXPR_SEXPRS_H_
 #define LISP_INCLUDE_SEXPR_SEXPRS_H_
 
-#include <memory>
-
 #include "SExpr.hpp"
+#include <memory>
 
 using std::shared_ptr;
 

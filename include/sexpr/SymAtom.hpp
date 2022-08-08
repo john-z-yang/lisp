@@ -1,9 +1,8 @@
 #ifndef LISP_INCLUDE_SEXPR_SYMATOM_H_
 #define LISP_INCLUDE_SEXPR_SYMATOM_H_
 
-#include <string>
-
 #include "Atom.hpp"
+#include <string>
 
 using std::string;
 
