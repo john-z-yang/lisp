@@ -124,4 +124,29 @@ void initEnv(shared_ptr<Env> env) {
       "null?", make_shared<ClosureAtom>(lispIsNull, env,
                                         dynamic_pointer_cast<SExprs>(parse(
                                             tokenize("(null?_oprand)"))))));
+
+  env->symTable.insert(make_pair(
+      "cons?", make_shared<ClosureAtom>(lispIsCons, env,
+                                        dynamic_pointer_cast<SExprs>(parse(
+                                            tokenize("(cons?_oprand)"))))));
+
+  env->symTable.insert(make_pair(
+      "sym?", make_shared<ClosureAtom>(lispIsSym, env,
+                                       dynamic_pointer_cast<SExprs>(
+                                           parse(tokenize("(sym?_oprand)"))))));
+
+  env->symTable.insert(make_pair(
+      "num?", make_shared<ClosureAtom>(lispIsNum, env,
+                                       dynamic_pointer_cast<SExprs>(
+                                           parse(tokenize("(num?_oprand)"))))));
+
+  env->symTable.insert(make_pair(
+      "proc?", make_shared<ClosureAtom>(lispIsProc, env,
+                                        dynamic_pointer_cast<SExprs>(parse(
+                                            tokenize("(proc?_oprand)"))))));
+
+  env->symTable.insert(make_pair(
+      "eq?", make_shared<ClosureAtom>(lispIsEqv, env,
+                                      dynamic_pointer_cast<SExprs>(parse(
+                                          tokenize("(eq?_lhs eq?_rhs)"))))));
 }

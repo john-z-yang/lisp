@@ -44,9 +44,9 @@ Farewell.
 | *(`set!` symbol expression)*                                                    | Evaluate *expression*, find the closest lexical scope where *symbol* is bound, re-bind *symbol* to the result.                                                                                              |
 | *(`quote` expression)*                                                          | Return *expression* without evaluating it.                                                                                                                                                                  |
 | *(`if` (expression<sub>1</sub>) expression<sub>2</sub> expression<sub>3</sub>)* | Evaluate *expression<sub>1</sub>*, if the result is *truthy* (aka not `#t`), evalulate *expression<sub>2</sub>* and return the result; otherwise, evalulate *expression<sub>3</sub>* and return the result. |
-| *(`lambda` (symbol<sub>1</sub> ... symbol<sub>n</sub>) expression)*             | Return a `Closure` that accepts *n* arguments. When invoked, bind parameters to *Symbol<sub>1</sub> ... Symbol<sub>n</sub>*, evalulate *expression* and return the result.                              |
-| *(`lambda` symbol expression)*                                                  | Return a `Closure` that accepts arbitary number of arguments. When invoked, bind parameters to *Symbol* as a list, evalulate *expression* and return the result.                                        |
-| *(`closure` expression<sub>1</sub> ... expression<sub>n</sub>)*                 | Evaluates *expression<sub>1</sub> ... expression<sub>n</sub>*, invoke `closure` with the results.                                                                                                           |
+| *(`lambda` (symbol<sub>1</sub> ... symbol<sub>n</sub>) expression)*             | Return a *procedure* that accepts *n* arguments. When invoked, bind parameters to *Symbol<sub>1</sub> ... Symbol<sub>n</sub>*, evalulate *expression* and return the result.                                |
+| *(`lambda` symbol expression)*                                                  | Return a *procedure* that accepts arbitary number of arguments. When invoked, bind parameters to *Symbol* as a list, evalulate *expression* and return the result.                                          |
+| *(procedure expression<sub>1</sub> ... expression<sub>n</sub>)*                 | Evaluates *expression<sub>1</sub> ... expression<sub>n</sub>*, invoke *procedure* with the results.                                                                                                         |
 
 ## Built-In Functions and Operators
 | Name      | Arguments    | Description                                                             |
@@ -71,6 +71,11 @@ Farewell.
 | `car`     | `pair`       | Returns the first element of `pair`                                     |
 | `cdr`     | `pair`       | Returns the second element of `pair`                                    |
 | `null?`   | `arg`        | Returns `#t` if `arg` is `(quote ())`; otherwise `#f`                   |
+| `cons?`   | `arg`        | Returns `#t` if `arg` is a `cons` pair; otherwise `#f`                  |
+| `sym?`    | `arg`        | Returns `#t` if `arg` is *symbol*; otherwise `#f`                       |
+| `num?`    | `arg`        | Returns `#t` if `arg` is *number*; otherwise `#f`                       |
+| `proc?`   | `arg`        | Returns `#t` if `arg` is *procedure*; otherwise `#f`                    |
+| `eq?`     | `lhs`, `rhs` | Returns `#t` if `lhs` and `rhs` are equivalent in value; otherwise `#f` |
 
 ## Running the tests
 

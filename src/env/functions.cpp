@@ -114,3 +114,28 @@ shared_ptr<SExpr> lispIsNull(shared_ptr<Env> env) {
   return make_shared<BoolAtom>(env->find("null?_oprand")->type ==
                                SExpr::Type::NIL);
 }
+
+shared_ptr<SExpr> lispIsCons(shared_ptr<Env> env) {
+  return make_shared<BoolAtom>(env->find("cons?_oprand")->type ==
+                               SExpr::Type::SEXPRS);
+}
+
+shared_ptr<SExpr> lispIsSym(shared_ptr<Env> env) {
+  return make_shared<BoolAtom>(env->find("sym?_oprand")->type ==
+                               SExpr::Type::SYM);
+}
+
+shared_ptr<SExpr> lispIsNum(shared_ptr<Env> env) {
+  return make_shared<BoolAtom>(env->find("num?_oprand")->type ==
+                               SExpr::Type::NUM);
+}
+
+shared_ptr<SExpr> lispIsProc(shared_ptr<Env> env) {
+  return make_shared<BoolAtom>(env->find("proc?_oprand")->type ==
+                               SExpr::Type::CLOSURE);
+}
+
+shared_ptr<SExpr> lispIsEqv(shared_ptr<Env> env) {
+  return make_shared<BoolAtom>(env->find("eq?_lhs")->toString() ==
+                               env->find("eq?_rhs")->toString());
+}

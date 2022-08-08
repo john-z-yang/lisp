@@ -50,4 +50,14 @@ shared_ptr<SExpr> lispCdr(shared_ptr<Env> env);
 
 shared_ptr<SExpr> lispIsNull(shared_ptr<Env> env);
 
+shared_ptr<SExpr> lispIsCons(shared_ptr<Env> env);
+
+shared_ptr<SExpr> lispIsSym(shared_ptr<Env> env);
+
+shared_ptr<SExpr> lispIsNum(shared_ptr<Env> env);
+
+shared_ptr<SExpr> lispIsProc(shared_ptr<Env> env);
+
+shared_ptr<SExpr> lispIsEqv(shared_ptr<Env> env);
+
 #endif
