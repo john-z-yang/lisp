@@ -1,3 +1,6 @@
+#include <iostream>
+#include <memory>
+
 #include "../../include/env/functions.hpp"
 #include "../../include/sexpr/BoolAtom.hpp"
 #include "../../include/sexpr/NilAtom.hpp"

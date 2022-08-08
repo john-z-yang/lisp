@@ -1,6 +1,9 @@
 #ifndef LISP_INCLUDE_SEXPR_BOOLATOM_H_
 #define LISP_INCLUDE_SEXPR_BOOLATOM_H_
 
+#include <memory>
+#include <string>
+
 #include "Atom.hpp"
 #include "SExpr.hpp"
 

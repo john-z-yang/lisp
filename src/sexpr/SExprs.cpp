@@ -1,3 +1,6 @@
+#include <memory>
+#include <string>
+
 #include "../../include/sexpr/SExprs.hpp"
 
 using std::shared_ptr;

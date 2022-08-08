@@ -2,6 +2,7 @@
 #define LISP_INCLUD_REPL_REPL
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "../env/Env.hpp"

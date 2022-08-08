@@ -1,3 +1,5 @@
+#include <string>
+
 #include "../../include/sexpr/IntAtom.hpp"
 
 using std::string;

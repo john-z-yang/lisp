@@ -2,6 +2,7 @@
 #define LISP_INCLUDE_SEXPR_CLOSUREATOM_H_
 
 #include <functional>
+#include <memory>
 
 #include "../../include/env/Env.hpp"
 #include "../../include/sexpr/Atom.hpp"

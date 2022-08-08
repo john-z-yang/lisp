@@ -1,4 +1,7 @@
+#include <iostream>
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "../../include/env/Env.hpp"
 #include "../../include/env/functions.hpp"

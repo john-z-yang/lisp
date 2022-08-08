@@ -1,3 +1,5 @@
+#include <string>
+
 #include "../../include/sexpr/NilAtom.hpp"
 
 using std::string;

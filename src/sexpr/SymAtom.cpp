@@ -1,3 +1,5 @@
+#include <string>
+
 #include "../../include/sexpr/SymAtom.hpp"
 
 using std::string;

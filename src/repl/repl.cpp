@@ -1,4 +1,9 @@
 #include <algorithm>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "../../include/env/Env.hpp"
 #include "../../include/env/functions.hpp"

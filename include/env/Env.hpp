@@ -2,6 +2,8 @@
 #define LISP_INCLUDE_ENV_ENV_HPP_
 
 #include <map>
+#include <memory>
+#include <string>
 
 #include "../sexpr/SExpr.hpp"
 
