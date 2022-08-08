@@ -1,6 +1,8 @@
-#include "../../include/repl/repl.hpp"
+#include <algorithm>
+
 #include "../../include/env/Env.hpp"
 #include "../../include/env/functions.hpp"
+#include "../../include/repl/repl.hpp"
 #include "../../include/sexpr/Atom.hpp"
 #include "../../include/sexpr/BoolAtom.hpp"
 #include "../../include/sexpr/ClosureAtom.hpp"

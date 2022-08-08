@@ -1,6 +1,8 @@
 #ifndef LISP_INCLUDE_SEXPR_CLOSUREATOM_H_
 #define LISP_INCLUDE_SEXPR_CLOSUREATOM_H_
 
+#include <functional>
+
 #include "../../include/env/Env.hpp"
 #include "../../include/sexpr/Atom.hpp"
 #include "../../include/sexpr/SExprs.hpp"
