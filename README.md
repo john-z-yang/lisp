@@ -120,6 +120,7 @@ lisp> Farewell.
 testCombine: out/lisp tests/combine.in tests/combine.expect
 	out/lisp < tests/combine.in > tests/combine.out
 	diff tests/combine.expect tests/combine.out
+	rm tests/combine.out
 ```
 
 ### Style test
