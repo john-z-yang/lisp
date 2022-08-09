@@ -14,7 +14,7 @@ your local machine.
 ### Prerequisites
 
 - [g++](https://gcc.gnu.org/)
-- [make](https://www.gnu.org/software/make/).
+- [make](https://www.gnu.org/software/make/)
 
 ### Installing
 
