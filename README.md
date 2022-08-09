@@ -1,6 +1,6 @@
 # Lisp Interpreter &middot; [![build](https://github.com/john-z-yang/lisp/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/john-z-yang/lisp/actions/workflows/ci.yml)
 
-Interpreter for lisp written in C++. This project started out as a solution to leetcode problem [736](https://leetcode.com/problems/parse-lisp-expression/) and was further inspired by Peter Norvig's blog [(How to Write a (Lisp) Interpreter (in Python))](http://www.norvig.com/lispy.html).
+Interpreter for lisp written in C++. This project started out as a solution to leetcode problem [736](https://leetcode.com/problems/parse-lisp-expression/) and was further inspired by Peter Norvig's blog [where he created a lisp interpreter in 90 lines of python code](http://www.norvig.com/lispy.html).
 
 <p align="center">
     <img src="https://raw.githubusercontent.com/john-z-yang/lisp/master/docs/assets/fib_seq_gen.gif" width="100%">
@@ -8,7 +8,13 @@ Interpreter for lisp written in C++. This project started out as a solution to l
 
 ## Getting Started
 
-Make sure you have [g++](https://gcc.gnu.org/) and [make](https://www.gnu.org/software/make/).
+These instructions will give you a copy of the interpreter up and running on
+your local machine.
+
+### Prerequisites
+
+- [g++](https://gcc.gnu.org/)
+- [make](https://www.gnu.org/software/make/).
 
 ### Installing
 
