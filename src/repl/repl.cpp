@@ -8,6 +8,7 @@
 #include "../../include/sexpr/NilAtom.hpp"
 #include "../../include/sexpr/SExpr.hpp"
 #include "../../include/sexpr/SymAtom.hpp"
+#include "../sexpr/cast.cpp"
 #include <algorithm>
 #include <iostream>
 #include <memory>
@@ -80,10 +81,9 @@ shared_ptr<SExpr> parse(vector<string> tokens) {
 }
 
 shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
-  if (sExpr->type == SExpr::Type::NIL || sExpr->type == SExpr::Type::NUM ||
-      sExpr->type == SExpr::Type::BOOL) {
+  if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) || isa<BoolAtom>(*sExpr)) {
     return sExpr;
-  } else if (sExpr->type == SExpr::Type::SYM) {
+  } else if (isa<SymAtom>(*sExpr)) {
     return env->find(dynamic_pointer_cast<SymAtom>(sExpr)->val);
   }
   shared_ptr<SExprs> sExprs = dynamic_pointer_cast<SExprs>(sExpr);

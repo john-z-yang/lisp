@@ -2,8 +2,10 @@
 #define LISP_INCLUDE_SEXPR_INTATOM_H_
 
 #include "Atom.hpp"
+#include <memory>
 #include <string>
 
+using std::shared_ptr;
 using std::string;
 
 class IntAtom : public Atom {
@@ -15,6 +17,8 @@ public:
   string toString() const;
 
   bool equals(const SExpr &other) const;
+
+  static bool classOf(const SExpr &sExpr);
 };
 
 #endif

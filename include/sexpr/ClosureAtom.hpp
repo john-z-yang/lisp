@@ -32,6 +32,8 @@ public:
   string toString() const;
 
   bool equals(const SExpr &other) const;
+
+  static bool classOf(const SExpr &sExpr);
 };
 
 #endif

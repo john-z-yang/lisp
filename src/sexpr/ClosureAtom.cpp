@@ -1,6 +1,7 @@
 #include "../../include/sexpr/ClosureAtom.hpp"
 #include "../../include/repl/repl.hpp"
 #include "../../include/sexpr/NilAtom.hpp"
+#include "cast.cpp"
 #include <memory>
 #include <string>
 
@@ -17,11 +18,11 @@ ClosureAtom::ClosureAtom(Proc proc, const shared_ptr<Env> outerEnv,
 shared_ptr<Env> ClosureAtom::bindArgs(shared_ptr<SExpr> args,
                                       shared_ptr<Env> curEnv) {
   shared_ptr<Env> env = std::make_shared<Env>(outerEnv);
-  if (argNames->type == SExpr::Type::NIL) {
+  if (isa<NilAtom>(*argNames)) {
     return env;
   }
   shared_ptr<SExpr> argVals = evalArgs(args, curEnv);
-  if (argNames->type == SExpr::Type::SEXPRS) {
+  if (isa<SExprs>(*argNames)) {
     shared_ptr<SExprs> argNamesIter = dynamic_pointer_cast<SExprs>(argNames);
     shared_ptr<SExprs> argValsIter = dynamic_pointer_cast<SExprs>(argVals);
     while (argNamesIter) {
@@ -39,7 +40,7 @@ shared_ptr<Env> ClosureAtom::bindArgs(shared_ptr<SExpr> args,
 
 std::shared_ptr<SExpr> ClosureAtom::evalArgs(shared_ptr<SExpr> args,
                                              shared_ptr<Env> curEnv) {
-  if (args->type == SExpr::Type::NIL) {
+  if (isa<NilAtom>(*args)) {
     return make_shared<NilAtom>();
   }
   shared_ptr<SExprs> sExprs = dynamic_pointer_cast<SExprs>(args);
@@ -59,4 +60,8 @@ bool ClosureAtom::equals(const SExpr &other) const {
     return false;
   }
   return &proc == &dynamic_cast<const ClosureAtom &>(other).proc;
+}
+
+bool ClosureAtom::classOf(const SExpr &sExpr) {
+  return sExpr.type == SExpr::Type::CLOSURE;
 }

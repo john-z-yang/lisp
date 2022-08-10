@@ -1,7 +1,10 @@
 #include "../../include/env/functions.hpp"
 #include "../../include/sexpr/BoolAtom.hpp"
+#include "../../include/sexpr/ClosureAtom.hpp"
 #include "../../include/sexpr/NilAtom.hpp"
 #include "../../include/sexpr/SExprs.hpp"
+#include "../../include/sexpr/SymAtom.hpp"
+#include "../sexpr/cast.cpp"
 #include <iostream>
 #include <memory>
 
@@ -113,28 +116,23 @@ shared_ptr<SExpr> lispCdr(shared_ptr<Env> env) {
 }
 
 shared_ptr<SExpr> lispIsNull(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(env->find("null?_oprand")->type ==
-                               SExpr::Type::NIL);
+  return make_shared<BoolAtom>(isa<NilAtom>(*env->find("null?_oprand")));
 }
 
 shared_ptr<SExpr> lispIsCons(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(env->find("cons?_oprand")->type ==
-                               SExpr::Type::SEXPRS);
+  return make_shared<BoolAtom>(isa<SExprs>(*env->find("cons?_oprand")));
 }
 
 shared_ptr<SExpr> lispIsSym(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(env->find("sym?_oprand")->type ==
-                               SExpr::Type::SYM);
+  return make_shared<BoolAtom>(isa<SymAtom>(*env->find("sym?_oprand")));
 }
 
 shared_ptr<SExpr> lispIsNum(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(env->find("num?_oprand")->type ==
-                               SExpr::Type::NUM);
+  return make_shared<BoolAtom>(isa<IntAtom>(*env->find("num?_oprand")));
 }
 
 shared_ptr<SExpr> lispIsProc(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(env->find("proc?_oprand")->type ==
-                               SExpr::Type::CLOSURE);
+  return make_shared<BoolAtom>(isa<ClosureAtom>(*env->find("proc?_oprand")));
 }
 
 shared_ptr<SExpr> lispIsEqv(shared_ptr<Env> env) {

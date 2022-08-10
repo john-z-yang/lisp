@@ -1,4 +1,5 @@
 #include "../../include/sexpr/BoolAtom.hpp"
+#include "cast.cpp"
 #include <memory>
 #include <string>
 
@@ -7,7 +8,7 @@ using std::shared_ptr;
 using std::string;
 
 bool BoolAtom::cast(const shared_ptr<SExpr> sExpr) {
-  if (sExpr->type == SExpr::Type::BOOL) {
+  if (isa<BoolAtom>(*sExpr)) {
     return dynamic_pointer_cast<BoolAtom>(sExpr)->val;
   }
   return true;
@@ -25,4 +26,8 @@ bool BoolAtom::equals(const SExpr &other) const {
     return false;
   }
   return val == dynamic_cast<const BoolAtom &>(other).val;
+}
+
+bool BoolAtom::classOf(const SExpr &sExpr) {
+  return sExpr.type == SExpr::Type::BOOL;
 }

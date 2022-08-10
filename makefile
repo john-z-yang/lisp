@@ -1,8 +1,8 @@
 CXX = g++
 CXXFLAGS = -std=c++11
 
-out/lisp: out/main.o out/repl.o out/functions.o out/Env.o out/SymAtom.o out/SExprs.o out/SExpr.o out/NilAtom.o out/IntAtom.o out/ClosureAtom.o out/BoolAtom.o out/Atom.o
-	$(CXX) $(CXXFLAGS) out/main.o out/repl.o out/functions.o out/Env.o out/SymAtom.o out/SExprs.o out/SExpr.o out/NilAtom.o out/IntAtom.o out/ClosureAtom.o out/BoolAtom.o out/Atom.o -o out/lisp
+out/lisp: out/main.o out/repl.o out/functions.o out/Env.o out/SymAtom.o out/SExprs.o out/SExpr.o out/NilAtom.o out/IntAtom.o out/ClosureAtom.o out/BoolAtom.o out/Atom.o out/cast.o
+	$(CXX) $(CXXFLAGS) out/main.o out/repl.o out/functions.o out/Env.o out/SymAtom.o out/SExprs.o out/SExpr.o out/NilAtom.o out/IntAtom.o out/ClosureAtom.o out/BoolAtom.o out/Atom.o out/cast.o -o out/lisp
 
 out/main.o: src/repl/main.cpp
 	$(CXX) $(CXXFLAGS) -c src/repl/main.cpp -o out/main.o
@@ -39,6 +39,9 @@ out/BoolAtom.o: src/sexpr/BoolAtom.cpp
 
 out/Atom.o: src/sexpr/Atom.cpp
 	$(CXX) $(CXXFLAGS) -c src/sexpr/Atom.cpp -o out/Atom.o
+
+out/cast.o: src/sexpr/cast.cpp
+	$(CXX) $(CXXFLAGS) -c src/sexpr/cast.cpp -o out/cast.o
 
 test: testParse testHof testCons testRecur testCombine testSet testPred
 
