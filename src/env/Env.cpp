@@ -24,7 +24,7 @@ Env::Env() {}
 
 Env::Env(const shared_ptr<Env> outer) : outer(outer) {}
 
-shared_ptr<SExpr> Env::find(string name) throw(EvalException) {
+shared_ptr<SExpr> Env::find(string name) {
   auto it = symTable.find(name);
   if (it != symTable.end()) {
     return it->second;
@@ -35,7 +35,7 @@ shared_ptr<SExpr> Env::find(string name) throw(EvalException) {
   return outer->find(name);
 }
 
-void Env::set(string name, shared_ptr<SExpr> val) throw(EvalException) {
+void Env::set(string name, shared_ptr<SExpr> val) {
   auto it = symTable.find(name);
   if (it != symTable.end()) {
     symTable[name] = val;

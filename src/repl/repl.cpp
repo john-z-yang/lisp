@@ -82,8 +82,7 @@ shared_ptr<SExpr> parse(vector<string> tokens) {
   return parse(it);
 }
 
-shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr,
-                       shared_ptr<Env> env) throw(EvalException) {
+shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   try {
     if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) || isa<BoolAtom>(*sExpr)) {
       return sExpr;

@@ -21,8 +21,7 @@ shared_ptr<SExpr> parse(vector<string>::iterator &it);
 
 shared_ptr<SExpr> parse(vector<string> tokens);
 
-shared_ptr<SExpr> eval(shared_ptr<SExpr> SExpr,
-                       shared_ptr<Env> env) throw(EvalException);
+shared_ptr<SExpr> eval(shared_ptr<SExpr> SExpr, shared_ptr<Env> env);
 
 void repl();
 
