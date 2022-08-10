@@ -2,6 +2,7 @@
 #define LISP_INCLUD_REPL_REPL
 
 #include "../env/Env.hpp"
+#include "../repl/EvalException.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "../sexpr/SExprs.hpp"
 #include <memory>
@@ -20,7 +21,8 @@ shared_ptr<SExpr> parse(vector<string>::iterator &it);
 
 shared_ptr<SExpr> parse(vector<string> tokens);
 
-shared_ptr<SExpr> eval(shared_ptr<SExpr> SExpr, shared_ptr<Env> env);
+shared_ptr<SExpr> eval(shared_ptr<SExpr> SExpr,
+                       shared_ptr<Env> env) throw(EvalException);
 
 void repl();
 

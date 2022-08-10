@@ -1,5 +1,6 @@
 #include "../../include/env/Env.hpp"
 #include "../../include/env/functions.hpp"
+#include "../../include/repl/EvalException.hpp"
 #include "../../include/repl/repl.hpp"
 #include "../../include/sexpr/ClosureAtom.hpp"
 #include "../../include/sexpr/NilAtom.hpp"
@@ -17,32 +18,31 @@ using std::make_pair;
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
+using std::to_string;
 
 Env::Env() {}
 
 Env::Env(const shared_ptr<Env> outer) : outer(outer) {}
 
-shared_ptr<SExpr> Env::find(string name) {
+shared_ptr<SExpr> Env::find(string name) throw(EvalException) {
   auto it = symTable.find(name);
   if (it != symTable.end()) {
     return it->second;
   }
   if (!outer) {
-    cerr << "Fatal: symbol \"" << name << "\" is undefined" << endl;
-    exit(EXIT_FAILURE);
+    throw EvalException("Undefined symbol \"" + name + "\"");
   }
   return outer->find(name);
 }
 
-void Env::set(string name, shared_ptr<SExpr> val) {
+void Env::set(string name, shared_ptr<SExpr> val) throw(EvalException) {
   auto it = symTable.find(name);
   if (it != symTable.end()) {
     symTable[name] = val;
     return;
   }
   if (!outer) {
-    cerr << "Fatal: symbol \"" << name << "\" is undefined" << endl;
-    exit(EXIT_FAILURE);
+    throw EvalException("Undefined symbol \"" + name + "\"");
   }
   outer->set(name, val);
 }
