@@ -15,6 +15,4 @@ bool IntAtom::equals(const SExpr &other) const {
   return val == dynamic_cast<const IntAtom &>(other).val;
 }
 
-bool IntAtom::classOf(const SExpr &sExpr) {
-  return sExpr.type == SExpr::Type::NUM;
-}
+bool IntAtom::classOf(SExpr &sExpr) { return sExpr.type == SExpr::Type::NUM; }

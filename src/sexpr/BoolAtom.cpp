@@ -3,13 +3,12 @@
 #include <memory>
 #include <string>
 
-using std::dynamic_pointer_cast;
 using std::shared_ptr;
 using std::string;
 
-bool BoolAtom::cast(const shared_ptr<SExpr> sExpr) {
+bool BoolAtom::toBool(shared_ptr<SExpr> sExpr) {
   if (isa<BoolAtom>(*sExpr)) {
-    return dynamic_pointer_cast<BoolAtom>(sExpr)->val;
+    return cast<BoolAtom>(sExpr)->val;
   }
   return true;
 }
@@ -17,7 +16,7 @@ bool BoolAtom::cast(const shared_ptr<SExpr> sExpr) {
 BoolAtom::BoolAtom(const bool val) : Atom(SExpr::Type::BOOL), val(val) {}
 
 BoolAtom::BoolAtom(const shared_ptr<SExpr> sExpr)
-    : Atom(SExpr::Type::BOOL), val(cast(sExpr)) {}
+    : Atom(SExpr::Type::BOOL), val(toBool(sExpr)) {}
 
 string BoolAtom::toString() const { return (val) ? "#t" : "#f"; }
 
@@ -28,6 +27,4 @@ bool BoolAtom::equals(const SExpr &other) const {
   return val == dynamic_cast<const BoolAtom &>(other).val;
 }
 
-bool BoolAtom::classOf(const SExpr &sExpr) {
-  return sExpr.type == SExpr::Type::BOOL;
-}
+bool BoolAtom::classOf(SExpr &sExpr) { return sExpr.type == SExpr::Type::BOOL; }

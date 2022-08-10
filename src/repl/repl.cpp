@@ -21,7 +21,6 @@ using std::all_of;
 using std::cerr;
 using std::cin;
 using std::cout;
-using std::dynamic_pointer_cast;
 using std::endl;
 using std::getline;
 using std::make_pair;
@@ -87,50 +86,46 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
     if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) || isa<BoolAtom>(*sExpr)) {
       return sExpr;
     } else if (isa<SymAtom>(*sExpr)) {
-      return env->find(dynamic_pointer_cast<SymAtom>(sExpr)->val);
+      return env->find(cast<SymAtom>(sExpr)->val);
     }
-    shared_ptr<SExprs> sExprs = dynamic_pointer_cast<SExprs>(sExpr);
-    shared_ptr<SymAtom> sym = dynamic_pointer_cast<SymAtom>(sExprs->first);
-    if (sym && sym->val == "define") {
-      sExprs = dynamic_pointer_cast<SExprs>(sExprs->rest);
-      string name = dynamic_pointer_cast<SymAtom>(sExprs->first)->val;
-      shared_ptr<SExpr> val =
-          eval(dynamic_pointer_cast<SExprs>(sExprs->rest)->first, env);
-      env->symTable.insert(make_pair(name, val));
-      return val;
-    } else if (sym && sym->val == "set!") {
-      sExprs = dynamic_pointer_cast<SExprs>(sExprs->rest);
-      string name = dynamic_pointer_cast<SymAtom>(sExprs->first)->val;
-      shared_ptr<SExpr> val =
-          eval(dynamic_pointer_cast<SExprs>(sExprs->rest)->first, env);
-      env->set(name, val);
-      return val;
-    } else if (sym && sym->val == "quote") {
-      sExprs = dynamic_pointer_cast<SExprs>(sExprs->rest);
-      return sExprs->first;
-    } else if (sym && sym->val == "if") {
-      sExprs = dynamic_pointer_cast<SExprs>(sExprs->rest);
-      shared_ptr<BoolAtom> test =
-          std::make_shared<BoolAtom>(eval(sExprs->first, env));
-      shared_ptr<SExpr> conseq =
-          dynamic_pointer_cast<SExprs>(sExprs->rest)->first;
-      shared_ptr<SExpr> alt =
-          dynamic_pointer_cast<SExprs>(
-              dynamic_pointer_cast<SExprs>(sExprs->rest)->rest)
-              ->first;
-      return (test->val) ? eval(conseq, env) : eval(alt, env);
-    } else if (sym && sym->val == "lambda") {
-      sExprs = dynamic_pointer_cast<SExprs>(sExprs->rest);
-      shared_ptr<SExpr> argNames = dynamic_pointer_cast<SExpr>(sExprs->first);
-      shared_ptr<SExpr> body = dynamic_pointer_cast<SExpr>(
-          dynamic_pointer_cast<SExprs>(sExprs->rest)->first);
+    shared_ptr<SExprs> sExprs = cast<SExprs>(sExpr);
+    if (isa<SymAtom>(*sExprs->first)) {
+      shared_ptr<SymAtom> sym = cast<SymAtom>(sExprs->first);
+      if (sym->val == "define") {
+        sExprs = cast<SExprs>(sExprs->rest);
+        string name = cast<SymAtom>(sExprs->first)->val;
+        shared_ptr<SExpr> val = eval(cast<SExprs>(sExprs->rest)->first, env);
+        env->symTable.insert(make_pair(name, val));
+        return val;
+      } else if (sym->val == "set!") {
+        sExprs = cast<SExprs>(sExprs->rest);
+        string name = cast<SymAtom>(sExprs->first)->val;
+        shared_ptr<SExpr> val = eval(cast<SExprs>(sExprs->rest)->first, env);
+        env->set(name, val);
+        return val;
+      } else if (sym->val == "quote") {
+        sExprs = cast<SExprs>(sExprs->rest);
+        return sExprs->first;
+      } else if (sym->val == "if") {
+        sExprs = cast<SExprs>(sExprs->rest);
+        shared_ptr<BoolAtom> test =
+            std::make_shared<BoolAtom>(eval(sExprs->first, env));
+        shared_ptr<SExpr> conseq = cast<SExprs>(sExprs->rest)->first;
+        shared_ptr<SExpr> alt =
+            cast<SExprs>(cast<SExprs>(sExprs->rest)->rest)->first;
+        return (test->val) ? eval(conseq, env) : eval(alt, env);
+      } else if (sym->val == "lambda") {
+        sExprs = cast<SExprs>(sExprs->rest);
+        shared_ptr<SExpr> argNames = sExprs->first;
+        shared_ptr<SExpr> body = cast<SExprs>(sExprs->rest)->first;
 
-      return make_shared<ClosureAtom>(
-          [body](shared_ptr<Env> env) { return eval(body, env); }, env,
-          argNames);
+        return make_shared<ClosureAtom>(
+            [body](shared_ptr<Env> env) { return eval(body, env); }, env,
+            argNames);
+      }
     }
     shared_ptr<ClosureAtom> closure =
-        dynamic_pointer_cast<ClosureAtom>(eval(sExprs->first, env));
+        cast<ClosureAtom>(eval(sExprs->first, env));
     return (*closure)(sExprs->rest, env);
   } catch (EvalException ee) {
     ee.pushStackTrace(sExpr);

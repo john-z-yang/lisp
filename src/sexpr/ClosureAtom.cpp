@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 
-using std::dynamic_pointer_cast;
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
@@ -23,16 +22,19 @@ shared_ptr<Env> ClosureAtom::bindArgs(shared_ptr<SExpr> args,
   }
   shared_ptr<SExpr> argVals = evalArgs(args, curEnv);
   if (isa<SExprs>(*argNames)) {
-    shared_ptr<SExprs> argNamesIter = dynamic_pointer_cast<SExprs>(argNames);
-    shared_ptr<SExprs> argValsIter = dynamic_pointer_cast<SExprs>(argVals);
-    while (argNamesIter) {
-      string argName = dynamic_pointer_cast<SymAtom>(argNamesIter->first)->val;
+    shared_ptr<SExprs> argNamesIter = cast<SExprs>(argNames);
+    shared_ptr<SExprs> argValsIter = cast<SExprs>(argVals);
+    while (true) {
+      string argName = cast<SymAtom>(argNamesIter->first)->val;
       env->symTable[argName] = argValsIter->first;
-      argNamesIter = dynamic_pointer_cast<SExprs>(argNamesIter->rest);
-      argValsIter = dynamic_pointer_cast<SExprs>(argValsIter->rest);
+      if (isa<NilAtom>(*argNamesIter->rest)) {
+        break;
+      }
+      argNamesIter = cast<SExprs>(argNamesIter->rest);
+      argValsIter = cast<SExprs>(argValsIter->rest);
     }
   } else {
-    string argName = dynamic_pointer_cast<SymAtom>(argNames)->val;
+    string argName = cast<SymAtom>(argNames)->val;
     env->symTable[argName] = evalArgs(args, curEnv);
   }
   return env;
@@ -43,7 +45,7 @@ std::shared_ptr<SExpr> ClosureAtom::evalArgs(shared_ptr<SExpr> args,
   if (isa<NilAtom>(*args)) {
     return make_shared<NilAtom>();
   }
-  shared_ptr<SExprs> sExprs = dynamic_pointer_cast<SExprs>(args);
+  shared_ptr<SExprs> sExprs = cast<SExprs>(args);
   return make_shared<SExprs>(eval(sExprs->first, curEnv),
                              evalArgs(sExprs->rest, curEnv));
 }
@@ -62,6 +64,6 @@ bool ClosureAtom::equals(const SExpr &other) const {
   return &proc == &dynamic_cast<const ClosureAtom &>(other).proc;
 }
 
-bool ClosureAtom::classOf(const SExpr &sExpr) {
+bool ClosureAtom::classOf(SExpr &sExpr) {
   return sExpr.type == SExpr::Type::CLOSURE;
 }

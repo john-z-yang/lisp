@@ -16,6 +16,4 @@ bool SymAtom::equals(const SExpr &other) const {
   return val == dynamic_cast<const SymAtom &>(other).val;
 }
 
-bool SymAtom::classOf(const SExpr &sExpr) {
-  return sExpr.type == SExpr::Type::SYM;
-}
+bool SymAtom::classOf(SExpr &sExpr) { return sExpr.type == SExpr::Type::SYM; }

@@ -10,8 +10,8 @@ NilAtom::NilAtom() : Atom(SExpr::Type::NIL) {}
 
 string NilAtom::toString() const { return "()"; }
 
-bool NilAtom::equals(const SExpr &other) const { return isa<NilAtom>(other); }
-
-bool NilAtom::classOf(const SExpr &sExpr) {
-  return sExpr.type == SExpr::Type::NIL;
+bool NilAtom::equals(const SExpr &other) const {
+  return other.type == SExpr::Type::NIL;
 }
+
+bool NilAtom::classOf(SExpr &sExpr) { return sExpr.type == SExpr::Type::NIL; }

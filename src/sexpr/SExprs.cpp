@@ -26,6 +26,4 @@ bool SExprs::equals(const SExpr &other) const {
   return first->equals(*sExprs.first) && rest->equals(*sExprs.rest);
 }
 
-bool SExprs::classOf(const SExpr &sExpr) {
-  return sExpr.type == SExpr::Type::SEXPRS;
-}
+bool SExprs::classOf(SExpr &sExpr) { return sExpr.type == SExpr::Type::SEXPRS; }
