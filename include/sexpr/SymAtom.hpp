@@ -13,6 +13,8 @@ public:
   SymAtom(string val);
 
   string toString() const;
+
+  bool equals(const SExpr &other) const;
 };
 
 #endif

@@ -30,4 +30,15 @@ lisp> #f
 lisp> #f
 lisp> #t
 lisp> #t
+lisp> #f
+lisp> #f
+lisp> <closure>
+lisp> <closure>
+lisp> #t
+lisp> #t
+lisp> <closure>
+lisp> #t
+lisp> #f
+lisp> #f
+lisp> #f
 lisp> Farewell.

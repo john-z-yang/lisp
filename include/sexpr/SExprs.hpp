@@ -14,6 +14,8 @@ public:
   SExprs(shared_ptr<SExpr> first, shared_ptr<SExpr> rest);
 
   string toString() const;
+
+  bool equals(const SExpr &other) const;
 };
 
 #endif

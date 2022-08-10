@@ -20,6 +20,8 @@ public:
   static bool cast(const shared_ptr<SExpr> sExpr);
 
   string toString() const;
+
+  bool equals(const SExpr &other) const;
 };
 
 #endif

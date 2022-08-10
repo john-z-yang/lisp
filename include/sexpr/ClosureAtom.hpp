@@ -30,6 +30,8 @@ public:
   shared_ptr<SExpr> operator()(shared_ptr<SExpr> args, shared_ptr<Env> curEnv);
 
   string toString() const;
+
+  bool equals(const SExpr &other) const;
 };
 
 #endif

@@ -9,3 +9,5 @@ ostream &operator<<(ostream &o, const SExpr &sExpr) {
   return o << (sExpr.type == SExpr::Type::SEXPRS ? "(" : "")
            << sExpr.toString();
 }
+
+bool operator==(SExpr &lhs, SExpr &rhs) { return lhs.equals(rhs); }

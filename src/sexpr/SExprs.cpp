@@ -15,3 +15,11 @@ string SExprs::toString() const {
   str += rest->type == SExpr::Type::NIL ? ")" : " " + rest->toString();
   return str;
 }
+
+bool SExprs::equals(const SExpr &other) const {
+  if (other.type != SExpr::Type::SEXPRS) {
+    return false;
+  }
+  const SExprs &sExprs = dynamic_cast<const SExprs &>(other);
+  return first->equals(*sExprs.first) && rest->equals(*sExprs.rest);
+}

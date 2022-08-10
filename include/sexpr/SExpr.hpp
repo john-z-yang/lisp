@@ -16,8 +16,12 @@ public:
   SExpr(SExpr::Type type);
 
   virtual string toString() const = 0;
+
+  virtual bool equals(const SExpr &other) const = 0;
+
   friend ostream &operator<<(ostream &o, const SExpr &sExpr);
 };
 
 ostream &operator<<(ostream &o, const SExpr &sExpr);
+
 #endif

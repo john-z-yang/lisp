@@ -8,6 +8,8 @@ public:
   NilAtom();
 
   string toString() const;
+
+  bool equals(const SExpr &other) const;
 };
 
 #endif

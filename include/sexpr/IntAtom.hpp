@@ -13,6 +13,8 @@ public:
   IntAtom(const int val);
 
   string toString() const;
+
+  bool equals(const SExpr &other) const;
 };
 
 #endif
