@@ -58,12 +58,12 @@ shared_ptr<SExpr> ClosureAtom::operator()(shared_ptr<SExpr> args,
 string ClosureAtom::toString() const { return "<closure>"; }
 
 bool ClosureAtom::equals(const SExpr &other) const {
-  if (other.type != SExpr::Type::CLOSURE) {
-    return false;
+  if (isa<ClosureAtom>(other)) {
+    return &proc == &dynamic_cast<const ClosureAtom &>(other).proc;
   }
-  return &proc == &dynamic_cast<const ClosureAtom &>(other).proc;
+  return false;
 }
 
-bool ClosureAtom::classOf(SExpr &sExpr) {
+bool ClosureAtom::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::CLOSURE;
 }

@@ -21,10 +21,12 @@ BoolAtom::BoolAtom(const shared_ptr<SExpr> sExpr)
 string BoolAtom::toString() const { return (val) ? "#t" : "#f"; }
 
 bool BoolAtom::equals(const SExpr &other) const {
-  if (other.type != SExpr::Type::BOOL) {
-    return false;
+  if (isa<BoolAtom>(other)) {
+    return val == dynamic_cast<const BoolAtom &>(other).val;
   }
-  return val == dynamic_cast<const BoolAtom &>(other).val;
+  return false;
 }
 
-bool BoolAtom::classOf(SExpr &sExpr) { return sExpr.type == SExpr::Type::BOOL; }
+bool BoolAtom::classOf(const SExpr &sExpr) {
+  return sExpr.type == SExpr::Type::BOOL;
+}

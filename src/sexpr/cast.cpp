@@ -9,7 +9,7 @@ template <typename To, typename From> bool isa(From &f) {
 }
 
 template <typename To, typename From> shared_ptr<To> cast(shared_ptr<From> f) {
-  if (To::classOf(*f)) {
+  if (isa<To>(*f)) {
     return dynamic_pointer_cast<To>(f);
   }
   throw EvalException(f->toString() + " is not a " + typeid(To).name());

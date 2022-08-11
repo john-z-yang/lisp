@@ -17,7 +17,7 @@ public:
 
   bool equals(const SExpr &other) const;
 
-  static bool classOf(SExpr &sExpr);
+  static bool classOf(const SExpr &sExpr);
 };
 
 #endif

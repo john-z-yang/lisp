@@ -19,11 +19,13 @@ string SExprs::toString() const {
 }
 
 bool SExprs::equals(const SExpr &other) const {
-  if (other.type != SExpr::Type::SEXPRS) {
-    return false;
+  if (isa<SExprs>(other)) {
+    const SExprs &sExprs = dynamic_cast<const SExprs &>(other);
+    return first->equals(*sExprs.first) && rest->equals(*sExprs.rest);
   }
-  const SExprs &sExprs = dynamic_cast<const SExprs &>(other);
-  return first->equals(*sExprs.first) && rest->equals(*sExprs.rest);
+  return false;
 }
 
-bool SExprs::classOf(SExpr &sExpr) { return sExpr.type == SExpr::Type::SEXPRS; }
+bool SExprs::classOf(const SExpr &sExpr) {
+  return sExpr.type == SExpr::Type::SEXPRS;
+}

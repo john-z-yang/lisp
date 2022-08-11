@@ -23,7 +23,7 @@ public:
 
   static bool toBool(const shared_ptr<SExpr> sExpr);
 
-  static bool classOf(SExpr &sExpr);
+  static bool classOf(const SExpr &sExpr);
 };
 
 #endif
