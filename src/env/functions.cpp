@@ -124,6 +124,5 @@ shared_ptr<SExpr> lispIsProc(shared_ptr<Env> env) {
 }
 
 shared_ptr<SExpr> lispIsEqv(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(
-      env->find("eq?_lhs")->equals(*env->find("eq?_rhs")));
+  return make_shared<BoolAtom>(*env->find("eq?_lhs") == *env->find("eq?_rhs"));
 }

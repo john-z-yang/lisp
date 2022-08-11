@@ -2,10 +2,12 @@
 #include "../../include/sexpr/NilAtom.hpp"
 #include "cast.cpp"
 #include <memory>
+#include <sstream>
 #include <string>
 
 using std::shared_ptr;
 using std::string;
+using std::stringstream;
 
 SExprs::SExprs(shared_ptr<SExpr> first, shared_ptr<SExpr> rest)
     : SExpr(SExpr::Type::SEXPRS), first(first), rest(rest) {}
