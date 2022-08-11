@@ -15,6 +15,7 @@ template <typename To, typename From> shared_ptr<To> cast(shared_ptr<From> f) {
     return dynamic_pointer_cast<To>(f);
   }
   stringstream ss;
-  ss << *f << " is not a " << typeid(To).name();
+  ss << "Mismatched types. Expected \"" << To::typeName << "\", but got \""
+     << *f << "\".";
   throw EvalException(ss.str());
 }

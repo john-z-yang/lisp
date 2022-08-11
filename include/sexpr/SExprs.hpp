@@ -3,8 +3,10 @@
 
 #include "SExpr.hpp"
 #include <memory>
+#include <string>
 
 using std::shared_ptr;
+using std::string;
 
 class SExprs : public SExpr {
 protected:
@@ -18,6 +20,7 @@ public:
   SExprs(shared_ptr<SExpr> first, shared_ptr<SExpr> rest);
 
   static bool classOf(const SExpr &sExpr);
+  static const string typeName;
 };
 
 #endif

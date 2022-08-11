@@ -19,6 +19,7 @@ public:
   SymAtom(string val);
 
   static bool classOf(const SExpr &sExpr);
+  static const string typeName;
 };
 
 #endif

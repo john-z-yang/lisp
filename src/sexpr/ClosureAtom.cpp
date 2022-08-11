@@ -59,8 +59,8 @@ std::shared_ptr<SExpr> ClosureAtom::evalArgs(shared_ptr<SExpr> args,
 void ClosureAtom::handleArgMismatch(shared_ptr<SExpr> argNames,
                                     shared_ptr<SExpr> argVals) {
   stringstream ss;
-  ss << "Invalid number of arguments, expecting: " << *argNames
-     << " got: " << *argVals;
+  ss << "Invalid number of arguments. Expected \"" << *argNames
+     << "\", but got \"" << *argVals << "\".";
   throw EvalException(ss.str());
 }
 
@@ -81,3 +81,5 @@ bool ClosureAtom::equals(const SExpr &other) const {
 bool ClosureAtom::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::CLOSURE;
 }
+
+const string ClosureAtom::typeName = "<closure>";

@@ -19,6 +19,7 @@ public:
   IntAtom(const int val);
 
   static bool classOf(const SExpr &sExpr);
+  static const string typeName;
 };
 
 #endif

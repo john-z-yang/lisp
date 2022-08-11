@@ -15,6 +15,7 @@ public:
   NilAtom();
 
   static bool classOf(const SExpr &sExpr);
+  static const string typeName;
 };
 
 #endif

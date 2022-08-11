@@ -35,6 +35,7 @@ public:
   shared_ptr<SExpr> operator()(shared_ptr<SExpr> args, shared_ptr<Env> curEnv);
 
   static bool classOf(const SExpr &sExpr);
+  static const string typeName;
 };
 
 #endif

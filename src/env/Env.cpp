@@ -30,7 +30,7 @@ shared_ptr<SExpr> Env::find(string name) {
     return it->second;
   }
   if (!outer) {
-    throw EvalException("Undefined symbol \"" + name + "\"");
+    throw EvalException("Undefined symbol \"" + name + "\".");
   }
   return outer->find(name);
 }
@@ -42,7 +42,7 @@ void Env::set(string name, shared_ptr<SExpr> val) {
     return;
   }
   if (!outer) {
-    throw EvalException("Undefined symbol \"" + name + "\"");
+    throw EvalException("Undefined symbol \"" + name + "\".");
   }
   outer->set(name, val);
 }

@@ -30,3 +30,5 @@ bool BoolAtom::equals(const SExpr &other) const {
 bool BoolAtom::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::BOOL;
 }
+
+const string BoolAtom::typeName = "Boolean";

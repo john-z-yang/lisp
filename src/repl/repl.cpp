@@ -145,11 +145,12 @@ void repl() {
       try {
         cout << *eval(parse(tokenize(input)), env) << endl;
       } catch (EvalException ee) {
-        cerr << "Error: " << ee.what() << endl;
+        cerr << "Error: " << ee.what() << endl << endl;
         cerr << "Eval stack:" << endl;
         for (auto it : ee.getStackTrace()) {
           cerr << "=> " << *it << endl;
         }
+        cerr << endl;
       }
     }
   }

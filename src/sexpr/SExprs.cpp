@@ -31,3 +31,5 @@ bool SExprs::equals(const SExpr &other) const {
 bool SExprs::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::SEXPRS;
 }
+
+const string SExprs::typeName = "One or more symbolic expressions";

@@ -15,3 +15,5 @@ bool NilAtom::equals(const SExpr &other) const { return isa<NilAtom>(other); }
 bool NilAtom::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::NIL;
 }
+
+const string NilAtom::typeName = "()";

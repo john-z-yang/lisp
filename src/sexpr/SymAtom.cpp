@@ -20,3 +20,5 @@ bool SymAtom::equals(const SExpr &other) const {
 bool SymAtom::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::SYM;
 }
+
+const string SymAtom::typeName = "Symbol";

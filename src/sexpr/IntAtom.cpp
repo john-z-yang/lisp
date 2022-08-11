@@ -19,3 +19,5 @@ bool IntAtom::equals(const SExpr &other) const {
 bool IntAtom::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::NUM;
 }
+
+const string IntAtom::typeName = "Integer";
