@@ -14,6 +14,9 @@ using std::shared_ptr;
 class ClosureAtom : public Atom {
   typedef function<shared_ptr<SExpr>(shared_ptr<Env>)> Proc;
 
+private:
+  void handleArgMismatch(shared_ptr<SExpr> argNames, shared_ptr<SExpr> argVals);
+
 public:
   Proc proc;
   const shared_ptr<Env> outerEnv;

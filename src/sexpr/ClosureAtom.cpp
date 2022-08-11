@@ -1,13 +1,16 @@
 #include "../../include/sexpr/ClosureAtom.hpp"
+#include "../../include/repl/EvalException.hpp"
 #include "../../include/repl/repl.hpp"
 #include "../../include/sexpr/NilAtom.hpp"
 #include "cast.cpp"
 #include <memory>
+#include <sstream>
 #include <string>
 
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
+using std::stringstream;
 
 ClosureAtom::ClosureAtom(Proc proc, const shared_ptr<Env> outerEnv,
                          const shared_ptr<SExpr> argNames)
@@ -17,9 +20,6 @@ ClosureAtom::ClosureAtom(Proc proc, const shared_ptr<Env> outerEnv,
 shared_ptr<Env> ClosureAtom::bindArgs(shared_ptr<SExpr> args,
                                       shared_ptr<Env> curEnv) {
   shared_ptr<Env> env = std::make_shared<Env>(outerEnv);
-  if (isa<NilAtom>(*argNames)) {
-    return env;
-  }
   shared_ptr<SExpr> argVals = evalArgs(args, curEnv);
   if (isa<SExprs>(*argNames)) {
     shared_ptr<SExprs> argNamesIter = cast<SExprs>(argNames);
@@ -27,15 +27,21 @@ shared_ptr<Env> ClosureAtom::bindArgs(shared_ptr<SExpr> args,
     while (true) {
       string argName = cast<SymAtom>(argNamesIter->first)->val;
       env->symTable[argName] = argValsIter->first;
-      if (isa<NilAtom>(*argNamesIter->rest)) {
+      if (isa<NilAtom>(*argNamesIter->rest) &&
+          isa<NilAtom>(*argValsIter->rest)) {
         break;
+      } else if (isa<NilAtom>(*argNamesIter->rest) ||
+                 isa<NilAtom>(*argValsIter->rest)) {
+        handleArgMismatch(argNames, argVals);
       }
       argNamesIter = cast<SExprs>(argNamesIter->rest);
       argValsIter = cast<SExprs>(argValsIter->rest);
     }
-  } else {
+  } else if (isa<SymAtom>(*argNames)) {
     string argName = cast<SymAtom>(argNames)->val;
     env->symTable[argName] = evalArgs(args, curEnv);
+  } else if (!isa<NilAtom>(*argVals)) {
+    handleArgMismatch(argNames, argVals);
   }
   return env;
 }
@@ -48,6 +54,14 @@ std::shared_ptr<SExpr> ClosureAtom::evalArgs(shared_ptr<SExpr> args,
   shared_ptr<SExprs> sExprs = cast<SExprs>(args);
   return make_shared<SExprs>(eval(sExprs->first, curEnv),
                              evalArgs(sExprs->rest, curEnv));
+}
+
+void ClosureAtom::handleArgMismatch(shared_ptr<SExpr> argNames,
+                                    shared_ptr<SExpr> argVals) {
+  stringstream ss;
+  ss << "Invalid number of arguments, expecting: " << *argNames
+     << " got: " << *argVals;
+  throw EvalException(ss.str());
 }
 
 shared_ptr<SExpr> ClosureAtom::operator()(shared_ptr<SExpr> args,
