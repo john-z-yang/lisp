@@ -2,7 +2,7 @@
 #define LISP_INCLUD_REPL_REPL
 
 #include "../env/Env.hpp"
-#include "../repl/EvalException.hpp"
+#include "../repl/except/EvalException.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "../sexpr/SExprs.hpp"
 #include <memory>

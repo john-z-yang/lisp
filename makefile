@@ -43,8 +43,8 @@ out/Atom.o: src/sexpr/Atom.cpp
 out/cast.o: src/sexpr/cast.cpp
 	$(CXX) $(CXXFLAGS) -c src/sexpr/cast.cpp -o out/cast.o
 	
-out/EvalException.o: src/repl/EvalException.cpp
-	$(CXX) $(CXXFLAGS) -c src/repl/EvalException.cpp -o out/EvalException.o
+out/EvalException.o: src/repl/except/EvalException.cpp
+	$(CXX) $(CXXFLAGS) -c src/repl/except/EvalException.cpp -o out/EvalException.o
 
 test: testParse testHof testCons testRecur testCombine testSet testPred
 

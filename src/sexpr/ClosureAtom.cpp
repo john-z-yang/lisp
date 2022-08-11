@@ -1,5 +1,5 @@
 #include "../../include/sexpr/ClosureAtom.hpp"
-#include "../../include/repl/EvalException.hpp"
+#include "../../include/repl/except/EvalException.hpp"
 #include "../../include/repl/repl.hpp"
 #include "../../include/sexpr/NilAtom.hpp"
 #include "cast.cpp"

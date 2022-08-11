@@ -1,7 +1,7 @@
 #ifndef LISP_INCLUDE_ENV_ENV_HPP_
 #define LISP_INCLUDE_ENV_ENV_HPP_
 
-#include "../repl/EvalException.hpp"
+#include "../repl/except/EvalException.hpp"
 #include "../sexpr/SExpr.hpp"
 #include <map>
 #include <memory>

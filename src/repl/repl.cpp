@@ -1,7 +1,7 @@
 #include "../../include/repl/repl.hpp"
 #include "../../include/env/Env.hpp"
 #include "../../include/env/functions.hpp"
-#include "../../include/repl/EvalException.hpp"
+#include "../../include/repl/except/EvalException.hpp"
 #include "../../include/sexpr/Atom.hpp"
 #include "../../include/sexpr/BoolAtom.hpp"
 #include "../../include/sexpr/ClosureAtom.hpp"

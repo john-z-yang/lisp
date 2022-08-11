@@ -1,6 +1,6 @@
 #include "../../include/env/Env.hpp"
 #include "../../include/env/functions.hpp"
-#include "../../include/repl/EvalException.hpp"
+#include "../../include/repl/except/EvalException.hpp"
 #include "../../include/repl/repl.hpp"
 #include "../../include/sexpr/ClosureAtom.hpp"
 #include "../../include/sexpr/NilAtom.hpp"

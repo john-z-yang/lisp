@@ -1,7 +1,7 @@
 #ifndef LISP_INCLUD_REPL_EVALEXCEPTION_H
 #define LISP_INCLUD_REPL_EVALEXCEPTION_H
 
-#include "../sexpr/SExpr.hpp"
+#include "../../sexpr/SExpr.hpp"
 #include <exception>
 #include <memory>
 #include <string>
