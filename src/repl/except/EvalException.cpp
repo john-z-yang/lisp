@@ -9,10 +9,10 @@ EvalException::EvalException(const string &msg) : _msg(msg) {}
 
 const char *EvalException::what() const noexcept { return _msg.c_str(); }
 
-void EvalException::pushStackTrace(const shared_ptr<SExpr> stack) {
+void EvalException::pushStackTrace(shared_ptr<SExpr> stack) {
   stackTrace.push_back(stack);
 }
 
-const vector<const shared_ptr<SExpr>> &EvalException::getStackTrace() const {
+const vector<shared_ptr<SExpr>> &EvalException::getStackTrace() const {
   return stackTrace;
 }

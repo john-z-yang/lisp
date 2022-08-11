@@ -14,16 +14,16 @@ using std::vector;
 
 class EvalException : public exception {
   string _msg;
-  vector<const shared_ptr<SExpr>> stackTrace;
+  vector<shared_ptr<SExpr>> stackTrace;
 
 public:
   EvalException(const string &msg);
 
   virtual const char *what() const noexcept override;
 
-  void pushStackTrace(const shared_ptr<SExpr> stack);
+  void pushStackTrace(shared_ptr<SExpr> stack);
 
-  const vector<const shared_ptr<SExpr>> &getStackTrace() const;
+  const vector<shared_ptr<SExpr>> &getStackTrace() const;
 };
 
 #endif
