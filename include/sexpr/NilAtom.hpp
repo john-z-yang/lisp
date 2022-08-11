@@ -7,12 +7,12 @@
 using std::shared_ptr;
 
 class NilAtom : public Atom {
+protected:
+  string toString() const;
+  bool equals(const SExpr &other) const;
+
 public:
   NilAtom();
-
-  string toString() const;
-
-  bool equals(const SExpr &other) const;
 
   static bool classOf(const SExpr &sExpr);
 };

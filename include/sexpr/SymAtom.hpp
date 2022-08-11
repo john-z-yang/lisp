@@ -9,14 +9,14 @@ using std::shared_ptr;
 using std::string;
 
 class SymAtom : public Atom {
+protected:
+  string toString() const;
+  bool equals(const SExpr &other) const;
+
 public:
   const string val;
 
   SymAtom(string val);
-
-  string toString() const;
-
-  bool equals(const SExpr &other) const;
 
   static bool classOf(const SExpr &sExpr);
 };

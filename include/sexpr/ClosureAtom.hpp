@@ -16,6 +16,13 @@ class ClosureAtom : public Atom {
 
 private:
   void handleArgMismatch(shared_ptr<SExpr> argNames, shared_ptr<SExpr> argVals);
+  std::shared_ptr<SExpr> evalArgs(shared_ptr<SExpr> args,
+                                  shared_ptr<Env> curEnv);
+  shared_ptr<Env> bindArgs(shared_ptr<SExpr> args, shared_ptr<Env> curEnv);
+
+protected:
+  string toString() const;
+  bool equals(const SExpr &other) const;
 
 public:
   Proc proc;
@@ -25,16 +32,7 @@ public:
   ClosureAtom(Proc proc, const shared_ptr<Env> outerEnv,
               const shared_ptr<SExpr> argNames);
 
-  std::shared_ptr<SExpr> evalArgs(shared_ptr<SExpr> args,
-                                  shared_ptr<Env> curEnv);
-
-  shared_ptr<Env> bindArgs(shared_ptr<SExpr> args, shared_ptr<Env> curEnv);
-
   shared_ptr<SExpr> operator()(shared_ptr<SExpr> args, shared_ptr<Env> curEnv);
-
-  string toString() const;
-
-  bool equals(const SExpr &other) const;
 
   static bool classOf(const SExpr &sExpr);
 };
