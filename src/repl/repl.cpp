@@ -14,7 +14,6 @@
 #include <iostream>
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 using std::all_of;
@@ -23,7 +22,6 @@ using std::cin;
 using std::cout;
 using std::endl;
 using std::getline;
-using std::make_pair;
 using std::make_shared;
 using std::shared_ptr;
 using std::stoi;
@@ -95,7 +93,7 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
         sExprs = cast<SExprs>(sExprs->rest);
         string name = cast<SymAtom>(sExprs->first)->val;
         shared_ptr<SExpr> val = eval(cast<SExprs>(sExprs->rest)->first, env);
-        env->symTable.insert(make_pair(name, val));
+        env->def(name, val);
         return val;
       } else if (sym->val == "set!") {
         sExprs = cast<SExprs>(sExprs->rest);
