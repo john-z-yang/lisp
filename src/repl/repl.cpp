@@ -1,6 +1,7 @@
 #include "../../include/repl/repl.hpp"
 #include "../../include/env/Env.hpp"
 #include "../../include/env/functions.hpp"
+#include "../../include/repl/eval/eval.hpp"
 #include "../../include/repl/except/EvalException.hpp"
 #include "../../include/sexpr/Atom.hpp"
 #include "../../include/sexpr/BoolAtom.hpp"
@@ -77,58 +78,6 @@ shared_ptr<SExpr> parse(vector<string> tokens) {
   }
   auto it = tokens.begin() + 1;
   return parse(it);
-}
-
-shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
-  try {
-    if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) || isa<BoolAtom>(*sExpr)) {
-      return sExpr;
-    } else if (isa<SymAtom>(*sExpr)) {
-      return env->find(cast<SymAtom>(sExpr)->val);
-    }
-    shared_ptr<SExprs> sExprs = cast<SExprs>(sExpr);
-    if (isa<SymAtom>(*sExprs->first)) {
-      shared_ptr<SymAtom> sym = cast<SymAtom>(sExprs->first);
-      if (sym->val == "define") {
-        sExprs = cast<SExprs>(sExprs->rest);
-        string name = cast<SymAtom>(sExprs->first)->val;
-        shared_ptr<SExpr> val = eval(cast<SExprs>(sExprs->rest)->first, env);
-        env->def(name, val);
-        return val;
-      } else if (sym->val == "set!") {
-        sExprs = cast<SExprs>(sExprs->rest);
-        string name = cast<SymAtom>(sExprs->first)->val;
-        shared_ptr<SExpr> val = eval(cast<SExprs>(sExprs->rest)->first, env);
-        env->set(name, val);
-        return val;
-      } else if (sym->val == "quote") {
-        sExprs = cast<SExprs>(sExprs->rest);
-        return sExprs->first;
-      } else if (sym->val == "if") {
-        sExprs = cast<SExprs>(sExprs->rest);
-        shared_ptr<BoolAtom> test =
-            std::make_shared<BoolAtom>(eval(sExprs->first, env));
-        shared_ptr<SExpr> conseq = cast<SExprs>(sExprs->rest)->first;
-        shared_ptr<SExpr> alt =
-            cast<SExprs>(cast<SExprs>(sExprs->rest)->rest)->first;
-        return (test->val) ? eval(conseq, env) : eval(alt, env);
-      } else if (sym->val == "lambda") {
-        sExprs = cast<SExprs>(sExprs->rest);
-        shared_ptr<SExpr> argNames = sExprs->first;
-        shared_ptr<SExpr> body = cast<SExprs>(sExprs->rest)->first;
-
-        return make_shared<ClosureAtom>(
-            [body](shared_ptr<Env> env) { return eval(body, env); }, env,
-            argNames);
-      }
-    }
-    shared_ptr<ClosureAtom> closure =
-        cast<ClosureAtom>(eval(sExprs->first, env));
-    return (*closure)(sExprs->rest, env);
-  } catch (EvalException ee) {
-    ee.pushStackTrace(sExpr);
-    throw ee;
-  }
 }
 
 void repl() {

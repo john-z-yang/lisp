@@ -1,14 +1,17 @@
 CXX = g++
 CXXFLAGS = -std=c++11
 
-out/lisp: out/main.o out/repl.o out/functions.o out/Env.o out/SymAtom.o out/SExprs.o out/SExpr.o out/NilAtom.o out/IntAtom.o out/ClosureAtom.o out/BoolAtom.o out/Atom.o out/cast.o out/EvalException.o
-	$(CXX) $(CXXFLAGS) out/main.o out/repl.o out/functions.o out/Env.o out/SymAtom.o out/SExprs.o out/SExpr.o out/NilAtom.o out/IntAtom.o out/ClosureAtom.o out/BoolAtom.o out/Atom.o out/cast.o out/EvalException.o -o out/lisp
+out/lisp: out/main.o out/repl.o out/eval.o out/functions.o out/Env.o out/SymAtom.o out/SExprs.o out/SExpr.o out/NilAtom.o out/IntAtom.o out/ClosureAtom.o out/BoolAtom.o out/Atom.o out/cast.o out/EvalException.o
+	$(CXX) $(CXXFLAGS) out/main.o out/repl.o out/eval.o out/functions.o out/Env.o out/SymAtom.o out/SExprs.o out/SExpr.o out/NilAtom.o out/IntAtom.o out/ClosureAtom.o out/BoolAtom.o out/Atom.o out/cast.o out/EvalException.o -o out/lisp
 
 out/main.o: src/repl/main.cpp
 	$(CXX) $(CXXFLAGS) -c src/repl/main.cpp -o out/main.o
 
 out/repl.o: src/repl/repl.cpp
 	$(CXX) $(CXXFLAGS) -c src/repl/repl.cpp -o out/repl.o
+
+out/eval.o: src/repl/eval/eval.cpp include/repl/eval/grammar.hpp
+	$(CXX) $(CXXFLAGS) -c src/repl/eval/eval.cpp -o out/eval.o
 
 out/functions.o: src/env/functions.cpp
 	$(CXX) $(CXXFLAGS) -c src/env/functions.cpp -o out/functions.o
