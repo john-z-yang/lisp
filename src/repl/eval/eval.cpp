@@ -25,7 +25,7 @@ shared_ptr<SExpr> get(const uint8_t n, shared_ptr<SExpr> sExpr) {
 
 void handleSyntaxError(string expected, shared_ptr<SExpr> actual) {
   stringstream ss;
-  ss << "Error: Expected \"" << expected << ", but got \"" << *actual << "\".";
+  ss << "Expected \"" << expected << ", but got \"" << *actual << "\".";
   throw EvalException(ss.str());
 }
 
