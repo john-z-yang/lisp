@@ -7,7 +7,6 @@
 
 using std::shared_ptr;
 
-shared_ptr<SExpr> get(const uint8_t n, shared_ptr<SExpr> sExpr);
 shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env);
 
 #endif
