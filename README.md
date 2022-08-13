@@ -29,7 +29,7 @@ Build the project.
 make
 ```
 
-The final executable (`lisp`) will be in the `out` directory.
+The final executable (`lisp`) will be in the `bin` directory.
 
 Run the program.
 
