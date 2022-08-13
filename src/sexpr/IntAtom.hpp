@@ -1,5 +1,5 @@
-#ifndef LISP_INCLUDE_SEXPR_INTATOM_H_
-#define LISP_INCLUDE_SEXPR_INTATOM_H_
+#ifndef LISP_SRC_SEXPR_INTATOM_HPP_
+#define LISP_SRC_SEXPR_INTATOM_HPP_
 
 #include "Atom.hpp"
 #include <memory>

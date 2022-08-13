@@ -1,7 +1,6 @@
-#ifndef LISP_INCLUDE_SEXPR_BOOLATOM_H_
-#define LISP_INCLUDE_SEXPR_BOOLATOM_H_
+#ifndef LISP_SRC_SEXPR_SEXPRS_HPP_
+#define LISP_SRC_SEXPR_SEXPRS_HPP_
 
-#include "Atom.hpp"
 #include "SExpr.hpp"
 #include <memory>
 #include <string>
@@ -9,18 +8,17 @@
 using std::shared_ptr;
 using std::string;
 
-class BoolAtom : public Atom {
+class SExprs : public SExpr {
 protected:
   string toString() const;
   bool equals(const SExpr &other) const;
 
 public:
-  const bool val;
+  shared_ptr<SExpr> first;
+  shared_ptr<SExpr> rest;
 
-  BoolAtom(const bool val);
-  BoolAtom(const shared_ptr<SExpr> sExpr);
+  SExprs(shared_ptr<SExpr> first, shared_ptr<SExpr> rest);
 
-  static bool toBool(const shared_ptr<SExpr> sExpr);
   static bool classOf(const SExpr &sExpr);
   static const string typeName;
 };

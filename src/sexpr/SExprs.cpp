@@ -1,5 +1,5 @@
-#include "../../include/sexpr/SExprs.hpp"
-#include "../../include/sexpr/NilAtom.hpp"
+#include "SExprs.hpp"
+#include "NilAtom.hpp"
 #include "cast.cpp"
 #include <memory>
 #include <sstream>

@@ -1,3 +1,3 @@
-#include "../../include/sexpr/Atom.hpp"
+#include "Atom.hpp"
 
 Atom::Atom(SExpr::Type type) : SExpr(type) {}

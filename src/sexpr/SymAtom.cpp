@@ -1,4 +1,4 @@
-#include "../../include/sexpr/SymAtom.hpp"
+#include "SymAtom.hpp"
 #include "cast.cpp"
 #include <memory>
 #include <string>

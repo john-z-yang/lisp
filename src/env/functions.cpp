@@ -1,9 +1,10 @@
-#include "../../include/env/functions.hpp"
-#include "../../include/sexpr/BoolAtom.hpp"
-#include "../../include/sexpr/ClosureAtom.hpp"
-#include "../../include/sexpr/NilAtom.hpp"
-#include "../../include/sexpr/SExprs.hpp"
-#include "../../include/sexpr/SymAtom.hpp"
+#include "functions.hpp"
+#include "../sexpr/BoolAtom.hpp"
+#include "../sexpr/ClosureAtom.hpp"
+#include "../sexpr/IntAtom.hpp"
+#include "../sexpr/NilAtom.hpp"
+#include "../sexpr/SExprs.hpp"
+#include "../sexpr/SymAtom.hpp"
 #include "../sexpr/cast.cpp"
 #include <iostream>
 #include <memory>

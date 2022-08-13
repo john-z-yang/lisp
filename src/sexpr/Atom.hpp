@@ -1,5 +1,5 @@
-#ifndef LISP_INCLUDE_SEXPR_ATOM_H_
-#define LISP_INCLUDE_SEXPR_ATOM_H_
+#ifndef LISP_SRC_SEXPR_ATOM_HPP_
+#define LISP_SRC_SEXPR_ATOM_HPP_
 
 #include "SExpr.hpp"
 

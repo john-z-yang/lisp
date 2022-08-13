@@ -1,10 +1,10 @@
-#ifndef LISP_INCLUDE_SEXPR_CLOSUREATOM_H_
-#define LISP_INCLUDE_SEXPR_CLOSUREATOM_H_
+#ifndef LISP_SRC_SEXPR_CLOSUREATOM_HPP_
+#define LISP_SRC_SEXPR_CLOSUREATOM_HPP_
 
-#include "../../include/env/Env.hpp"
-#include "../../include/sexpr/Atom.hpp"
-#include "../../include/sexpr/SExprs.hpp"
-#include "../../include/sexpr/SymAtom.hpp"
+#include "../env/Env.hpp"
+#include "Atom.hpp"
+#include "SExprs.hpp"
+#include "SymAtom.hpp"
 #include <functional>
 #include <memory>
 

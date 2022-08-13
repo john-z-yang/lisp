@@ -1,7 +1,6 @@
-#ifndef LISP_INCLUDE_ENV_FUNCTIONS_HPP_
-#define LISP_INCLUDE_ENV_FUNCTIONS_HPP_
+#ifndef LISP_SRC_ENV_FUNCTIONS_HPP_
+#define LISP_SRC_ENV_FUNCTIONS_HPP_
 
-#include "../sexpr/IntAtom.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "./Env.hpp"
 #include <memory>

@@ -1,4 +1,4 @@
-#include "../../include/repl/repl.hpp"
+#include "repl.hpp"
 
 int main(int argc, char const *argv[]) {
   repl();

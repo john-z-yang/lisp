@@ -1,5 +1,5 @@
-#ifndef LISP_INCLUDE_ENV_ENV_HPP_
-#define LISP_INCLUDE_ENV_ENV_HPP_
+#ifndef LISP_SRC_ENV_ENV_HPP_
+#define LISP_SRC_ENV_ENV_HPP_
 
 #include "../repl/except/EvalException.hpp"
 #include "../sexpr/SExpr.hpp"

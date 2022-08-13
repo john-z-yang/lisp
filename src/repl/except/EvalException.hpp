@@ -1,5 +1,5 @@
-#ifndef LISP_INCLUD_REPL_EVALEXCEPTION_H
-#define LISP_INCLUD_REPL_EVALEXCEPTION_H
+#ifndef LISP_SRC_REPL_EXCEPT_EVALEXCEPTION_HPP_
+#define LISP_SRC_REPL_EXCEPT_EVALEXCEPTION_HPP_
 
 #include "../../sexpr/SExpr.hpp"
 #include <exception>

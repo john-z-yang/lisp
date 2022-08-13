@@ -1,5 +1,5 @@
-#ifndef LISP_INCLUDE_SEXPR_SEXPR_H_
-#define LISP_INCLUDE_SEXPR_SEXPR_H_
+#ifndef LISP_SRC_SEXPR_SEXPR_HPP_
+#define LISP_SRC_SEXPR_SEXPR_HPP_
 
 #include <iostream>
 #include <string>

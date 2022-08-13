@@ -1,4 +1,4 @@
-#include "../../include/sexpr/BoolAtom.hpp"
+#include "BoolAtom.hpp"
 #include "cast.cpp"
 #include <memory>
 #include <string>

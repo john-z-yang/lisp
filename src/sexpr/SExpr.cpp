@@ -1,5 +1,5 @@
-#include "../../include/sexpr/SExpr.hpp"
-#include "../../include/sexpr/SExprs.hpp"
+#include "SExpr.hpp"
+#include "SExprs.hpp"
 #include "cast.cpp"
 #include <iostream>
 

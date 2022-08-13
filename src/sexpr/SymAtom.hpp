@@ -1,23 +1,22 @@
-#ifndef LISP_INCLUDE_SEXPR_SEXPRS_H_
-#define LISP_INCLUDE_SEXPR_SEXPRS_H_
+#ifndef LISP_SRC_SEXPR_SYMATOM_HPP_
+#define LISP_SRC_SEXPR_SYMATOM_HPP_
 
-#include "SExpr.hpp"
+#include "Atom.hpp"
 #include <memory>
 #include <string>
 
 using std::shared_ptr;
 using std::string;
 
-class SExprs : public SExpr {
+class SymAtom : public Atom {
 protected:
   string toString() const;
   bool equals(const SExpr &other) const;
 
 public:
-  shared_ptr<SExpr> first;
-  shared_ptr<SExpr> rest;
+  const string val;
 
-  SExprs(shared_ptr<SExpr> first, shared_ptr<SExpr> rest);
+  SymAtom(string val);
 
   static bool classOf(const SExpr &sExpr);
   static const string typeName;

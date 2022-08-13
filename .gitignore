@@ -34,8 +34,8 @@
 # .DS_Store
 .DS_Store
 
-# Everything in .out
-out/*
-!out/.keep
+# Everything in bin
+bin/*
+!bin/.keep
 .vscode/*
 tests/*.out

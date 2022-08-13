@@ -1,4 +1,4 @@
-#include "../../include/sexpr/IntAtom.hpp"
+#include "IntAtom.hpp"
 #include "cast.cpp"
 #include <string>
 

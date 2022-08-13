@@ -1,7 +1,7 @@
-#include "../../include/sexpr/ClosureAtom.hpp"
-#include "../../include/repl/eval/eval.hpp"
-#include "../../include/repl/except/EvalException.hpp"
-#include "../../include/sexpr/NilAtom.hpp"
+#include "ClosureAtom.hpp"
+#include "../repl/eval/eval.hpp"
+#include "../repl/except/EvalException.hpp"
+#include "NilAtom.hpp"
 #include "cast.cpp"
 #include <memory>
 #include <sstream>

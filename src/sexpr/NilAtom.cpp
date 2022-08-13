@@ -1,4 +1,4 @@
-#include "../../include/sexpr/NilAtom.hpp"
+#include "NilAtom.hpp"
 #include "cast.cpp"
 #include <memory>
 #include <string>
