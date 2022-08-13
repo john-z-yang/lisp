@@ -92,7 +92,7 @@ Tests are defined in the `tests` directory. Each test suite is a pair of `.in` (
 
 ### Sample test suite (`combine`)
 
-Behaviour we want
+Here is the behaviour we want to reproduce.
 ```lisp
 lisp> (define list (lambda lis lis))
 <closure>
@@ -105,7 +105,7 @@ lisp> (zip (list 1 2 3 4) (list 5 6 7 8))
 lisp> (quit)
 Farewell.
 ```
-`combine.in`
+Create `.in` file for input (`combine.in`).
 ```lisp
 (define list (lambda lis lis))
 (define combine (lambda (f) (lambda (x y) (if (null? x) (quote ()) (f (list (car x) (car y)) ((combine f) (cdr x) (cdr y)))))))
@@ -113,7 +113,7 @@ Farewell.
 (zip (list 1 2 3 4) (list 5 6 7 8))
 (quit)
 ```
-`combine.expect`
+Create `.expect` file for expected output (`combine.expect`).
 ```lisp
 lisp> <closure>
 lisp> <closure>
@@ -121,14 +121,19 @@ lisp> <closure>
 lisp> ((1 5) (2 6) (3 7) (4 8))
 lisp> Farewell.
 ```
-`makefile`
+Add the test to `makefile`.
 ```make
-testCombine: out/lisp tests/combine.in tests/combine.expect
-	out/lisp < tests/combine.in > tests/combine.out
-	diff tests/combine.expect tests/combine.out
-	rm tests/combine.out
+TESTS = $(TESTDIR)/combine ...
 ```
+Tests will be executed via `make test`.
+```make
+test: $(TESTS)
 
+$(TESTDIR)/%: $(TESTDIR)/%.in $(TESTDIR)/%.expect $(OUTDIR)/lisp
+	$(OUTDIR)/lisp < $@.in > $@.out
+	diff $@.expect $@.out
+	rm $@.out
+```
 ### Style test
 
 Use [`clang-format`](https://clang.llvm.org/docs/ClangFormat.html) for formatting.
