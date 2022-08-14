@@ -29,9 +29,7 @@ Build the project.
 make
 ```
 
-The final executable (`lisp`) will be in the `out` directory.
-
-Run the program.
+The executable (`lisp`) will be in the `out` directory. Happy hacking!
 
 ```console
 foo@bar:~$ out/lisp
@@ -92,7 +90,7 @@ Tests are defined in the `tests` directory. Each test suite is a pair of `.in` (
 
 ### Sample test suite (`combine`)
 
-Here is the behaviour we want to reproduce.
+Say we want to reproduce the following behaviours.
 ```lisp
 lisp> (define list (lambda lis lis))
 <closure>
@@ -105,7 +103,7 @@ lisp> (zip (list 1 2 3 4) (list 5 6 7 8))
 lisp> (quit)
 Farewell.
 ```
-Create `.in` file for input (`combine.in`).
+Create `.in` file for input (`tests/combine.in`).
 ```lisp
 (define list (lambda lis lis))
 (define combine (lambda (f) (lambda (x y) (if (null? x) (quote ()) (f (list (car x) (car y)) ((combine f) (cdr x) (cdr y)))))))
@@ -113,7 +111,7 @@ Create `.in` file for input (`combine.in`).
 (zip (list 1 2 3 4) (list 5 6 7 8))
 (quit)
 ```
-Create `.expect` file for expected output (`combine.expect`).
+Create `.expect` file for expected output (`tests/combine.expect`).
 ```lisp
 lisp> <closure>
 lisp> <closure>
@@ -121,11 +119,11 @@ lisp> <closure>
 lisp> ((1 5) (2 6) (3 7) (4 8))
 lisp> Farewell.
 ```
-Add the test to `makefile`.
+Add the new test to the `TESTS` variable in `makefile`.
 ```make
-TESTS = $(TESTDIR)/combine ...
+TESTS = $(TESTDIR)/combine # Along with other tests.
 ```
-Tests will be executed via `make test`.
+Tests will be executed from `make test`.
 ```make
 test: $(TESTS)
 
