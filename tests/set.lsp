@@ -1,6 +1,5 @@
 (define x 0)
 ((lambda () (define x 1)))
-(+ x 0)
+(display x)
 ((lambda () (set! x 1)))
-(+ x 0)
-(quit)
+(display x)

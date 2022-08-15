@@ -26,6 +26,7 @@ using std::cin;
 using std::cout;
 using std::distance;
 using std::endl;
+using std::fstream;
 using std::getline;
 using std::istream;
 using std::make_shared;
@@ -36,10 +37,10 @@ using std::stoi;
 using std::string;
 using std::vector;
 
-vector<string> tokenize(string expression) {
+vector<string> tokenize(string str) {
   vector<string> tokens;
   string token;
-  for (const char c : expression) {
+  for (const char c : str) {
     if (c == '(' || c == ')' || c == ' ') {
       if (!token.empty()) {
         tokens.push_back(token);
@@ -88,44 +89,50 @@ shared_ptr<SExpr> parse(vector<string> tokens) {
 }
 
 void handleUnexpectedChar(const string name, const string line,
-                          const string::size_type pos) {
+                          const string::size_type charPos) {
   stringstream ss;
   ss << "Unexpected \"" << name << "\".";
-  throw ParseException(ss.str(), line, pos);
+  throw ParseException(ss.str(), line, charPos);
 }
 
-istream &getInput(istream &in, ostream &out, string &str, string prompt,
+void verifyLex(std::string &line, int &openParen, int &closedParen) {
+  for (auto it = line.begin(); it != line.end(); ++it) {
+    if ((openParen == closedParen && openParen > 0 && !isspace(*it)) ||
+        (openParen == closedParen && *it == ')')) {
+      handleUnexpectedChar(string(1, *it), line, distance(line.begin(), it));
+    }
+    if (*it == '(') {
+      openParen += 1;
+    } else if (*it == ')') {
+      closedParen += 1;
+    }
+  }
+  string::size_type wsPos = line.find(' ');
+  if (openParen == 0 && wsPos != string::npos) {
+    handleUnexpectedChar(string(1, line[wsPos + 1]), line, wsPos + 1);
+  }
+}
+
+istream &getInput(istream &in, string &str, size_t &linesRead, string prompt,
                   string wrap) {
   int openParen = 0;
   int closedParen = 0;
   string line;
-  out << prompt;
+  cout << prompt;
   while (getline(in, line)) {
+    linesRead += 1;
     replace_if(line.begin(), line.end(), ::isspace, ' ');
     line = regex_replace(line, regex("^ +| +$|( ) +"), "$1");
     if (str.empty() && line.empty()) {
-      out << prompt;
+      cout << prompt;
       continue;
     }
-    for (auto it = line.begin(); it != line.end(); ++it) {
-      if (openParen == closedParen && openParen > 0 && !isspace(*it)) {
-        handleUnexpectedChar(string(1, *it), line, distance(line.begin(), it));
-      }
-      if (*it == '(') {
-        openParen += 1;
-      } else if (*it == ')') {
-        closedParen += 1;
-      }
-    }
+    verifyLex(line, openParen, closedParen);
     str += line + " ";
     if (openParen == closedParen) {
-      string::size_type pos = line.find(' ');
-      if (openParen > 0 || pos == string::npos) {
-        return in;
-      }
-      handleUnexpectedChar(string(1, line[pos + 1]), line, pos + 1);
+      return in;
     }
-    out << wrap;
+    cout << wrap;
   }
   return in;
 }
@@ -134,18 +141,50 @@ int repl() {
   shared_ptr<Env> env = make_shared<Env>();
   initEnv(env);
   while (true) {
+    string input;
+    size_t linesRead = 0;
     try {
-      string input;
-      if (getInput(cin, cout, input, "lisp> ", "  ... ")) {
+      if (getInput(cin, input, linesRead, "lisp> ", "  ... ")) {
         cout << *eval(parse(tokenize(input)), env) << endl;
       } else {
         cout << endl;
         lispQuit(nullptr);
       }
     } catch (ParseException pe) {
+      cerr << "In line " << linesRead << " of <std::cin>" << endl;
       cerr << pe;
     } catch (EvalException ee) {
+      cerr << "In line " << linesRead << " of <std::cin>" << endl;
       cerr << ee;
+    }
+  }
+  return EXIT_FAILURE;
+}
+
+int repl(const string fileName) {
+  fstream fs;
+  fs.open(fileName, fstream::in);
+
+  shared_ptr<Env> env = make_shared<Env>();
+  initEnv(env);
+
+  size_t linesRead = 0;
+  while (true) {
+    string input;
+    try {
+      if (getInput(fs, input, linesRead, "", "")) {
+        *eval(parse(tokenize(input)), env);
+      } else {
+        break;
+      }
+    } catch (ParseException pe) {
+      cerr << "In line " << linesRead << " of " << fileName << endl;
+      cerr << pe;
+      return EXIT_FAILURE;
+    } catch (EvalException ee) {
+      cerr << "In line " << linesRead << " of " << fileName << endl;
+      cerr << ee;
+      return EXIT_FAILURE;
     }
   }
   return EXIT_SUCCESS;

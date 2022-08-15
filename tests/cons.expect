@@ -1,8 +1,1 @@
-lisp> <closure>
-lisp> (1 2 3)
-lisp> (3 2 3)
-lisp> <closure>
-lisp> <closure>
-lisp> <closure>
-lisp> (1 1 2 3 5 8 13 21 34 55 89 144)
-lisp> Farewell.
+(1 1 2 3 5 8 13 21 34 55 89 144)
