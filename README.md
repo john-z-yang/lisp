@@ -29,15 +29,27 @@ Build the project.
 make
 ```
 
-The executable (`lisp`) will be in the `out` directory. Happy hacking!
+The executable (`lisp`) will be in the `bin` directory.
 
+Execute without argument to run in interactive mode.
 ```console
 foo@bar:~$ out/lisp
 lisp> (quote (Hello World!))
 (Hello World!)
 lisp> (quit)
 Farewell.
+foo@bar:~$ 
 ```
+
+Supply the file name of a lisp script as the argument to run them.
+```console
+foo@bar:~$ echo '(display (quote (Hello World!)))' > hello_world.lsp 
+foo@bar:~$ out/lisp hello_world.lsp
+(Hello World!)
+foo@bar:~$ 
+```
+
+_Happy hacking!_
 ## Supported Syntax
 
 | Syntax                                                                        | Description                                                                                                                                                                                                 |
