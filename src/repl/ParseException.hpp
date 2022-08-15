@@ -14,10 +14,10 @@ class ParseException : public exception {
 
 public:
   const string line;
-  const string::size_type pos;
+  const string::size_type charPos;
 
   ParseException(const string &msg, const string line,
-                 const string::size_type pos);
+                 const string::size_type charPos);
 
   virtual const char *what() const noexcept override;
 };

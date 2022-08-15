@@ -1,44 +1,38 @@
-lisp> <closure>
-lisp> #t
-lisp> #t
-lisp> #f
-lisp> #f
-lisp> #t
-lisp> #t
-lisp> #t
-lisp> #f
-lisp> #f
-lisp> #t
-lisp> x
-lisp> #t
-lisp> #t
-lisp> #t
-lisp> 0
-lisp> #t
-lisp> #f
-lisp> #f
-lisp> #t
-lisp> #f
-lisp> #t
-lisp> #t
-lisp> #t
-lisp> #f
-lisp> #t
-lisp> #t
-lisp> #t
-lisp> #f
-lisp> #f
-lisp> #t
-lisp> #t
-lisp> #f
-lisp> #f
-lisp> <closure>
-lisp> <closure>
-lisp> #t
-lisp> #t
-lisp> <closure>
-lisp> #t
-lisp> #f
-lisp> #f
-lisp> #f
-lisp> Farewell.
+#t
+#t
+#f
+#f
+#t
+#t
+#t
+#f
+#f
+#t
+x
+#t
+#t
+#t
+#t
+#f
+#f
+#t
+#f
+#t
+#t
+#t
+#f
+#t
+#t
+#t
+#f
+#f
+#t
+#t
+#f
+#f
+#t
+#t
+#t
+#f
+#f
+#f

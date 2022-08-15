@@ -18,5 +18,6 @@ vector<string> tokenize(string expression);
 shared_ptr<SExpr> parse(vector<string> tokens);
 
 int repl();
+int repl(const string fileName);
 
 #endif
