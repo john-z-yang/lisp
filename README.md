@@ -43,8 +43,8 @@ foo@bar:~$
 
 Supply the file name of a lisp script as the argument to run them.
 ```console
-foo@bar:~$ echo '(display (quote (Hello World!)))' > hello_world.lsp 
-foo@bar:~$ out/lisp hello_world.lsp
+foo@bar:~$ echo '(display (quote (Hello World!)))' > hello_world.lisp 
+foo@bar:~$ out/lisp hello_world.lisp
 (Hello World!)
 foo@bar:~$ 
 ```
@@ -98,11 +98,11 @@ _Happy hacking!_
 ```bash
 make test
 ```
-Tests are defined in the `tests` directory. Each test suite is a pair of lisp code (`.lsp`) and its expected output (`.expect`). The `test` command runs the `.lsp` file and generates a `.out` file by redirecting `stdout`. Finally, it `diff`s the `.out` file against the `.expect` file.
+Tests are defined in the `tests` directory. Each test suite is a pair of lisp code (`.lisp`) and its expected output (`.expect`). The `test` command runs the `.lisp` file and generates a `.out` file by redirecting `stdout`. Finally, it `diff`s the `.out` file against the `.expect` file.
 
 ### Sample test suite (`combine`)
 
-Lisp code (`combine.lsp`)
+Lisp code (`combine.lisp`)
 ```lisp
 (define list (lambda lis lis))
 
@@ -120,7 +120,7 @@ Lisp code (`combine.lsp`)
 
 When executed, it should behave like this
 ```console
-foo@bar:~$ out/lisp combine.lsp
+foo@bar:~$ out/lisp combine.lisp
 ((1 5) (2 6) (3 7) (4 8))
 foo@bar:~$ 
 ```
@@ -137,8 +137,8 @@ Tests will be executed from `make test`.
 ```make
 test: $(TESTS)
 
-$(TESTDIR)/%: $(TESTDIR)/%.lsp $(TESTDIR)/%.expect $(OUTDIR)/lisp
-	$(OUTDIR)/lisp $@.lsp > $@.out
+$(TESTDIR)/%: $(TESTDIR)/%.lisp $(TESTDIR)/%.expect $(OUTDIR)/lisp
+	$(OUTDIR)/lisp $@.lisp > $@.out
 	diff $@.expect $@.out
 	rm $@.out
 ```

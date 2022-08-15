@@ -29,8 +29,8 @@ $(OUTDIR)/%.o: $$(subst _,/,$$(patsubst $$(OUTDIR)/$$(PERCENT).o,src/$$(PERCENT)
 	$$(subst _,/,$$(patsubst $$(OUTDIR)/$$(PERCENT).o,src/$$(PERCENT).hpp,$$@))
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(TESTDIR)/%: $(TESTDIR)/%.lsp $(TESTDIR)/%.expect $(OUTDIR)/lisp
-	$(OUTDIR)/lisp $@.lsp > $@.out
+$(TESTDIR)/%: $(TESTDIR)/%.lisp $(TESTDIR)/%.expect $(OUTDIR)/lisp
+	$(OUTDIR)/lisp $@.lisp > $@.out
 	diff $@.expect $@.out
 	rm $@.out
 
