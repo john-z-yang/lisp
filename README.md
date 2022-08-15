@@ -98,38 +98,36 @@ _Happy hacking!_
 ```bash
 make test
 ```
-Tests are defined in the `tests` directory. Each test suite is a pair of `.in` (input) and `.expect` (expected output) files. The `test` command in makefile generates a `.out` file with the `.in` file and `diff` it against the `.expect` file.
+Tests are defined in the `tests` directory. Each test suite is a pair of lisp code (`.lsp`) and its expected output (`.expect`). The `test` command runs the `.lsp` file and generates a `.out` file by redirecting `stdout`. Finally, it `diff`s the `.out` file against the `.expect` file.
 
 ### Sample test suite (`combine`)
 
-Say we want to reproduce the following behaviours.
-```lisp
-lisp> (define list (lambda lis lis))
-<closure>
-lisp> (define combine (lambda (f) (lambda (x y) (if (null? x) (quote ()) (f (list (car x) (car y)) ((combine f) (cdr x) (cdr y)))))))
-<closure>
-lisp> (define zip (combine cons))
-<closure>
-lisp> (zip (list 1 2 3 4) (list 5 6 7 8))
-((1 5) (2 6) (3 7) (4 8))
-lisp> (quit)
-Farewell.
-```
-Create `.in` file for input (`tests/combine.in`).
+Lisp code (`combine.lsp`)
 ```lisp
 (define list (lambda lis lis))
-(define combine (lambda (f) (lambda (x y) (if (null? x) (quote ()) (f (list (car x) (car y)) ((combine f) (cdr x) (cdr y)))))))
+
+(define combine
+  (lambda (f)
+    (lambda (x y) 
+      (if (null? x) (quote ())
+        (f (list (car x) (car y))
+           ((combine f) (cdr x) (cdr y)))))))
+
 (define zip (combine cons))
-(zip (list 1 2 3 4) (list 5 6 7 8))
-(quit)
+
+(display (zip (list 1 2 3 4) (list 5 6 7 8)))
 ```
-Create `.expect` file for expected output (`tests/combine.expect`).
+
+When executed, it should behave like this
+```console
+foo@bar:~$ out/lisp combine.lsp
+((1 5) (2 6) (3 7) (4 8))
+foo@bar:~$ 
+```
+
+So we create the `.expect` file for expected output (`tests/combine.expect`).
 ```lisp
-lisp> <closure>
-lisp> <closure>
-lisp> <closure>
-lisp> ((1 5) (2 6) (3 7) (4 8))
-lisp> Farewell.
+((1 5) (2 6) (3 7) (4 8))
 ```
 Add the new test to the `TESTS` variable in `makefile`.
 ```make
@@ -139,8 +137,8 @@ Tests will be executed from `make test`.
 ```make
 test: $(TESTS)
 
-$(TESTDIR)/%: $(TESTDIR)/%.in $(TESTDIR)/%.expect $(OUTDIR)/lisp
-	$(OUTDIR)/lisp < $@.in > $@.out
+$(TESTDIR)/%: $(TESTDIR)/%.lsp $(TESTDIR)/%.expect $(OUTDIR)/lisp
+	$(OUTDIR)/lisp $@.lsp > $@.out
 	diff $@.expect $@.out
 	rm $@.out
 ```
