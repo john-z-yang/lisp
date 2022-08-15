@@ -165,6 +165,12 @@ int repl(const string fileName) {
   fstream fs;
   fs.open(fileName, fstream::in);
 
+  if (fs.fail()) {
+    cerr << "Unable to open file \"" << fileName << "\": " << strerror(errno)
+         << endl;
+    return EXIT_FAILURE;
+  }
+
   shared_ptr<Env> env = make_shared<Env>();
   initEnv(env);
 
@@ -178,11 +184,11 @@ int repl(const string fileName) {
         break;
       }
     } catch (ParseException pe) {
-      cerr << "In line " << linesRead << " of " << fileName << endl;
+      cerr << "In line " << linesRead << " of \"" << fileName << "\"" << endl;
       cerr << pe;
       return EXIT_FAILURE;
     } catch (EvalException ee) {
-      cerr << "In line " << linesRead << " of " << fileName << endl;
+      cerr << "In line " << linesRead << " of \"" << fileName << "\"" << endl;
       cerr << ee;
       return EXIT_FAILURE;
     }
