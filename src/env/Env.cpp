@@ -1,5 +1,5 @@
 #include "Env.hpp"
-#include "../repl/except/EvalException.hpp"
+#include "../eval/EvalException.hpp"
 #include "../repl/repl.hpp"
 #include "../sexpr/ClosureAtom.hpp"
 #include "../sexpr/NilAtom.hpp"

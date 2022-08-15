@@ -7,10 +7,10 @@ SRCDIR = src
 OUTDIR = bin
 TESTDIR = tests
 
-_DEPS = env/Env.hpp env/functions.hpp repl/eval/eval.hpp \
-	repl/except/EvalException.hpp repl/repl.hpp sexpr/Atom.hpp \
-	sexpr/BoolAtom.hpp sexpr/ClosureAtom.hpp sexpr/IntAtom.hpp \
-	sexpr/NilAtom.hpp sexpr/SExpr.hpp sexpr/SExprs.hpp sexpr/SymAtom.hpp
+_DEPS = env/Env.hpp env/functions.hpp eval/eval.hpp eval/EvalException.hpp \
+	repl/ParseException.hpp repl/repl.hpp sexpr/Atom.hpp sexpr/BoolAtom.hpp \
+	sexpr/ClosureAtom.hpp sexpr/IntAtom.hpp sexpr/NilAtom.hpp sexpr/SExpr.hpp \
+	sexpr/SExprs.hpp sexpr/SymAtom.hpp
 	
 DEPS = $(addprefix $(SRCDIR)/,$(_DEPS))
 OBJS = $(patsubst %.hpp,$(OUTDIR)/%.o,$(subst /,_,$(_DEPS)))

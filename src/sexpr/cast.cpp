@@ -1,4 +1,4 @@
-#include "../repl/except/EvalException.hpp"
+#include "../eval/EvalException.hpp"
 #include <memory>
 #include <sstream>
 

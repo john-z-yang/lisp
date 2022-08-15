@@ -1,13 +1,15 @@
-#ifndef LISP_SRC_REPL_EXCEPT_EVALEXCEPTION_HPP_
-#define LISP_SRC_REPL_EXCEPT_EVALEXCEPTION_HPP_
+#ifndef LISP_SRC_EVAL_EVALEXCEPTION_HPP_
+#define LISP_SRC_EVAL_EVALEXCEPTION_HPP_
 
-#include "../../sexpr/SExpr.hpp"
+#include "../sexpr/SExpr.hpp"
 #include <exception>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <vector>
 
 using std::exception;
+using std::ostream;
 using std::shared_ptr;
 using std::string;
 using std::vector;
@@ -25,5 +27,7 @@ public:
 
   const vector<shared_ptr<SExpr>> &getStackTrace() const;
 };
+
+ostream &operator<<(ostream &o, const EvalException &ee);
 
 #endif
