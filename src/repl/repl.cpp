@@ -96,7 +96,6 @@ void handleUnexpectedChar(const string name, const string line,
 
 istream &getInput(istream &in, ostream &out, string &str, string prompt,
                   string wrap) {
-  str.erase();
   int openParen = 0;
   int closedParen = 0;
   string line;
@@ -109,7 +108,7 @@ istream &getInput(istream &in, ostream &out, string &str, string prompt,
       continue;
     }
     for (auto it = line.begin(); it != line.end(); ++it) {
-      if (openParen == closedParen && openParen > 0) {
+      if (openParen == closedParen && openParen > 0 && !isspace(*it)) {
         handleUnexpectedChar(string(1, *it), line, distance(line.begin(), it));
       }
       if (*it == '(') {
@@ -120,10 +119,11 @@ istream &getInput(istream &in, ostream &out, string &str, string prompt,
     }
     str += line + " ";
     if (openParen == closedParen) {
-      if (openParen > 0 || line.find(' ') == string::npos) {
+      string::size_type pos = line.find(' ');
+      if (openParen > 0 || pos == string::npos) {
         return in;
       }
-      handleUnexpectedChar(string(1, ' '), line, line.find(' '));
+      handleUnexpectedChar(string(1, line[pos + 1]), line, pos + 1);
     }
     out << wrap;
   }
