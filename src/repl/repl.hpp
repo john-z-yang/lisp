@@ -2,7 +2,7 @@
 #define LISP_SRC_REPL_REPL_HPP_
 
 #include "../env/Env.hpp"
-#include "../repl/except/EvalException.hpp"
+#include "../eval/EvalException.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "../sexpr/SExprs.hpp"
 #include <memory>
@@ -15,12 +15,8 @@ using std::vector;
 
 vector<string> tokenize(string expression);
 
-shared_ptr<SExpr> parseAtom(string token);
-
-shared_ptr<SExpr> parse(vector<string>::iterator &it);
-
 shared_ptr<SExpr> parse(vector<string> tokens);
 
-void repl();
+int repl();
 
 #endif

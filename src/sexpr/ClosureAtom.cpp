@@ -1,6 +1,6 @@
 #include "ClosureAtom.hpp"
-#include "../repl/eval/eval.hpp"
-#include "../repl/except/EvalException.hpp"
+#include "../eval/EvalException.hpp"
+#include "../eval/eval.hpp"
 #include "NilAtom.hpp"
 #include "cast.cpp"
 #include <memory>

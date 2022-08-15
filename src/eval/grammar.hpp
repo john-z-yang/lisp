@@ -1,5 +1,5 @@
-#ifndef LISP_SRC_REPL_EVAL_GRAMMAR_HPP_
-#define LISP_SRC_REPL_EVAL_GRAMMAR_HPP_
+#ifndef LISP_SRC_EVAL_GRAMMAR_HPP_
+#define LISP_SRC_EVAL_GRAMMAR_HPP_
 
 #include <cstdint>
 #include <string>
