@@ -16,7 +16,13 @@ string SExprs::toString() const {
   string str = "";
   str += isa<SExprs>(*first) ? "(" : "";
   str += first->toString();
-  str += isa<NilAtom>(*rest) ? ")" : " " + rest->toString();
+  if (isa<NilAtom>(*rest)) {
+    str += ")";
+  } else if (!isa<SExprs>(*rest)) {
+    str += " " + rest->toString() + ")";
+  } else {
+    str += isa<NilAtom>(*rest) ? ")" : " " + rest->toString();
+  }
   return str;
 }
 
