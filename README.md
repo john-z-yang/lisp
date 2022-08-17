@@ -60,15 +60,23 @@ _Happy hacking!_
 | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | *symbol*                                                                      | Return the value that *sybmol* is bound to in the closest lexical scope.                                                                                                                                    |
 | *number*                                                                      | Return the *number*.                                                                                                                                                                                        |
-| *(`quote` expression)*<br>`'`*expression*                                     | Return *expression* without evaluating it.                                                                                                                                                                  |
-| *(`quasiquote` expression)*<br>`` ` ``*expression*                            | Increase the level of quasiquotation of *expression* by 1.                                                                                                                                                  |
-| *(`unquote` expression)*<br>`,`*expression*                                   | Decrease the level of quasiquotation of *expression* by 1.<br>If the level of quasiquotation reaches 0, evaluate *expression*, otherwise, the expression is not evaluated.                                  |
+| *(`quote` expression)*                                                        | Return *expression* without evaluating it.                                                                                                                                                                  |
+| *(`quasiquote` expression)*                                                   | Increase the level of quasiquotation of *expression* by 1.                                                                                                                                                  |
+| *(`unquote` expression)*                                                      | Decrease the level of quasiquotation of *expression* by 1.<br>If the level of quasiquotation reaches 0, evaluate *expression*, otherwise, the expression is not evaluated.                                  |
 | *(`define` symbol expression)*                                                | Evaluate *expression*, bind *symbol* to the result in current lexical scope.                                                                                                                                |
 | *(`set!` symbol expression)*                                                  | Evaluate *expression*, find the closest lexical scope where *symbol* is bound, re-bind *symbol* to the result.                                                                                              |
 | *(`if` expression<sub>1</sub> expression<sub>2</sub> expression<sub>3</sub>)* | Evaluate *expression<sub>1</sub>*, if the result is *truthy* (aka not `#t`), evalulate *expression<sub>2</sub>* and return the result; otherwise, evalulate *expression<sub>3</sub>* and return the result. |
 | *(`lambda` (symbol<sub>1</sub> ... symbol<sub>n</sub>) expression)*           | Return a *procedure* that accepts *n* arguments. When invoked, bind parameters to *Symbol<sub>1</sub> ... Symbol<sub>n</sub>*, evalulate *expression* and return the result.                                |
 | *(`lambda` symbol expression)*                                                | Return a *procedure* that accepts arbitary number of arguments. When invoked, bind parameters to *Symbol* as a list, evalulate *expression* and return the result.                                          |
 | *(procedure expression<sub>1</sub> ... expression<sub>n</sub>)*               | Evaluates *expression<sub>1</sub> ... expression<sub>n</sub>*, invoke *procedure* with the results.                                                                                                         |
+
+
+### Syntactic Sugar
+| Syntax              | Equivalence                 |
+| ------------------- | --------------------------- |
+| `'`*expression*     | *(`quote` expression)*      |
+| `` ` ``*expression* | *(`quasiquote` expression)* |
+| `,`*expression*     | *(`unquote` expression)*    |
 
 
 ## Built-In Functions and Operators
@@ -169,4 +177,5 @@ who participated in this project.
 
 
 ## Acknowledgments
-  - [(How to Write a (Lisp) Interpreter (in Python))](http://www.norvig.com/lispy.html)
+  - [(How to Write a (Lisp) Interpreter (in Python))](http://www.norvig.com/lispy.html) by Peter Norvig
+  - Special thanks to [Sophie](https://github.com/yqstan) for pointing out that parameter eval order is different across C++ compiler implementations.
