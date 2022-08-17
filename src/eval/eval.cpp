@@ -29,6 +29,64 @@ void handleSyntaxError(string expected, shared_ptr<SExpr> actual) {
   throw EvalException(ss.str());
 }
 
+shared_ptr<SExpr> evalQuote(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
+  shared_ptr<SExpr> quoteVal;
+  try {
+    cast<NilAtom>(get(quoteNilPos, sExpr));
+    quoteVal = cast<SExprs>(get(quoteArgPos, sExpr))->first;
+  } catch (EvalException ee) {
+    handleSyntaxError(quoteGrammar, sExpr);
+  }
+  return quoteVal;
+}
+
+shared_ptr<SExpr> evalUnquote(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
+  shared_ptr<SExpr> unquoteVal;
+  try {
+    cast<NilAtom>(get(unquoteNilPos, sExpr));
+    unquoteVal = cast<SExprs>(get(unquoteArgPos, sExpr))->first;
+  } catch (EvalException ee) {
+    handleSyntaxError(unquoteGrammar, sExpr);
+  }
+  return eval(unquoteVal, env);
+}
+
+shared_ptr<SExpr> scanQuasiquote(shared_ptr<SExpr> sExpr,
+                                 const unsigned int level,
+                                 shared_ptr<Env> env) {
+  if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) || isa<BoolAtom>(*sExpr) ||
+      isa<SymAtom>(*sExpr)) {
+    return sExpr;
+  }
+  shared_ptr<SExprs> sExprs = cast<SExprs>(sExpr);
+  if (isa<SymAtom>(*sExprs->first) &&
+      cast<SymAtom>(sExprs->first)->val == "unquote") {
+    if (level == 1) {
+      return evalUnquote(sExprs, env);
+    }
+    return make_shared<SExprs>(scanQuasiquote(sExprs->first, level - 1, env),
+                               scanQuasiquote(sExprs->rest, level - 1, env));
+  }
+  if (isa<SymAtom>(*sExprs->first) &&
+      cast<SymAtom>(sExprs->first)->val == "quasiquote") {
+    return make_shared<SExprs>(scanQuasiquote(sExprs->first, level + 1, env),
+                               scanQuasiquote(sExprs->rest, level + 1, env));
+  }
+  return make_shared<SExprs>(scanQuasiquote(sExprs->first, level, env),
+                             scanQuasiquote(sExprs->rest, level, env));
+}
+
+shared_ptr<SExpr> evalQuasiquote(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
+  shared_ptr<SExpr> quasiquoteVal;
+  try {
+    cast<NilAtom>(get(quasiquoteNilPos, sExpr));
+    quasiquoteVal = cast<SExprs>(get(quasiquoteArgPos, sExpr))->first;
+  } catch (EvalException ee) {
+    handleSyntaxError(quasiquoteGrammar, sExpr);
+  }
+  return scanQuasiquote(quasiquoteVal, 1, env);
+}
+
 shared_ptr<SExpr> evalDef(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   string defSym;
   shared_ptr<SExpr> defSExpr;
@@ -57,17 +115,6 @@ shared_ptr<SExpr> evalSet(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   shared_ptr<SExpr> setVal = eval(setSExpr, env);
   env->set(setSym, setVal);
   return setVal;
-}
-
-shared_ptr<SExpr> evalQuote(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
-  shared_ptr<SExpr> quoteVal;
-  try {
-    cast<NilAtom>(get(quoteNilPos, sExpr));
-    quoteVal = cast<SExprs>(get(quoteArgPos, sExpr))->first;
-  } catch (EvalException ee) {
-    handleSyntaxError(quoteGrammar, sExpr);
-  }
-  return quoteVal;
 }
 
 shared_ptr<SExpr> evalIf(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
@@ -110,12 +157,16 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
     shared_ptr<SExprs> sExprs = cast<SExprs>(sExpr);
     if (isa<SymAtom>(*sExprs->first)) {
       string sym = cast<SymAtom>(sExprs->first)->val;
-      if (sym == "define") {
+      if (sym == "quote") {
+        return evalQuote(sExpr, env);
+      } else if (sym == "quasiquote") {
+        return evalQuasiquote(sExpr, env);
+      } else if (sym == "unquote") {
+        handleSyntaxError(unquoteGrammar, sExpr);
+      } else if (sym == "define") {
         return evalDef(sExpr, env);
       } else if (sym == "set!") {
         return evalSet(sExpr, env);
-      } else if (sym == "quote") {
-        return evalQuote(sExpr, env);
       } else if (sym == "if") {
         return evalIf(sExpr, env);
       } else if (sym == "lambda") {

@@ -6,15 +6,18 @@ Interpreter for lisp written in C++. This project started out as a solution to l
     <img src="https://raw.githubusercontent.com/john-z-yang/lisp/master/docs/assets/fib_seq_gen.gif" width="100%">
 </p>
 
+
 ## Getting Started
 
 These instructions will give you a copy of the interpreter up and running on
 your local machine.
 
+
 ### Prerequisites
 
 - [g++](https://gcc.gnu.org/)
 - [make](https://www.gnu.org/software/make/)
+
 
 ### Installing
 
@@ -48,21 +51,25 @@ foo@bar:~$ out/lisp hello_world.lisp
 (Hello World!)
 foo@bar:~$ 
 ```
-
 _Happy hacking!_
-## Supported Syntax
+
+
+## Supported Expressions
 
 | Syntax                                                                        | Description                                                                                                                                                                                                 |
 | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | *symbol*                                                                      | Return the value that *sybmol* is bound to in the closest lexical scope.                                                                                                                                    |
 | *number*                                                                      | Return the *number*.                                                                                                                                                                                        |
+| *(`quote` expression)*<br>`'`*expression*                                     | Return *expression* without evaluating it.                                                                                                                                                                  |
+| *(`quasiquote` expression)*<br>`` ` ``*expression*                            | Increase the level of quasiquotation of *expression* by 1.                                                                                                                                                  |
+| *(`unquote` expression)*<br>`'`*expression*                                   | Decrease the level of quasiquotation of *expression* by 1.<br>If the level of quasiquotation reaches 0, evaluate *expression*, otherwise, the expression is not evaluated (same as `quote`).                |
 | *(`define` symbol expression)*                                                | Evaluate *expression*, bind *symbol* to the result in current lexical scope.                                                                                                                                |
 | *(`set!` symbol expression)*                                                  | Evaluate *expression*, find the closest lexical scope where *symbol* is bound, re-bind *symbol* to the result.                                                                                              |
-| *(`quote` expression)*                                                        | Return *expression* without evaluating it.                                                                                                                                                                  |
 | *(`if` expression<sub>1</sub> expression<sub>2</sub> expression<sub>3</sub>)* | Evaluate *expression<sub>1</sub>*, if the result is *truthy* (aka not `#t`), evalulate *expression<sub>2</sub>* and return the result; otherwise, evalulate *expression<sub>3</sub>* and return the result. |
 | *(`lambda` (symbol<sub>1</sub> ... symbol<sub>n</sub>) expression)*           | Return a *procedure* that accepts *n* arguments. When invoked, bind parameters to *Symbol<sub>1</sub> ... Symbol<sub>n</sub>*, evalulate *expression* and return the result.                                |
 | *(`lambda` symbol expression)*                                                | Return a *procedure* that accepts arbitary number of arguments. When invoked, bind parameters to *Symbol* as a list, evalulate *expression* and return the result.                                          |
 | *(procedure expression<sub>1</sub> ... expression<sub>n</sub>)*               | Evaluates *expression<sub>1</sub> ... expression<sub>n</sub>*, invoke *procedure* with the results.                                                                                                         |
+
 
 ## Built-In Functions and Operators
 | Name      | Arguments    | Description                                                             |
@@ -93,12 +100,14 @@ _Happy hacking!_
 | `proc?`   | `arg`        | Returns `#t` if `arg` is *procedure*; otherwise `#f`                    |
 | `eq?`     | `lhs`, `rhs` | Returns `#t` if `lhs` and `rhs` are equivalent in value; otherwise `#f` |
 
+
 ## Running the tests
 
 ```bash
 make test
 ```
 Tests are defined in the `tests` directory. Each test suite is a pair of lisp code (`.lisp`) and its expected output (`.expect`). The `test` command runs the `.lisp` file and generates a `.out` file by redirecting `stdout`. Finally, it `diff`s the `.out` file against the `.expect` file.
+
 
 ### Sample test suite (`combine`)
 
@@ -142,12 +151,13 @@ $(TESTDIR)/%: $(TESTDIR)/%.lisp $(TESTDIR)/%.expect $(OUTDIR)/lisp
 	diff $@.expect $@.out
 	rm $@.out
 ```
-### Style test
 
+
+### Style test
 Use [`clang-format`](https://clang.llvm.org/docs/ClangFormat.html) for formatting.
 
-## Authors
 
+## Authors
   - **John Yang** - [john-z-yang](https://github.com/john-z-yang)
 
   - **Billie Thompson** - *Provided README Template* -
@@ -157,6 +167,6 @@ See also the list of
 [contributors](https://github.com/john-z-yang/lisp/contributors)
 who participated in this project.
 
-## Acknowledgments
 
+## Acknowledgments
   - [(How to Write a (Lisp) Interpreter (in Python))](http://www.norvig.com/lispy.html)

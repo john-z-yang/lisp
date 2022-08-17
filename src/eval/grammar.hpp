@@ -6,6 +6,18 @@
 
 using std::string;
 
+const string quoteGrammar = "(quote expression)";
+const uint8_t quoteArgPos = 1;
+const uint8_t quoteNilPos = 2;
+
+const string quasiquoteGrammar = "(quasiquote expression)";
+const uint8_t quasiquoteArgPos = 1;
+const uint8_t quasiquoteNilPos = 2;
+
+const string unquoteGrammar = "(quasiquote ... (unquote expression) ...)";
+const uint8_t unquoteArgPos = 1;
+const uint8_t unquoteNilPos = 2;
+
 const string defGrammar = "(define symbol expression)";
 const uint8_t defSymPos = 1;
 const uint8_t defSExprPos = 2;
@@ -15,10 +27,6 @@ const string setGrammar = "(set symbol expression)";
 const uint8_t setSymPos = 1;
 const uint8_t setSExprPos = 2;
 const uint8_t setNilPos = 3;
-
-const string quoteGrammar = "(quote expression)";
-const uint8_t quoteArgPos = 1;
-const uint8_t quoteNilPos = 2;
 
 const string ifGrammar = "(if expression_1 expression_2 expression_3)";
 const uint8_t ifTestPos = 1;

@@ -41,7 +41,8 @@ vector<string> tokenize(string str) {
   vector<string> tokens;
   string token;
   for (const char c : str) {
-    if (c == '(' || c == ')' || c == ' ') {
+    if (c == '(' || c == ')' || c == '\'' || c == '\'' || c == '`' ||
+        c == ',' || c == ' ') {
       if (!token.empty()) {
         tokens.push_back(token);
         token = "";
@@ -60,31 +61,53 @@ vector<string> tokenize(string str) {
 }
 
 shared_ptr<SExpr> parseAtom(string token) {
-  if (all_of(token.begin(), token.end(), ::isdigit) ||
+  if ((token.length() >= 1 && all_of(token.begin(), token.end(), ::isdigit)) ||
       (token[0] == '-' && token.length() > 1 &&
        all_of(token.begin() + 1, token.end(), ::isdigit))) {
     return make_shared<IntAtom>(stoi(token));
   }
+  if (token == "'") {
+    token = "quote";
+  }
+  if (token == "`") {
+    token = "quasiquote";
+  }
+  if (token == ",") {
+    token = "unquote";
+  }
   return make_shared<SymAtom>(token);
+}
+
+shared_ptr<SExpr> parse(vector<string>::iterator &it);
+
+shared_ptr<SExpr> parseSexprs(vector<string>::iterator &it) {
+  string token = *it;
+  if (token == ")") {
+    it += 1;
+    return make_shared<NilAtom>();
+  } else if (token == "(") {
+    it += 1;
+    return make_shared<SExprs>(parseSexprs(it), parseSexprs(it));
+  }
+  return make_shared<SExprs>(parse(it), parseSexprs(it));
 }
 
 shared_ptr<SExpr> parse(vector<string>::iterator &it) {
   string token = *it;
   it += 1;
-  if (token == ")") {
-    return make_shared<NilAtom>();
-  } else if (token == "(") {
-    shared_ptr<SExpr> first = parse(it);
-    return make_shared<SExprs>(first, parse(it));
+  if (token == "(") {
+    return parseSexprs(it);
   }
-  return make_shared<SExprs>(parseAtom(token), parse(it));
+  if (token == "'" || token == "`" || token == ",") {
+    shared_ptr<SExpr> rest =
+        make_shared<SExprs>(parse(it), make_shared<NilAtom>());
+    return make_shared<SExprs>(parseAtom(token), rest);
+  }
+  return parseAtom(token);
 }
 
 shared_ptr<SExpr> parse(vector<string> tokens) {
-  if (tokens.size() == 1) {
-    return parseAtom(tokens.front());
-  }
-  auto it = tokens.begin() + 1;
+  vector<string>::iterator it = tokens.begin();
   return parse(it);
 }
 
