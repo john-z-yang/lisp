@@ -87,9 +87,13 @@ shared_ptr<SExpr> parseSexprs(vector<string>::iterator &it) {
     return make_shared<NilAtom>();
   } else if (token == "(") {
     it += 1;
-    return make_shared<SExprs>(parseSexprs(it), parseSexprs(it));
+    shared_ptr<SExpr> first = parseSexprs(it);
+    shared_ptr<SExpr> rest = parseSexprs(it);
+    return make_shared<SExprs>(first, rest);
   }
-  return make_shared<SExprs>(parse(it), parseSexprs(it));
+  shared_ptr<SExpr> first = parse(it);
+  shared_ptr<SExpr> rest = parseSexprs(it);
+  return make_shared<SExprs>(first, rest);
 }
 
 shared_ptr<SExpr> parse(vector<string>::iterator &it) {
