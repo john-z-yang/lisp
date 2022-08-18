@@ -23,6 +23,7 @@ using std::cout;
 using std::endl;
 using std::fstream;
 using std::make_shared;
+using std::strerror;
 
 int repl() {
   shared_ptr<Env> env = make_shared<Env>();
