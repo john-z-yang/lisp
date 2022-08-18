@@ -12,6 +12,7 @@
 #include "sexpr/SExpr.hpp"
 #include "sexpr/SymAtom.hpp"
 #include "sexpr/cast.cpp"
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <memory>
