@@ -1,6 +1,6 @@
 #include "Env.hpp"
 #include "../eval/EvalException.hpp"
-#include "../repl/repl.hpp"
+#include "../parse/parse.hpp"
 #include "../sexpr/ClosureAtom.hpp"
 #include "../sexpr/NilAtom.hpp"
 #include "../sexpr/SExpr.hpp"
@@ -51,81 +51,65 @@ shared_ptr<SExpr> Env::find(string symbol) {
 void initEnv(shared_ptr<Env> env) {
   env->def("quit",
            make_shared<ClosureAtom>(lispQuit, env, make_shared<NilAtom>()));
-  env->def("display", make_shared<ClosureAtom>(
-                          lispDisplay, env,
-                          cast<SExprs>(parse(tokenize("(display_oprand)")))));
-  env->def("abs",
-           make_shared<ClosureAtom>(
-               lispAdd, env, cast<SExprs>(parse(tokenize("(abs_oprand)")))));
+  env->def("display",
+           make_shared<ClosureAtom>(lispDisplay, env,
+                                    cast<SExprs>(parse("(display_oprand)"))));
+  env->def("abs", make_shared<ClosureAtom>(
+                      lispAdd, env, cast<SExprs>(parse("(abs_oprand)"))));
   env->def("+", make_shared<ClosureAtom>(
-                    lispAdd, env,
-                    cast<SExprs>(parse(tokenize("(add_lhs add_rhs)")))));
+                    lispAdd, env, cast<SExprs>(parse("(add_lhs add_rhs)"))));
   env->def("-", make_shared<ClosureAtom>(
-                    lispSub, env,
-                    cast<SExprs>(parse(tokenize("(sub_lhs sub_rhs)")))));
+                    lispSub, env, cast<SExprs>(parse("(sub_lhs sub_rhs)"))));
   env->def("*", make_shared<ClosureAtom>(
-                    lispMult, env,
-                    cast<SExprs>(parse(tokenize("(mult_lhs mult_rhs)")))));
+                    lispMult, env, cast<SExprs>(parse("(mult_lhs mult_rhs)"))));
   env->def("/", make_shared<ClosureAtom>(
-                    lispDiv, env,
-                    cast<SExprs>(parse(tokenize("(div_lhs div_rhs)")))));
+                    lispDiv, env, cast<SExprs>(parse("(div_lhs div_rhs)"))));
   env->def("%", make_shared<ClosureAtom>(
-                    lispMod, env,
-                    cast<SExprs>(parse(tokenize("(mod_lhs mod_rhs)")))));
-  env->def("=",
+                    lispMod, env, cast<SExprs>(parse("(mod_lhs mod_rhs)"))));
+  env->def("=", make_shared<ClosureAtom>(
+                    lispEq, env, cast<SExprs>(parse("(eq_lhs eq_rhs)"))));
+  env->def(">", make_shared<ClosureAtom>(
+                    lispGt, env, cast<SExprs>(parse("(gt_lhs gt_rhs)"))));
+  env->def(">=",
            make_shared<ClosureAtom>(
-               lispEq, env, cast<SExprs>(parse(tokenize("(eq_lhs eq_rhs)")))));
-  env->def(">",
+               lispGteq, env, cast<SExprs>(parse("(gteq_lhs gteq_rhs)"))));
+  env->def("<", make_shared<ClosureAtom>(
+                    lispLt, env, cast<SExprs>(parse("(lt_lhs lt_rhs)"))));
+  env->def("<=",
            make_shared<ClosureAtom>(
-               lispGt, env, cast<SExprs>(parse(tokenize("(gt_lhs gt_rhs)")))));
-  env->def(">=", make_shared<ClosureAtom>(
-                     lispGteq, env,
-                     cast<SExprs>(parse(tokenize("(gteq_lhs gteq_rhs)")))));
-  env->def("<",
-           make_shared<ClosureAtom>(
-               lispLt, env, cast<SExprs>(parse(tokenize("(lt_lhs lt_rhs)")))));
-  env->def("<=", make_shared<ClosureAtom>(
-                     lispLteq, env,
-                     cast<SExprs>(parse(tokenize("(lteq_lhs lteq_rhs)")))));
-  env->def("not",
-           make_shared<ClosureAtom>(
-               lispNot, env, cast<SExprs>(parse(tokenize("(not_oprand)")))));
+               lispLteq, env, cast<SExprs>(parse("(lteq_lhs lteq_rhs)"))));
+  env->def("not", make_shared<ClosureAtom>(
+                      lispNot, env, cast<SExprs>(parse("(not_oprand)"))));
   env->def("and", make_shared<ClosureAtom>(
-                      lispAnd, env,
-                      cast<SExprs>(parse(tokenize("(and_lhs and_rhs)")))));
-  env->def("or",
+                      lispAnd, env, cast<SExprs>(parse("(and_lhs and_rhs)"))));
+  env->def("or", make_shared<ClosureAtom>(
+                     lispOr, env, cast<SExprs>(parse("(or_lhs or_rhs)"))));
+  env->def("cons",
            make_shared<ClosureAtom>(
-               lispOr, env, cast<SExprs>(parse(tokenize("(or_lhs or_rhs)")))));
-  env->def("cons", make_shared<ClosureAtom>(
-                       lispCons, env,
-                       cast<SExprs>(parse(tokenize("(cons_lhs cons_rhs)")))));
-  env->def("car",
-           make_shared<ClosureAtom>(
-               lispCar, env, cast<SExprs>(parse(tokenize("(car_oprand)")))));
-  env->def("cdr",
-           make_shared<ClosureAtom>(
-               lispCdr, env, cast<SExprs>(parse(tokenize("(cdr_oprand)")))));
-  env->def("null?", make_shared<ClosureAtom>(
-                        lispIsNull, env,
-                        cast<SExprs>(parse(tokenize("(null?_oprand)")))));
+               lispCons, env, cast<SExprs>(parse("(cons_lhs cons_rhs)"))));
+  env->def("car", make_shared<ClosureAtom>(
+                      lispCar, env, cast<SExprs>(parse("(car_oprand)"))));
+  env->def("cdr", make_shared<ClosureAtom>(
+                      lispCdr, env, cast<SExprs>(parse("(cdr_oprand)"))));
+  env->def("null?",
+           make_shared<ClosureAtom>(lispIsNull, env,
+                                    cast<SExprs>(parse("(null?_oprand)"))));
 
-  env->def("cons?", make_shared<ClosureAtom>(
-                        lispIsCons, env,
-                        cast<SExprs>(parse(tokenize("(cons?_oprand)")))));
+  env->def("cons?",
+           make_shared<ClosureAtom>(lispIsCons, env,
+                                    cast<SExprs>(parse("(cons?_oprand)"))));
 
-  env->def("sym?",
-           make_shared<ClosureAtom>(
-               lispIsSym, env, cast<SExprs>(parse(tokenize("(sym?_oprand)")))));
+  env->def("sym?", make_shared<ClosureAtom>(
+                       lispIsSym, env, cast<SExprs>(parse("(sym?_oprand)"))));
 
-  env->def("num?",
-           make_shared<ClosureAtom>(
-               lispIsNum, env, cast<SExprs>(parse(tokenize("(num?_oprand)")))));
+  env->def("num?", make_shared<ClosureAtom>(
+                       lispIsNum, env, cast<SExprs>(parse("(num?_oprand)"))));
 
-  env->def("proc?", make_shared<ClosureAtom>(
-                        lispIsProc, env,
-                        cast<SExprs>(parse(tokenize("(proc?_oprand)")))));
+  env->def("proc?",
+           make_shared<ClosureAtom>(lispIsProc, env,
+                                    cast<SExprs>(parse("(proc?_oprand)"))));
 
-  env->def("eq?", make_shared<ClosureAtom>(
-                      lispIsEqv, env,
-                      cast<SExprs>(parse(tokenize("(eq?_lhs eq?_rhs)")))));
+  env->def("eq?",
+           make_shared<ClosureAtom>(lispIsEqv, env,
+                                    cast<SExprs>(parse("(eq?_lhs eq?_rhs)"))));
 }

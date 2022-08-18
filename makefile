@@ -8,10 +8,10 @@ OUTDIR = bin
 TESTDIR = tests
 
 _DEPS = env/Env.hpp env/functions.hpp eval/eval.hpp eval/EvalException.hpp \
-	repl/ParseException.hpp repl/repl.hpp sexpr/Atom.hpp sexpr/BoolAtom.hpp \
+	parse/parse.hpp parse/ParseException.hpp sexpr/Atom.hpp sexpr/BoolAtom.hpp \
 	sexpr/ClosureAtom.hpp sexpr/IntAtom.hpp sexpr/NilAtom.hpp sexpr/SExpr.hpp \
 	sexpr/SExprs.hpp sexpr/SymAtom.hpp
-	
+
 DEPS = $(addprefix $(SRCDIR)/,$(_DEPS))
 OBJS = $(patsubst %.hpp,$(OUTDIR)/%.o,$(subst /,_,$(_DEPS)))
 
@@ -21,7 +21,7 @@ TESTS = $(TESTDIR)/combine $(TESTDIR)/cons $(TESTDIR)/hof $(TESTDIR)/parse \
 $(OUTDIR)/lisp: $(OBJS) $(DEPS) $(OUTDIR)/main.o
 	$(CXX) $(CXXFLAGS) $(OBJS) $(OUTDIR)/main.o -o $(OUTDIR)/lisp
 
-$(OUTDIR)/main.o: $(SRCDIR)/repl/main.cpp $(DEPS)
+$(OUTDIR)/main.o: $(SRCDIR)/main.cpp $(DEPS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 .SECONDEXPANSION:

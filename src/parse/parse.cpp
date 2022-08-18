@@ -1,40 +1,29 @@
-#include "../repl/repl.hpp"
-#include "../env/Env.hpp"
-#include "../env/functions.hpp"
-#include "../eval/EvalException.hpp"
-#include "../eval/eval.hpp"
-#include "../sexpr/Atom.hpp"
-#include "../sexpr/BoolAtom.hpp"
-#include "../sexpr/ClosureAtom.hpp"
 #include "../sexpr/IntAtom.hpp"
 #include "../sexpr/NilAtom.hpp"
 #include "../sexpr/SExpr.hpp"
+#include "../sexpr/SExprs.hpp"
 #include "../sexpr/SymAtom.hpp"
-#include "../sexpr/cast.cpp"
 #include "ParseException.hpp"
 #include <algorithm>
-#include <fstream>
-#include <iostream>
 #include <memory>
 #include <regex>
+#include <sstream>
 #include <string>
 #include <vector>
 
 using std::all_of;
-using std::cerr;
-using std::cin;
 using std::cout;
 using std::distance;
-using std::endl;
-using std::fstream;
 using std::getline;
 using std::istream;
 using std::make_shared;
 using std::regex;
 using std::regex_replace;
+using std::replace_if;
 using std::shared_ptr;
 using std::stoi;
 using std::string;
+using std::stringstream;
 using std::vector;
 
 vector<string> tokenize(string str) {
@@ -110,7 +99,8 @@ shared_ptr<SExpr> parse(vector<string>::iterator &it) {
   return parseAtom(token);
 }
 
-shared_ptr<SExpr> parse(vector<string> tokens) {
+shared_ptr<SExpr> parse(string str) {
+  vector<string> tokens = tokenize(str);
   vector<string>::iterator it = tokens.begin();
   return parse(it);
 }
@@ -162,63 +152,4 @@ istream &getInput(istream &in, string &str, size_t &linesRead, string prompt,
     cout << wrap;
   }
   return in;
-}
-
-int repl() {
-  shared_ptr<Env> env = make_shared<Env>();
-  initEnv(env);
-  while (true) {
-    string input;
-    size_t linesRead = 0;
-    try {
-      if (getInput(cin, input, linesRead, "lisp> ", "  ... ")) {
-        cout << *eval(parse(tokenize(input)), env) << endl;
-      } else {
-        cout << endl;
-        lispQuit(nullptr);
-      }
-    } catch (ParseException pe) {
-      cerr << "In line " << linesRead << " of <std::cin>" << endl;
-      cerr << pe;
-    } catch (EvalException ee) {
-      cerr << "In line " << linesRead << " of <std::cin>" << endl;
-      cerr << ee;
-    }
-  }
-  return EXIT_FAILURE;
-}
-
-int repl(const string fileName) {
-  fstream fs;
-  fs.open(fileName, fstream::in);
-
-  if (fs.fail()) {
-    cerr << "Unable to open file \"" << fileName << "\": " << strerror(errno)
-         << endl;
-    return EXIT_FAILURE;
-  }
-
-  shared_ptr<Env> env = make_shared<Env>();
-  initEnv(env);
-
-  size_t linesRead = 0;
-  while (true) {
-    string input;
-    try {
-      if (getInput(fs, input, linesRead, "", "")) {
-        *eval(parse(tokenize(input)), env);
-      } else {
-        break;
-      }
-    } catch (ParseException pe) {
-      cerr << "In line " << linesRead << " of \"" << fileName << "\"" << endl;
-      cerr << pe;
-      return EXIT_FAILURE;
-    } catch (EvalException ee) {
-      cerr << "In line " << linesRead << " of \"" << fileName << "\"" << endl;
-      cerr << ee;
-      return EXIT_FAILURE;
-    }
-  }
-  return EXIT_SUCCESS;
 }
