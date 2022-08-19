@@ -1,5 +1,6 @@
 (display (cons 1 2))
 (display (cons (cons 1 2) 3))
+(display (cons 1 (cons 2 (cons 3 (cons 4 5)))))
 (define list (lambda lis lis))
 (display (list 1 2 3))
 (display (list (+ 1 2) 2 3))

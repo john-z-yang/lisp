@@ -19,7 +19,7 @@ string SExprs::toString() const {
   if (isa<NilAtom>(*rest)) {
     str += ")";
   } else if (!isa<SExprs>(*rest)) {
-    str += " " + rest->toString() + ")";
+    str += " . " + rest->toString() + ")";
   } else {
     str += isa<NilAtom>(*rest) ? ")" : " " + rest->toString();
   }
