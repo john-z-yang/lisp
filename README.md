@@ -73,11 +73,12 @@ _Happy hacking!_
 
 
 ### Syntactic Sugar
-| Syntax              | Equivalence                 |
-| ------------------- | --------------------------- |
-| `'`*expression*     | *(`quote` expression)*      |
-| `` ` ``*expression* | *(`quasiquote` expression)* |
-| `,`*expression*     | *(`unquote` expression)*    |
+| Syntax              | Equivalence                       |
+| ------------------- | --------------------------------- |
+| `'`*expression*     | *(`quote` expression)*            |
+| `` ` ``*expression* | *(`quasiquote` expression)*       |
+| `,`*expression*     | *(`unquote` expression)*          |
+| `,@`*expression*    | *(`unquote-splicing` expression)* |
 
 
 ## Built-In Functions and Operators
