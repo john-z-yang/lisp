@@ -182,6 +182,8 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
         return evalQuasiquote(sExpr, env);
       } else if (sym == "unquote") {
         handleSyntaxError(unquoteGrammar, sExpr);
+      } else if (sym == "unquote-splicing") {
+        handleSyntaxError(unquoteSplicingGrammar, sExpr);
       } else if (sym == "define") {
         return evalDef(sExpr, env);
       } else if (sym == "set!") {

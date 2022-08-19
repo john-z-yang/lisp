@@ -5,6 +5,7 @@
 #include "../sexpr/SymAtom.hpp"
 #include "ParseException.hpp"
 #include <algorithm>
+#include <iterator>
 #include <memory>
 #include <regex>
 #include <sstream>
@@ -12,6 +13,8 @@
 #include <vector>
 
 using std::all_of;
+using std::back_inserter;
+using std::copy;
 using std::cout;
 using std::distance;
 using std::getline;
@@ -21,6 +24,7 @@ using std::regex;
 using std::regex_replace;
 using std::replace_if;
 using std::shared_ptr;
+using std::sregex_token_iterator;
 using std::stoi;
 using std::string;
 using std::stringstream;
@@ -28,24 +32,9 @@ using std::vector;
 
 vector<string> tokenize(string str) {
   vector<string> tokens;
-  string token;
-  for (const char c : str) {
-    if (c == '(' || c == ')' || c == '\'' || c == '\'' || c == '`' ||
-        c == ',' || c == ' ') {
-      if (!token.empty()) {
-        tokens.push_back(token);
-        token = "";
-      }
-      if (c != ' ') {
-        tokens.push_back(string(1, c));
-      }
-    } else {
-      token += string(1, c);
-    }
-  }
-  if (!token.empty()) {
-    tokens.push_back(token);
-  }
+  regex rgx("\\(|\\)|,@|,|`|'|[^\\s(),@,`']+");
+  copy(sregex_token_iterator(str.begin(), str.end(), rgx, 0),
+       sregex_token_iterator(), back_inserter(tokens));
   return tokens;
 }
 
@@ -63,6 +52,9 @@ shared_ptr<SExpr> parseAtom(string token) {
   }
   if (token == ",") {
     token = "unquote";
+  }
+  if (token == ",@") {
+    token = "unquote-splicing";
   }
   return make_shared<SymAtom>(token);
 }
@@ -91,7 +83,7 @@ shared_ptr<SExpr> parse(vector<string>::iterator &it) {
   if (token == "(") {
     return parseSexprs(it);
   }
-  if (token == "'" || token == "`" || token == ",") {
+  if (token == "'" || token == "`" || token == "," || token == ",@") {
     shared_ptr<SExpr> rest =
         make_shared<SExprs>(parse(it), make_shared<NilAtom>());
     return make_shared<SExprs>(parseAtom(token), rest);
