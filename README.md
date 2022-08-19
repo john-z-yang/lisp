@@ -36,7 +36,7 @@ The executable (`lisp`) will be in the `bin` directory.
 
 Execute without argument to run in interactive mode.
 ```console
-foo@bar:~$ out/lisp
+foo@bar:~$ bin/lisp
 lisp> (quote (Hello World!))
 (Hello World!)
 lisp> (quit)
@@ -47,7 +47,7 @@ foo@bar:~$
 Supply the file name of a lisp script as the argument to run them.
 ```console
 foo@bar:~$ echo '(display (quote (Hello World!)))' > hello_world.lisp 
-foo@bar:~$ out/lisp hello_world.lisp
+foo@bar:~$ bin/lisp hello_world.lisp
 (Hello World!)
 foo@bar:~$ 
 ```
@@ -138,7 +138,7 @@ Lisp code (`combine.lisp`)
 
 When executed, it should behave like this
 ```console
-foo@bar:~$ out/lisp combine.lisp
+foo@bar:~$ bin/lisp combine.lisp
 ((1 5) (2 6) (3 7) (4 8))
 foo@bar:~$ 
 ```
