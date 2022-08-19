@@ -30,25 +30,25 @@ void handleSyntaxError(string expected, shared_ptr<SExpr> actual) {
 }
 
 shared_ptr<SExpr> evalQuote(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
-  shared_ptr<SExpr> quoteVal;
+  shared_ptr<SExpr> quoteArg;
   try {
     cast<NilAtom>(get(quoteNilPos, sExpr));
-    quoteVal = cast<SExprs>(get(quoteArgPos, sExpr))->first;
+    quoteArg = cast<SExprs>(get(quoteArgPos, sExpr))->first;
   } catch (EvalException ee) {
     handleSyntaxError(quoteGrammar, sExpr);
   }
-  return quoteVal;
+  return quoteArg;
 }
 
 shared_ptr<SExpr> evalUnquote(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
-  shared_ptr<SExpr> unquoteVal;
+  shared_ptr<SExpr> unquoteArg;
   try {
     cast<NilAtom>(get(unquoteNilPos, sExpr));
-    unquoteVal = cast<SExprs>(get(unquoteArgPos, sExpr))->first;
+    unquoteArg = cast<SExprs>(get(unquoteArgPos, sExpr))->first;
   } catch (EvalException ee) {
     handleSyntaxError(unquoteGrammar, sExpr);
   }
-  return eval(unquoteVal, env);
+  return eval(unquoteArg, env);
 }
 
 shared_ptr<SExpr> scanQuasiquote(shared_ptr<SExpr> sExpr,
@@ -96,14 +96,14 @@ shared_ptr<SExpr> scanQuasiquote(shared_ptr<SExpr> sExpr,
 }
 
 shared_ptr<SExpr> evalQuasiquote(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
-  shared_ptr<SExpr> quasiquoteVal;
+  shared_ptr<SExpr> quasiquoteArg;
   try {
     cast<NilAtom>(get(quasiquoteNilPos, sExpr));
-    quasiquoteVal = cast<SExprs>(get(quasiquoteArgPos, sExpr))->first;
+    quasiquoteArg = cast<SExprs>(get(quasiquoteArgPos, sExpr))->first;
   } catch (EvalException ee) {
     handleSyntaxError(quasiquoteGrammar, sExpr);
   }
-  return scanQuasiquote(quasiquoteVal, 1, env);
+  return scanQuasiquote(quasiquoteArg, 1, env);
 }
 
 shared_ptr<SExpr> evalDef(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
@@ -116,9 +116,9 @@ shared_ptr<SExpr> evalDef(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   } catch (EvalException ee) {
     handleSyntaxError(defGrammar, sExpr);
   }
-  shared_ptr<SExpr> defVal = eval(defSExpr, env);
-  env->def(defSym, defVal);
-  return defVal;
+  shared_ptr<SExpr> res = eval(defSExpr, env);
+  env->def(defSym, res);
+  return res;
 }
 
 shared_ptr<SExpr> evalSet(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
@@ -131,9 +131,9 @@ shared_ptr<SExpr> evalSet(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   } catch (EvalException ee) {
     handleSyntaxError(setGrammar, sExpr);
   }
-  shared_ptr<SExpr> setVal = eval(setSExpr, env);
-  env->set(setSym, setVal);
-  return setVal;
+  shared_ptr<SExpr> res = eval(setSExpr, env);
+  env->set(setSym, res);
+  return res;
 }
 
 shared_ptr<SExpr> evalIf(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
