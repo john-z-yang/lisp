@@ -59,18 +59,37 @@ shared_ptr<SExpr> scanQuasiquote(shared_ptr<SExpr> sExpr,
     return sExpr;
   }
   shared_ptr<SExprs> sExprs = cast<SExprs>(sExpr);
-  if (isa<SymAtom>(*sExprs->first) &&
-      cast<SymAtom>(sExprs->first)->val == "unquote") {
-    if (level == 1) {
+  if (level == 1) {
+    if (isa<SExprs>(*sExprs->first) &&
+        isa<SymAtom>(*cast<SExprs>(sExprs->first)->first) &&
+        cast<SymAtom>(cast<SExprs>(sExprs->first)->first)->val ==
+            "unquote-splicing") {
+      shared_ptr<SExpr> res = evalUnquote(sExprs->first, env);
+      if (isa<NilAtom>(*res)) {
+        return scanQuasiquote(sExprs->rest, level, env);
+      }
+      shared_ptr<SExprs> it = cast<SExprs>(res);
+      while (!isa<NilAtom>(*cast<SExprs>(it)->rest)) {
+        it = cast<SExprs>(cast<SExprs>(it)->rest);
+      }
+      it->rest = scanQuasiquote(sExprs->rest, level, env);
+      return res;
+    }
+    if (isa<SymAtom>(*sExprs->first) &&
+        cast<SymAtom>(sExprs->first)->val == "unquote") {
       return evalUnquote(sExprs, env);
     }
-    return make_shared<SExprs>(scanQuasiquote(sExprs->first, level - 1, env),
-                               scanQuasiquote(sExprs->rest, level - 1, env));
   }
-  if (isa<SymAtom>(*sExprs->first) &&
-      cast<SymAtom>(sExprs->first)->val == "quasiquote") {
-    return make_shared<SExprs>(scanQuasiquote(sExprs->first, level + 1, env),
-                               scanQuasiquote(sExprs->rest, level + 1, env));
+  if (isa<SymAtom>(*sExprs->first)) {
+    string sym = cast<SymAtom>(sExprs->first)->val;
+    if (sym == "unquote" || sym == "unquote-splicing") {
+      return make_shared<SExprs>(scanQuasiquote(sExprs->first, level - 1, env),
+                                 scanQuasiquote(sExprs->rest, level - 1, env));
+    }
+    if (sym == "quasiquote") {
+      return make_shared<SExprs>(scanQuasiquote(sExprs->first, level + 1, env),
+                                 scanQuasiquote(sExprs->rest, level + 1, env));
+    }
   }
   return make_shared<SExprs>(scanQuasiquote(sExprs->first, level, env),
                              scanQuasiquote(sExprs->rest, level, env));

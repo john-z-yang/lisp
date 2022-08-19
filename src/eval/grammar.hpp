@@ -18,6 +18,11 @@ const string unquoteGrammar = "(quasiquote ... (unquote expression) ...)";
 const uint8_t unquoteArgPos = 1;
 const uint8_t unquoteNilPos = 2;
 
+const string unquoteSplicingGrammar =
+    "(quasiquote ... (unquote-splicing (list)) ...)";
+const uint8_t unquoteSplicingArgPos = 1;
+const uint8_t unquoteSplicingNilPos = 2;
+
 const string defGrammar = "(define symbol expression)";
 const uint8_t defSymPos = 1;
 const uint8_t defSExprPos = 2;
