@@ -51,9 +51,9 @@ shared_ptr<SExpr> evalUnquote(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   return eval(unquoteArg, env);
 }
 
-shared_ptr<SExpr> scanQuasiquote(shared_ptr<SExpr> sExpr,
-                                 const unsigned int level,
-                                 shared_ptr<Env> env) {
+shared_ptr<SExpr> expandQuasiquote(shared_ptr<SExpr> sExpr,
+                                   const unsigned int level,
+                                   shared_ptr<Env> env) {
   if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) || isa<BoolAtom>(*sExpr) ||
       isa<SymAtom>(*sExpr)) {
     return sExpr;
@@ -66,13 +66,13 @@ shared_ptr<SExpr> scanQuasiquote(shared_ptr<SExpr> sExpr,
             "unquote-splicing") {
       shared_ptr<SExpr> res = evalUnquote(sExprs->first, env);
       if (isa<NilAtom>(*res)) {
-        return scanQuasiquote(sExprs->rest, level, env);
+        return expandQuasiquote(sExprs->rest, level, env);
       }
       shared_ptr<SExprs> it = cast<SExprs>(res);
       while (!isa<NilAtom>(*cast<SExprs>(it)->rest)) {
         it = cast<SExprs>(cast<SExprs>(it)->rest);
       }
-      it->rest = scanQuasiquote(sExprs->rest, level, env);
+      it->rest = expandQuasiquote(sExprs->rest, level, env);
       return res;
     }
     if (isa<SymAtom>(*sExprs->first) &&
@@ -83,16 +83,18 @@ shared_ptr<SExpr> scanQuasiquote(shared_ptr<SExpr> sExpr,
   if (isa<SymAtom>(*sExprs->first)) {
     string sym = cast<SymAtom>(sExprs->first)->val;
     if (sym == "unquote" || sym == "unquote-splicing") {
-      return make_shared<SExprs>(scanQuasiquote(sExprs->first, level - 1, env),
-                                 scanQuasiquote(sExprs->rest, level - 1, env));
+      return make_shared<SExprs>(
+          expandQuasiquote(sExprs->first, level - 1, env),
+          expandQuasiquote(sExprs->rest, level - 1, env));
     }
     if (sym == "quasiquote") {
-      return make_shared<SExprs>(scanQuasiquote(sExprs->first, level + 1, env),
-                                 scanQuasiquote(sExprs->rest, level + 1, env));
+      return make_shared<SExprs>(
+          expandQuasiquote(sExprs->first, level + 1, env),
+          expandQuasiquote(sExprs->rest, level + 1, env));
     }
   }
-  return make_shared<SExprs>(scanQuasiquote(sExprs->first, level, env),
-                             scanQuasiquote(sExprs->rest, level, env));
+  return make_shared<SExprs>(expandQuasiquote(sExprs->first, level, env),
+                             expandQuasiquote(sExprs->rest, level, env));
 }
 
 shared_ptr<SExpr> evalQuasiquote(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
@@ -103,7 +105,7 @@ shared_ptr<SExpr> evalQuasiquote(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   } catch (EvalException ee) {
     handleSyntaxError(quasiquoteGrammar, sExpr);
   }
-  return scanQuasiquote(quasiquoteArg, 1, env);
+  return expandQuasiquote(quasiquoteArg, 1, env);
 }
 
 shared_ptr<SExpr> evalDef(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
