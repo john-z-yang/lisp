@@ -1,3 +1,4 @@
+#include "../sexpr/BoolAtom.hpp"
 #include "../sexpr/IntAtom.hpp"
 #include "../sexpr/NilAtom.hpp"
 #include "../sexpr/SExpr.hpp"
@@ -44,17 +45,23 @@ shared_ptr<SExpr> parseAtom(string token) {
        all_of(token.begin() + 1, token.end(), ::isdigit))) {
     return make_shared<IntAtom>(stoi(token));
   }
+  if (token == "#t") {
+    return make_shared<BoolAtom>(true);
+  }
+  if (token == "#f") {
+    return make_shared<BoolAtom>(false);
+  }
   if (token == "'") {
-    token = "quote";
+    return make_shared<SymAtom>("quote");
   }
   if (token == "`") {
-    token = "quasiquote";
+    return make_shared<SymAtom>("quasiquote");
   }
   if (token == ",") {
-    token = "unquote";
+    return make_shared<SymAtom>("unquote");
   }
   if (token == ",@") {
-    token = "unquote-splicing";
+    return make_shared<SymAtom>("unquote-splicing");
   }
   return make_shared<SymAtom>(token);
 }
