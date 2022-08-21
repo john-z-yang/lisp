@@ -39,7 +39,7 @@ shared_ptr<Env> ClosureAtom::bindArgs(shared_ptr<SExpr> args,
     }
   } else if (isa<SymAtom>(*argNames)) {
     string argName = cast<SymAtom>(argNames)->val;
-    env->def(argName, evalArgs(args, curEnv));
+    env->def(argName, argVals);
   } else if (!isa<NilAtom>(*argVals)) {
     handleArgMismatch(argNames, argVals);
   }

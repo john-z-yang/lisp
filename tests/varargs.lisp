@@ -1,0 +1,6 @@
+(define varargs (lambda args ()))
+(varargs (define x 1) (define y 2) (define z 3))
+(display x)
+(display y)
+(display z)
+(varargs (display 1) (display 2) (display 3))
