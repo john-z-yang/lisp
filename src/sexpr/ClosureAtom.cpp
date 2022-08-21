@@ -52,8 +52,9 @@ std::shared_ptr<SExpr> ClosureAtom::evalArgs(shared_ptr<SExpr> args,
     return make_shared<NilAtom>();
   }
   shared_ptr<SExprs> sExprs = cast<SExprs>(args);
-  return make_shared<SExprs>(eval(sExprs->first, curEnv),
-                             evalArgs(sExprs->rest, curEnv));
+  shared_ptr<SExpr> first = eval(sExprs->first, curEnv);
+  shared_ptr<SExpr> rest = evalArgs(sExprs->rest, curEnv);
+  return make_shared<SExprs>(first, rest);
 }
 
 void ClosureAtom::handleArgMismatch(shared_ptr<SExpr> argNames,
