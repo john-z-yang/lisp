@@ -83,33 +83,38 @@ _Happy hacking!_
 
 
 ## Built-In Functions and Operators
-| Name      | Arguments    | Description                                                             |
-| --------- | ------------ | ----------------------------------------------------------------------- |
-| `quit`    |              | Quit the session                                                        |
-| `display` | `arg`        | Print `arg` to `std::cout`, returns `(quote ())`                        |
-| `abs`     | `arg`        | Returns \|`arg`\|                                                       |
-| `+`       | `lhs`, `rhs` | Returns `lhs` + `rhs`                                                   |
-| `-`       | `lhs`, `rhs` | Returns `lhs` - `rhs`                                                   |
-| `*`       | `lhs`, `rhs` | Returns `lhs` × `rhs`                                                   |
-| `/`       | `lhs`, `rhs` | Returns `lhs` ÷ `rhs`                                                   |
-| `%`       | `lhs`, `rhs` | Returns `lhs` % `rhs`                                                   |
-| `=`       | `lhs`, `rhs` | Returns `lhs` = `rhs`                                                   |
-| `>`       | `lhs`, `rhs` | Returns `lhs` > `rhs`                                                   |
-| `>=`      | `lhs`, `rhs` | Returns `lhs` ≥ `rhs`                                                   |
-| `<`       | `lhs`, `rhs` | Returns `lhs` < `rhs`                                                   |
-| `<=`      | `lhs`, `rhs` | Returns `lhs` ≤ `rhs`                                                   |
-| `not`     | `arg`        | Returns ¬`arg`                                                          |
-| `and`     | `lhs`, `rhs` | Returns `lhs` ∧ `rhs`                                                   |
-| `or`      | `lhs`, `rhs` | Returns `lhs` ∨ `rhs`                                                   |
-| `cons`    | `lhs`, `rhs` | Returns a pair where first element is `lhs` and second element is `rhs` |
-| `car`     | `pair`       | Returns the first element of `pair`                                     |
-| `cdr`     | `pair`       | Returns the second element of `pair`                                    |
-| `null?`   | `arg`        | Returns `#t` if `arg` is `(quote ())`; otherwise `#f`                   |
-| `cons?`   | `arg`        | Returns `#t` if `arg` is a `cons` pair; otherwise `#f`                  |
-| `sym?`    | `arg`        | Returns `#t` if `arg` is *symbol*; otherwise `#f`                       |
-| `num?`    | `arg`        | Returns `#t` if `arg` is *number*; otherwise `#f`                       |
-| `proc?`   | `arg`        | Returns `#t` if `arg` is *procedure*; otherwise `#f`                    |
-| `eq?`     | `lhs`, `rhs` | Returns `#t` if `lhs` and `rhs` are equivalent in value; otherwise `#f` |
+| Name      | Arguments                                 | Description                                                                                                                                |
+| --------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `quit`    |                                           | Quit the session.                                                                                                                          |
+| `display` | `arg`                                     | Print `arg` to `std::cout`, returns `(quote ())`.                                                                                          |
+| `abs`     | `arg`                                     | Return \|`arg`\|.                                                                                                                          |
+| `+`       | `lhs`, `rhs`                              | Return `lhs` + `rhs`.                                                                                                                      |
+| `-`       | `lhs`, `rhs`                              | Return `lhs` - `rhs`.                                                                                                                      |
+| `*`       | `lhs`, `rhs`                              | Return `lhs` × `rhs`.                                                                                                                      |
+| `/`       | `lhs`, `rhs`                              | Return `lhs` ÷ `rhs`.                                                                                                                      |
+| `%`       | `lhs`, `rhs`                              | Return `lhs` % `rhs`.                                                                                                                      |
+| `=`       | `lhs`, `rhs`                              | Return `lhs` = `rhs`.                                                                                                                      |
+| `>`       | `lhs`, `rhs`                              | Return `lhs` > `rhs`.                                                                                                                      |
+| `>=`      | `lhs`, `rhs`                              | Return `lhs` ≥ `rhs`.                                                                                                                      |
+| `<`       | `lhs`, `rhs`                              | Return `lhs` < `rhs`.                                                                                                                      |
+| `<=`      | `lhs`, `rhs`                              | Return `lhs` ≤ `rhs`.                                                                                                                      |
+| `not`     | `arg`                                     | Return ¬`arg`.                                                                                                                             |
+| `and`     | `lhs`, `rhs`                              | Return `lhs` ∧ `rhs`.                                                                                                                      |
+| `or`      | `lhs`, `rhs`                              | Return `lhs` ∨ `rhs`.                                                                                                                      |
+| `cons`    | `lhs`, `rhs`                              | Return a pair where first element is `lhs` and second element is `rhs`.                                                                    |
+| `car`     | `pair`                                    | Return the first element of `pair`.                                                                                                        |
+| `cdr`     | `pair`                                    | Return the second element of `pair`.                                                                                                       |
+| `null?`   | `arg`                                     | Return `#t` if `arg` is `(quote ())`; otherwise `#f`.                                                                                      |
+| `cons?`   | `arg`                                     | Return `#t` if `arg` is a `cons` pair; otherwise `#f`.                                                                                     |
+| `sym?`    | `arg`                                     | Return `#t` if `arg` is *symbol*; otherwise `#f`.                                                                                          |
+| `num?`    | `arg`                                     | Return `#t` if `arg` is *number*; otherwise `#f`.                                                                                          |
+| `proc?`   | `arg`                                     | Return `#t` if `arg` is *procedure*; otherwise `#f`.                                                                                       |
+| `eq?`     | `lhs`, `rhs`                              | Return `#t` if `lhs` and `rhs` are equivalent in value; otherwise `#f`.                                                                    |
+| `list`    | `arg`<sub>1</sub>, ..., `arg`<sub>n</sub> | Return `arg`<sub>1</sub>, ..., `arg`<sub>n</sub> as a list (i.e. `(cons arg`<sub>1</sub> ... `(cons arg`<sub>n</sub>` (quote ()))`...`))`. |
+| `last`    | `list`                                    | Return the last element if `list` is not empty, otherwise `(quote ())`. (**Note:** `list` must be a properly formed list.)                 |
+| `progn`   | `arg`<sub>1</sub>, ..., `arg`<sub>n</sub> | Return `arg`<sub>n</sub>.                                                                                                                  |
+
+
 
 
 ## Running the tests
@@ -124,8 +129,6 @@ Tests are defined in the `tests` directory. Each test suite is a pair of lisp co
 
 Lisp code (`combine.lisp`)
 ```lisp
-(define list (lambda lis lis))
-
 (define combine
   (lambda (f)
     (lambda (x y) 

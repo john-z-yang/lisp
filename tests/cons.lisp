@@ -1,10 +1,17 @@
 (display (cons 1 2))
 (display (cons (cons 1 2) 3))
 (display (cons 1 (cons 2 (cons 3 (cons 4 5)))))
-(define list (lambda lis lis))
 (display (list 1 2 3))
 (display (list (+ 1 2) 2 3))
 (define map (lambda (fn lis) (if (null? lis) (quote ()) (cons (fn (car lis)) (map fn (cdr lis))))))
 (define range (lambda (a b) (if (= a b) (quote ()) (cons a (range (+ a 1) b)))))
 (define fib (lambda (n) (if (= n 1) 1 (if (= n 2) 1 (+ (fib (- n 1)) (fib (- n 2)))))))
 (display (map fib (range 1 13)))
+(define print-list
+  (lambda (list)
+    (if (null? list) (quote ())
+      (progn
+        (display (car list))
+        (print-list (cdr list))))))
+(print-list (list 1 2 3 4 5))
+(print-list (list))

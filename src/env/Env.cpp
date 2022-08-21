@@ -1,5 +1,6 @@
 #include "Env.hpp"
 #include "../eval/EvalException.hpp"
+#include "../eval/eval.hpp"
 #include "../parse/parse.hpp"
 #include "../sexpr/ClosureAtom.hpp"
 #include "../sexpr/NilAtom.hpp"
@@ -112,4 +113,25 @@ void initEnv(shared_ptr<Env> env) {
   env->def("eq?",
            make_shared<ClosureAtom>(lispIsEqv, env,
                                     cast<SExprs>(parse("(eq?_lhs eq?_rhs)"))));
+
+  eval(parse("\
+  (define list \
+    (lambda lis lis)) \
+  "),
+       env);
+
+  eval(parse("\
+  (define last \
+    (lambda (list) \
+      (if (null? list) (quote ()) \
+      (if (null? (cdr list)) (car list) \
+        (last (cdr list)))))) \
+  "),
+       env);
+
+  eval(parse("\
+  (define progn \
+    (lambda lis (last lis))) \
+  "),
+       env);
 }

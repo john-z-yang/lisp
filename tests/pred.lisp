@@ -1,4 +1,3 @@
-(define list (lambda lis lis))
 (display (null? (list)))
 (display (null? ()))
 (display (null? (list 1)))
