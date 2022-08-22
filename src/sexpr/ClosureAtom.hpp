@@ -28,9 +28,12 @@ public:
   Proc proc;
   const shared_ptr<Env> outerEnv;
   const shared_ptr<SExpr> argNames;
+  const bool isMacro;
 
   ClosureAtom(Proc proc, const shared_ptr<Env> outerEnv,
               const shared_ptr<SExpr> argNames);
+  ClosureAtom(Proc proc, const shared_ptr<Env> outerEnv,
+              const shared_ptr<SExpr> argNames, const bool isMacro);
 
   shared_ptr<SExpr> operator()(shared_ptr<SExpr> args, shared_ptr<Env> curEnv);
 

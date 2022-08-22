@@ -15,9 +15,9 @@ _DEPS = env/Env.hpp env/functions.hpp eval/eval.hpp eval/EvalException.hpp \
 DEPS = $(addprefix $(SRCDIR)/,$(_DEPS))
 OBJS = $(patsubst %.hpp,$(OUTDIR)/%.o,$(subst /,_,$(_DEPS)))
 
-TESTS = $(TESTDIR)/combine $(TESTDIR)/cons $(TESTDIR)/hof $(TESTDIR)/parse \
-	$(TESTDIR)/quote $(TESTDIR)/pred $(TESTDIR)/recur $(TESTDIR)/set \
-	$(TESTDIR)/varargs
+TESTS = $(TESTDIR)/combine $(TESTDIR)/cons $(TESTDIR)/hof $(TESTDIR)/macro \
+    $(TESTDIR)/parse $(TESTDIR)/quote $(TESTDIR)/pred $(TESTDIR)/recur \
+	$(TESTDIR)/set $(TESTDIR)/varargs
 
 $(OUTDIR)/lisp: $(OBJS) $(DEPS) $(OUTDIR)/main.o
 	$(CXX) $(CXXFLAGS) $(OBJS) $(OUTDIR)/main.o -o $(OUTDIR)/lisp

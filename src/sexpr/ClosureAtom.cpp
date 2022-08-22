@@ -14,13 +14,17 @@ using std::stringstream;
 
 ClosureAtom::ClosureAtom(Proc proc, const shared_ptr<Env> outerEnv,
                          const shared_ptr<SExpr> argNames)
-    : Atom(SExpr::Type::CLOSURE), proc(proc), argNames(argNames),
-      outerEnv(outerEnv) {}
+    : ClosureAtom(proc, outerEnv, argNames, false) {}
+
+ClosureAtom::ClosureAtom(Proc proc, const shared_ptr<Env> outerEnv,
+                         const shared_ptr<SExpr> argNames, const bool isMacro)
+    : Atom(SExpr::Type::CLOSURE), proc(proc), outerEnv(outerEnv),
+      argNames(argNames), isMacro(isMacro) {}
 
 shared_ptr<Env> ClosureAtom::bindArgs(shared_ptr<SExpr> args,
                                       shared_ptr<Env> curEnv) {
   shared_ptr<Env> env = std::make_shared<Env>(outerEnv);
-  shared_ptr<SExpr> argVals = evalArgs(args, curEnv);
+  shared_ptr<SExpr> argVals = isMacro ? args : evalArgs(args, curEnv);
   if (isa<SExprs>(*argNames)) {
     shared_ptr<SExprs> argNamesIter = cast<SExprs>(argNames);
     shared_ptr<SExprs> argValsIter = cast<SExprs>(argVals);
@@ -67,10 +71,15 @@ void ClosureAtom::handleArgMismatch(shared_ptr<SExpr> argNames,
 
 shared_ptr<SExpr> ClosureAtom::operator()(shared_ptr<SExpr> args,
                                           shared_ptr<Env> curEnv) {
+  if (isMacro) {
+    return eval(proc(bindArgs(args, curEnv)), curEnv);
+  }
   return proc(bindArgs(args, curEnv));
 }
 
-string ClosureAtom::toString() const { return "<closure>"; }
+string ClosureAtom::toString() const {
+  return isMacro ? "<macro>" : "<procedure>";
+}
 
 bool ClosureAtom::equals(const SExpr &other) const {
   if (isa<ClosureAtom>(other)) {

@@ -25,7 +25,7 @@ shared_ptr<SExpr> get(const uint8_t n, shared_ptr<SExpr> sExpr) {
 
 void handleSyntaxError(string expected, shared_ptr<SExpr> actual) {
   stringstream ss;
-  ss << "Expected \"" << expected << ", but got \"" << *actual << "\".";
+  ss << "Expected \"" << expected << "\", but got \"" << *actual << "\".";
   throw EvalException(ss.str());
 }
 
@@ -109,33 +109,64 @@ shared_ptr<SExpr> evalQuasiquote(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
 }
 
 shared_ptr<SExpr> evalDef(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
-  string defSym;
+  string sym;
   shared_ptr<SExpr> defSExpr;
   try {
-    defSym = cast<SymAtom>(cast<SExprs>(get(defSymPos, sExpr))->first)->val;
+    sym = cast<SymAtom>(cast<SExprs>(get(defSymPos, sExpr))->first)->val;
     defSExpr = cast<SExprs>(get(defSExprPos, sExpr))->first;
     cast<NilAtom>(get(defNilPos, sExpr));
   } catch (EvalException ee) {
     handleSyntaxError(defGrammar, sExpr);
   }
   shared_ptr<SExpr> res = eval(defSExpr, env);
-  env->def(defSym, res);
+  env->def(sym, res);
   return res;
 }
 
 shared_ptr<SExpr> evalSet(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
-  string setSym;
+  string sym;
   shared_ptr<SExpr> setSExpr;
   try {
-    setSym = cast<SymAtom>(cast<SExprs>(get(setSymPos, sExpr))->first)->val;
+    sym = cast<SymAtom>(cast<SExprs>(get(setSymPos, sExpr))->first)->val;
     setSExpr = cast<SExprs>(get(setSExprPos, sExpr))->first;
     cast<NilAtom>(get(setNilPos, sExpr));
   } catch (EvalException ee) {
     handleSyntaxError(setGrammar, sExpr);
   }
   shared_ptr<SExpr> res = eval(setSExpr, env);
-  env->set(setSym, res);
+  env->set(sym, res);
   return res;
+}
+
+shared_ptr<SExpr> evalLambda(shared_ptr<SExpr> sExpr, shared_ptr<Env> env,
+                             const bool isMacro) {
+  shared_ptr<SExpr> argNames;
+  shared_ptr<SExpr> body;
+  try {
+    argNames = cast<SExprs>(get(lambdaArgPos, sExpr))->first;
+    body = cast<SExprs>(get(lambdaBodyPos, sExpr))->first;
+    cast<NilAtom>(get(lambdaNilPos, sExpr));
+  } catch (EvalException ee) {
+    handleSyntaxError(lambdaGrammar, sExpr);
+  }
+  return make_shared<ClosureAtom>(
+      [body](shared_ptr<Env> env) { return eval(body, env); }, env, argNames,
+      isMacro);
+}
+
+shared_ptr<SExpr> evalDefMacro(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
+  string sym;
+  shared_ptr<SExpr> macroExpr;
+  try {
+    sym = cast<SymAtom>(cast<SExprs>(get(defMacroSymPos, sExpr))->first)->val;
+    macroExpr = cast<SExprs>(get(defMacroExprPos, sExpr))->first;
+    cast<NilAtom>(get(defMacroNilPos, sExpr));
+  } catch (EvalException ee) {
+    handleSyntaxError(defMacroGrammar, sExpr);
+  }
+  shared_ptr<SExpr> macro = evalLambda(macroExpr, env, true);
+  env->def(sym, macro);
+  return macro;
 }
 
 shared_ptr<SExpr> evalIf(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
@@ -152,20 +183,6 @@ shared_ptr<SExpr> evalIf(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
     handleSyntaxError(ifGrammar, sExpr);
   }
   return (test->val) ? eval(conseq, env) : eval(alt, env);
-}
-
-shared_ptr<SExpr> evalLambda(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
-  shared_ptr<SExpr> argNames;
-  shared_ptr<SExpr> body;
-  try {
-    argNames = cast<SExprs>(get(lambdaArgPos, sExpr))->first;
-    body = cast<SExprs>(get(lambdaBodyPos, sExpr))->first;
-    cast<NilAtom>(get(lambdaNilPos, sExpr));
-  } catch (EvalException ee) {
-    handleSyntaxError(lambdaGrammar, sExpr);
-  }
-  return make_shared<ClosureAtom>(
-      [body](shared_ptr<Env> env) { return eval(body, env); }, env, argNames);
 }
 
 shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
@@ -190,10 +207,12 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
         return evalDef(sExpr, env);
       } else if (sym == "set!") {
         return evalSet(sExpr, env);
+      } else if (sym == "lambda") {
+        return evalLambda(sExpr, env, false);
+      } else if (sym == "define-macro") {
+        return evalDefMacro(sExpr, env);
       } else if (sym == "if") {
         return evalIf(sExpr, env);
-      } else if (sym == "lambda") {
-        return evalLambda(sExpr, env);
       }
     }
     shared_ptr<ClosureAtom> closure =
