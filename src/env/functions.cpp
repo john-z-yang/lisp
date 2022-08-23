@@ -127,3 +127,10 @@ shared_ptr<SExpr> lispIsProc(shared_ptr<Env> env) {
 shared_ptr<SExpr> lispIsEqv(shared_ptr<Env> env) {
   return make_shared<BoolAtom>(*env->find("eq?_lhs") == *env->find("eq?_rhs"));
 }
+
+long long cnt = 0;
+shared_ptr<SExpr> lispGensym(shared_ptr<Env> env) {
+  stringstream ss;
+  ss << "(_GENSYM_)_#" << cnt++;
+  return make_shared<SymAtom>(ss.str());
+}

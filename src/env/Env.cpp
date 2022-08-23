@@ -114,6 +114,9 @@ void initEnv(shared_ptr<Env> env) {
            make_shared<ClosureAtom>(lispIsEqv, env,
                                     cast<SExprs>(parse("(eq?_lhs eq?_rhs)"))));
 
+  env->def("gensym",
+           make_shared<ClosureAtom>(lispGensym, env, make_shared<NilAtom>()));
+
   eval(parse("\
   (define list \
     (lambda lis lis)) \
