@@ -37,7 +37,7 @@ int repl() {
         cout << *eval(parse(input), env) << endl;
       } else {
         cout << endl;
-        lispQuit(nullptr);
+        lispQuit(env);
       }
     } catch (ParseException pe) {
       cerr << "In line " << linesRead << " of <std::cin>" << endl;
@@ -75,11 +75,9 @@ int repl(const string fileName) {
     } catch (ParseException pe) {
       cerr << "In line " << linesRead << " of \"" << fileName << "\"" << endl;
       cerr << pe;
-      return EXIT_FAILURE;
     } catch (EvalException ee) {
       cerr << "In line " << linesRead << " of \"" << fileName << "\"" << endl;
       cerr << ee;
-      return EXIT_FAILURE;
     }
   }
   return EXIT_SUCCESS;
