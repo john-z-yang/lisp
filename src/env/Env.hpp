@@ -25,6 +25,7 @@ public:
   void def(string symbol, shared_ptr<SExpr> val);
   void set(string symbol, shared_ptr<SExpr> val);
   shared_ptr<SExpr> find(string symbol);
+  void clear();
 };
 
 void initEnv(shared_ptr<Env> env);

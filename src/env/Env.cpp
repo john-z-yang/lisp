@@ -49,6 +49,8 @@ shared_ptr<SExpr> Env::find(string symbol) {
   return findSymTable(symbol)[symbol];
 }
 
+void Env::clear() { symTable.clear(); }
+
 void initEnv(shared_ptr<Env> env) {
   env->def("quit",
            make_shared<ClosureAtom>(lispQuit, env, make_shared<NilAtom>()));

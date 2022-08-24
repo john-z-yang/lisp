@@ -29,6 +29,7 @@ using std::strerror;
 int repl() {
   shared_ptr<Env> env = make_shared<Env>();
   initEnv(env);
+
   while (true) {
     string input;
     size_t linesRead = 0;
@@ -47,6 +48,7 @@ int repl() {
       cerr << ee;
     }
   }
+  env->clear();
   return EXIT_FAILURE;
 }
 
@@ -80,6 +82,7 @@ int repl(const string fileName) {
       cerr << ee;
     }
   }
+  env->clear();
   return EXIT_SUCCESS;
 }
 

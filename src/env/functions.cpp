@@ -15,6 +15,7 @@ using std::make_shared;
 using std::shared_ptr;
 
 shared_ptr<SExpr> lispQuit(shared_ptr<Env> env) {
+  env->clear();
   cout << "Farewell." << endl;
   exit(EXIT_SUCCESS);
 }
