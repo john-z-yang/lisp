@@ -83,16 +83,6 @@ shared_ptr<SExpr> lispNot(shared_ptr<Env> env) {
   return make_shared<BoolAtom>(!BoolAtom::toBool(env->find("not_oprand")));
 }
 
-shared_ptr<SExpr> lispAnd(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(BoolAtom::toBool(env->find("and_lhs")) &&
-                               BoolAtom::toBool(env->find("and_rhs")));
-}
-
-shared_ptr<SExpr> lispOr(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(BoolAtom::toBool(env->find("or_lhs")) ||
-                               BoolAtom::toBool(env->find("or_rhs")));
-}
-
 shared_ptr<SExpr> lispCons(shared_ptr<Env> env) {
   return make_shared<SExprs>(env->find("cons_lhs"), env->find("cons_rhs"));
 }

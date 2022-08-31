@@ -83,10 +83,6 @@ void initEnv(shared_ptr<Env> env) {
                lispLteq, env, cast<SExprs>(parse("(lteq_lhs lteq_rhs)"))));
   env->def("not", make_shared<ClosureAtom>(
                       lispNot, env, cast<SExprs>(parse("(not_oprand)"))));
-  env->def("and", make_shared<ClosureAtom>(
-                      lispAnd, env, cast<SExprs>(parse("(and_lhs and_rhs)"))));
-  env->def("or", make_shared<ClosureAtom>(
-                     lispOr, env, cast<SExprs>(parse("(or_lhs or_rhs)"))));
   env->def("cons",
            make_shared<ClosureAtom>(
                lispCons, env, cast<SExprs>(parse("(cons_lhs cons_rhs)"))));
@@ -119,24 +115,42 @@ void initEnv(shared_ptr<Env> env) {
   env->def("gensym",
            make_shared<ClosureAtom>(lispGensym, env, make_shared<NilAtom>()));
 
-  eval(parse("\
-  (define list \
+  eval(parse("        \
+  (define list        \
     (lambda lis lis)) \
   "),
        env);
 
-  eval(parse("\
-  (define last \
-    (lambda (list) \
-      (if (null? list) (quote ()) \
+  eval(parse("                          \
+  (define last                          \
+    (lambda (list)                      \
+      (if (null? list) (quote ())       \
       (if (null? (cdr list)) (car list) \
-        (last (cdr list)))))) \
+        (last (cdr list))))))           \
   "),
        env);
 
-  eval(parse("\
-  (define progn \
+  eval(parse("               \
+  (define progn              \
     (lambda lis (last lis))) \
+  "),
+       env);
+
+  eval(parse("                                      \
+  (define-macro and                                 \
+    (lambda args                                    \
+      (if (null? args) #t                           \
+      (if (null? (cdr args)) (car args)             \
+        `(if ,(car args) (and ,@(cdr args)) #f))))) \
+  "),
+       env);
+
+  eval(parse("                                              \
+  (define-macro or                                          \
+    (lambda args                                            \
+      (if (null? args) #f                                   \
+      (if (null? (cdr args)) (car args)                     \
+        `(if ,(car args) ,(car args) (or ,@(cdr args))))))) \
   "),
        env);
 }
