@@ -103,8 +103,6 @@ _Happy hacking!_
 | `<`       | `lhs`, `rhs`                              | Return `lhs` < `rhs`.                                                                                                                      |
 | `<=`      | `lhs`, `rhs`                              | Return `lhs` ≤ `rhs`.                                                                                                                      |
 | `not`     | `arg`                                     | Return ¬`arg`.                                                                                                                             |
-| `and`     | `lhs`, `rhs`                              | Return `lhs` ∧ `rhs`.                                                                                                                      |
-| `or`      | `lhs`, `rhs`                              | Return `lhs` ∨ `rhs`.                                                                                                                      |
 | `cons`    | `lhs`, `rhs`                              | Return a pair where first element is `lhs` and second element is `rhs`.                                                                    |
 | `car`     | `pair`                                    | Return the first element of `pair`.                                                                                                        |
 | `cdr`     | `pair`                                    | Return the second element of `pair`.                                                                                                       |
