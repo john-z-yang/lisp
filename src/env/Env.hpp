@@ -3,18 +3,18 @@
 
 #include "../eval/EvalException.hpp"
 #include "../sexpr/SExpr.hpp"
-#include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
-using std::map;
 using std::shared_ptr;
 using std::string;
+using std::unordered_map;
 
 class Env {
 private:
-  map<string, shared_ptr<SExpr>> symTable;
-  map<string, shared_ptr<SExpr>> &findSymTable(string symbol);
+  unordered_map<string, shared_ptr<SExpr>> symTable;
+  unordered_map<string, shared_ptr<SExpr>> &findSymTable(string symbol);
 
 public:
   const shared_ptr<Env> outer;

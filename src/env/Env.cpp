@@ -18,12 +18,13 @@ using std::make_shared;
 using std::shared_ptr;
 using std::string;
 using std::to_string;
+using std::unordered_map;
 
 Env::Env() {}
 
 Env::Env(const shared_ptr<Env> outer) : outer(outer) {}
 
-map<string, shared_ptr<SExpr>> &Env::findSymTable(string symbol) {
+unordered_map<string, shared_ptr<SExpr>> &Env::findSymTable(string symbol) {
   if (symTable.find(symbol) != symTable.end()) {
     return symTable;
   }
