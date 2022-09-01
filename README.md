@@ -164,7 +164,7 @@ Tests will be executed from `make test`.
 test: $(TESTS)
 
 $(TESTDIR)/%: $(TESTDIR)/%.lisp $(TESTDIR)/%.expect $(OUTDIR)/lisp
-	$(OUTDIR)/lisp $@.lisp > $@.out
+	$(OUTDIR)/lisp $@.lisp >> $@.out 2>&1
 	diff $@.expect $@.out
 	rm $@.out
 ```
