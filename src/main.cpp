@@ -40,10 +40,10 @@ int repl() {
         cout << endl;
         lispQuit(env);
       }
-    } catch (ParseException pe) {
+    } catch (ParseException &pe) {
       cerr << "In line " << linesRead << " of <std::cin>" << endl;
       cerr << pe;
-    } catch (EvalException ee) {
+    } catch (EvalException &ee) {
       cerr << "In line " << linesRead << " of <std::cin>" << endl;
       cerr << ee;
     }
@@ -74,10 +74,10 @@ int repl(const string fileName) {
       } else {
         break;
       }
-    } catch (ParseException pe) {
+    } catch (ParseException &pe) {
       cerr << "In line " << linesRead << " of \"" << fileName << "\"" << endl;
       cerr << pe;
-    } catch (EvalException ee) {
+    } catch (EvalException &ee) {
       cerr << "In line " << linesRead << " of \"" << fileName << "\"" << endl;
       cerr << ee;
     }

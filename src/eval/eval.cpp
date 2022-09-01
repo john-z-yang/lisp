@@ -34,7 +34,7 @@ shared_ptr<SExpr> evalQuote(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   try {
     cast<NilAtom>(get(quoteNilPos, sExpr));
     quoteArg = cast<SExprs>(get(quoteArgPos, sExpr))->first;
-  } catch (EvalException ee) {
+  } catch (EvalException &ee) {
     handleSyntaxError(quoteGrammar, sExpr);
   }
   return quoteArg;
@@ -45,7 +45,7 @@ shared_ptr<SExpr> evalUnquote(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   try {
     cast<NilAtom>(get(unquoteNilPos, sExpr));
     unquoteArg = cast<SExprs>(get(unquoteArgPos, sExpr))->first;
-  } catch (EvalException ee) {
+  } catch (EvalException &ee) {
     handleSyntaxError(unquoteGrammar, sExpr);
   }
   return eval(unquoteArg, env);
@@ -102,7 +102,7 @@ shared_ptr<SExpr> evalQuasiquote(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   try {
     cast<NilAtom>(get(quasiquoteNilPos, sExpr));
     quasiquoteArg = cast<SExprs>(get(quasiquoteArgPos, sExpr))->first;
-  } catch (EvalException ee) {
+  } catch (EvalException &ee) {
     handleSyntaxError(quasiquoteGrammar, sExpr);
   }
   return expandQuasiquote(quasiquoteArg, 1, env);
@@ -115,7 +115,7 @@ shared_ptr<SExpr> evalDef(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
     sym = cast<SymAtom>(cast<SExprs>(get(defSymPos, sExpr))->first);
     defSExpr = cast<SExprs>(get(defSExprPos, sExpr))->first;
     cast<NilAtom>(get(defNilPos, sExpr));
-  } catch (EvalException ee) {
+  } catch (EvalException &ee) {
     handleSyntaxError(defGrammar, sExpr);
   }
   shared_ptr<SExpr> res = eval(defSExpr, env);
@@ -130,7 +130,7 @@ shared_ptr<SExpr> evalSet(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
     sym = cast<SymAtom>(cast<SExprs>(get(setSymPos, sExpr))->first);
     setSExpr = cast<SExprs>(get(setSExprPos, sExpr))->first;
     cast<NilAtom>(get(setNilPos, sExpr));
-  } catch (EvalException ee) {
+  } catch (EvalException &ee) {
     handleSyntaxError(setGrammar, sExpr);
   }
   shared_ptr<SExpr> res = eval(setSExpr, env);
@@ -146,7 +146,7 @@ shared_ptr<SExpr> evalLambda(shared_ptr<SExpr> sExpr, shared_ptr<Env> env,
     argNames = cast<SExprs>(get(lambdaArgPos, sExpr))->first;
     body = cast<SExprs>(get(lambdaBodyPos, sExpr))->first;
     cast<NilAtom>(get(lambdaNilPos, sExpr));
-  } catch (EvalException ee) {
+  } catch (EvalException &ee) {
     handleSyntaxError(lambdaGrammar, sExpr);
   }
   return make_shared<ClosureAtom>(
@@ -161,7 +161,7 @@ shared_ptr<SExpr> evalDefMacro(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
     sym = cast<SymAtom>(cast<SExprs>(get(defMacroSymPos, sExpr))->first)->val;
     macroExpr = cast<SExprs>(get(defMacroExprPos, sExpr))->first;
     cast<NilAtom>(get(defMacroNilPos, sExpr));
-  } catch (EvalException ee) {
+  } catch (EvalException &ee) {
     handleSyntaxError(defMacroGrammar, sExpr);
   }
   shared_ptr<SExpr> macro = evalLambda(macroExpr, env, true);
@@ -179,7 +179,7 @@ shared_ptr<SExpr> evalIf(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
     conseq = cast<SExprs>(get(ifConseqPos, sExpr))->first;
     alt = cast<SExprs>(get(ifAltPos, sExpr))->first;
     cast<NilAtom>(get(ifNilPos, sExpr));
-  } catch (EvalException ee) {
+  } catch (EvalException &ee) {
     handleSyntaxError(ifGrammar, sExpr);
   }
   return (test->val) ? eval(conseq, env) : eval(alt, env);
@@ -218,7 +218,7 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
     shared_ptr<ClosureAtom> closure =
         cast<ClosureAtom>(eval(sExprs->first, env));
     return (*closure)(sExprs->rest, env);
-  } catch (EvalException ee) {
+  } catch (EvalException &ee) {
     ee.pushStackTrace(sExpr);
     throw ee;
   }
