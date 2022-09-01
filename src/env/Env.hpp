@@ -3,18 +3,20 @@
 
 #include "../eval/EvalException.hpp"
 #include "../sexpr/SExpr.hpp"
+#include "../sexpr/SymAtom.hpp"
 #include <memory>
-#include <string>
 #include <unordered_map>
 
 using std::shared_ptr;
-using std::string;
 using std::unordered_map;
 
 class Env {
+  typedef unordered_map<SymAtom, shared_ptr<SExpr>, SymAtom::HashFunction>
+      SymTable;
+
 private:
-  unordered_map<string, shared_ptr<SExpr>> symTable;
-  unordered_map<string, shared_ptr<SExpr>> &findSymTable(string symbol);
+  SymTable symTable;
+  SymTable &findSymTable(SymAtom &sym);
 
 public:
   const shared_ptr<Env> outer;
@@ -22,9 +24,14 @@ public:
   Env();
   Env(const shared_ptr<Env> outer);
 
-  void def(string symbol, shared_ptr<SExpr> val);
-  void set(string symbol, shared_ptr<SExpr> val);
-  shared_ptr<SExpr> find(string symbol);
+  void def(SymAtom &sym, shared_ptr<SExpr> val);
+  void def(SymAtom &&sym, shared_ptr<SExpr> val);
+
+  void set(SymAtom &sym, shared_ptr<SExpr> val);
+
+  shared_ptr<SExpr> find(SymAtom &sym);
+  shared_ptr<SExpr> find(SymAtom &&sym);
+
   void clear();
 };
 

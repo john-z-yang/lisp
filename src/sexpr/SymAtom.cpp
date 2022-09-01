@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+using std::hash;
 using std::shared_ptr;
 using std::string;
 
@@ -22,3 +23,7 @@ bool SymAtom::classOf(const SExpr &sExpr) {
 }
 
 const string SymAtom::typeName = "Symbol";
+
+size_t SymAtom::HashFunction::operator()(const SymAtom &sym) const {
+  return hash<string>()(sym.val);
+}

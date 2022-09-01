@@ -24,96 +24,111 @@ Env::Env() {}
 
 Env::Env(const shared_ptr<Env> outer) : outer(outer) {}
 
-unordered_map<string, shared_ptr<SExpr>> &Env::findSymTable(string symbol) {
-  if (symTable.find(symbol) != symTable.end()) {
+Env::SymTable &Env::findSymTable(SymAtom &sym) {
+  if (symTable.find(sym) != symTable.end()) {
     return symTable;
   }
   if (!outer) {
-    throw EvalException("Undefined symbol \"" + symbol + "\".");
+    throw EvalException("Undefined symbol \"" + sym.val + "\".");
   }
-  return outer->findSymTable(symbol);
+  return outer->findSymTable(sym);
 }
 
-void Env::def(string name, shared_ptr<SExpr> val) {
-  auto it = symTable.find(name);
+void Env::def(SymAtom &sym, shared_ptr<SExpr> val) {
+  auto it = symTable.find(sym);
   if (it != symTable.end()) {
-    throw EvalException("Symbol \"" + name + "\" is already defined.");
+    throw EvalException("Symbol \"" + sym.val + "\" is already defined.");
   }
-  symTable[name] = val;
+  symTable[sym] = val;
 }
 
-void Env::set(string symbol, shared_ptr<SExpr> val) {
-  findSymTable(symbol)[symbol] = val;
+void Env::def(SymAtom &&sym, shared_ptr<SExpr> val) { def(sym, val); }
+
+void Env::set(SymAtom &sym, shared_ptr<SExpr> val) {
+  findSymTable(sym)[sym] = val;
 }
 
-shared_ptr<SExpr> Env::find(string symbol) {
-  return findSymTable(symbol)[symbol];
-}
+shared_ptr<SExpr> Env::find(SymAtom &sym) { return findSymTable(sym)[sym]; }
+shared_ptr<SExpr> Env::find(SymAtom &&sym) { return find(sym); }
 
 void Env::clear() { symTable.clear(); }
 
 void initEnv(shared_ptr<Env> env) {
-  env->def("quit",
+  env->def(SymAtom("quit"),
            make_shared<ClosureAtom>(lispQuit, env, make_shared<NilAtom>()));
-  env->def("display",
+  env->def(SymAtom("display"),
            make_shared<ClosureAtom>(lispDisplay, env,
                                     cast<SExprs>(parse("(display_oprand)"))));
-  env->def("abs", make_shared<ClosureAtom>(
-                      lispAdd, env, cast<SExprs>(parse("(abs_oprand)"))));
-  env->def("+", make_shared<ClosureAtom>(
-                    lispAdd, env, cast<SExprs>(parse("(add_lhs add_rhs)"))));
-  env->def("-", make_shared<ClosureAtom>(
-                    lispSub, env, cast<SExprs>(parse("(sub_lhs sub_rhs)"))));
-  env->def("*", make_shared<ClosureAtom>(
-                    lispMult, env, cast<SExprs>(parse("(mult_lhs mult_rhs)"))));
-  env->def("/", make_shared<ClosureAtom>(
-                    lispDiv, env, cast<SExprs>(parse("(div_lhs div_rhs)"))));
-  env->def("%", make_shared<ClosureAtom>(
-                    lispMod, env, cast<SExprs>(parse("(mod_lhs mod_rhs)"))));
-  env->def("=", make_shared<ClosureAtom>(
-                    lispEq, env, cast<SExprs>(parse("(eq_lhs eq_rhs)"))));
-  env->def(">", make_shared<ClosureAtom>(
-                    lispGt, env, cast<SExprs>(parse("(gt_lhs gt_rhs)"))));
-  env->def(">=",
+  env->def(SymAtom("abs"),
+           make_shared<ClosureAtom>(lispAdd, env,
+                                    cast<SExprs>(parse("(abs_oprand)"))));
+  env->def(SymAtom("+"),
+           make_shared<ClosureAtom>(lispAdd, env,
+                                    cast<SExprs>(parse("(add_lhs add_rhs)"))));
+  env->def(SymAtom("-"),
+           make_shared<ClosureAtom>(lispSub, env,
+                                    cast<SExprs>(parse("(sub_lhs sub_rhs)"))));
+  env->def(SymAtom("*"),
+           make_shared<ClosureAtom>(
+               lispMult, env, cast<SExprs>(parse("(mult_lhs mult_rhs)"))));
+  env->def(SymAtom("/"),
+           make_shared<ClosureAtom>(lispDiv, env,
+                                    cast<SExprs>(parse("(div_lhs div_rhs)"))));
+  env->def(SymAtom("%"),
+           make_shared<ClosureAtom>(lispMod, env,
+                                    cast<SExprs>(parse("(mod_lhs mod_rhs)"))));
+  env->def(SymAtom("="),
+           make_shared<ClosureAtom>(lispEq, env,
+                                    cast<SExprs>(parse("(eq_lhs eq_rhs)"))));
+  env->def(SymAtom(">"),
+           make_shared<ClosureAtom>(lispGt, env,
+                                    cast<SExprs>(parse("(gt_lhs gt_rhs)"))));
+  env->def(SymAtom(">="),
            make_shared<ClosureAtom>(
                lispGteq, env, cast<SExprs>(parse("(gteq_lhs gteq_rhs)"))));
-  env->def("<", make_shared<ClosureAtom>(
-                    lispLt, env, cast<SExprs>(parse("(lt_lhs lt_rhs)"))));
-  env->def("<=",
+  env->def(SymAtom("<"),
+           make_shared<ClosureAtom>(lispLt, env,
+                                    cast<SExprs>(parse("(lt_lhs lt_rhs)"))));
+  env->def(SymAtom("<="),
            make_shared<ClosureAtom>(
                lispLteq, env, cast<SExprs>(parse("(lteq_lhs lteq_rhs)"))));
-  env->def("not", make_shared<ClosureAtom>(
-                      lispNot, env, cast<SExprs>(parse("(not_oprand)"))));
-  env->def("cons",
+  env->def(SymAtom("not"),
+           make_shared<ClosureAtom>(lispNot, env,
+                                    cast<SExprs>(parse("(not_oprand)"))));
+  env->def(SymAtom("cons"),
            make_shared<ClosureAtom>(
                lispCons, env, cast<SExprs>(parse("(cons_lhs cons_rhs)"))));
-  env->def("car", make_shared<ClosureAtom>(
-                      lispCar, env, cast<SExprs>(parse("(car_oprand)"))));
-  env->def("cdr", make_shared<ClosureAtom>(
-                      lispCdr, env, cast<SExprs>(parse("(cdr_oprand)"))));
-  env->def("null?",
+  env->def(SymAtom("car"),
+           make_shared<ClosureAtom>(lispCar, env,
+                                    cast<SExprs>(parse("(car_oprand)"))));
+  env->def(SymAtom("cdr"),
+           make_shared<ClosureAtom>(lispCdr, env,
+                                    cast<SExprs>(parse("(cdr_oprand)"))));
+  env->def(SymAtom("null?"),
            make_shared<ClosureAtom>(lispIsNull, env,
                                     cast<SExprs>(parse("(null?_oprand)"))));
 
-  env->def("cons?",
+  env->def(SymAtom("cons?"),
            make_shared<ClosureAtom>(lispIsCons, env,
                                     cast<SExprs>(parse("(cons?_oprand)"))));
 
-  env->def("sym?", make_shared<ClosureAtom>(
-                       lispIsSym, env, cast<SExprs>(parse("(sym?_oprand)"))));
+  env->def(SymAtom("sym?"),
+           make_shared<ClosureAtom>(lispIsSym, env,
+                                    cast<SExprs>(parse("(sym?_oprand)"))));
 
-  env->def("num?", make_shared<ClosureAtom>(
-                       lispIsNum, env, cast<SExprs>(parse("(num?_oprand)"))));
+  env->def(SymAtom("num?"),
+           make_shared<ClosureAtom>(lispIsNum, env,
+                                    cast<SExprs>(parse("(num?_oprand)"))));
 
-  env->def("proc?",
+  env->def(SymAtom("proc?"),
            make_shared<ClosureAtom>(lispIsProc, env,
                                     cast<SExprs>(parse("(proc?_oprand)"))));
 
-  env->def("eq?",
+  env->def(SymAtom("eq?"),
            make_shared<ClosureAtom>(lispIsEqv, env,
                                     cast<SExprs>(parse("(eq?_lhs eq?_rhs)"))));
 
-  env->def("gensym",
+  env->def(SymAtom("gensym"),
            make_shared<ClosureAtom>(lispGensym, env, make_shared<NilAtom>()));
 
   eval(parse("        \

@@ -20,6 +20,11 @@ public:
 
   static bool classOf(const SExpr &sExpr);
   static const string typeName;
+
+  class HashFunction {
+  public:
+    size_t operator()(const SymAtom &sym) const;
+  };
 };
 
 #endif

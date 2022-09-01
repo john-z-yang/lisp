@@ -109,32 +109,32 @@ shared_ptr<SExpr> evalQuasiquote(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
 }
 
 shared_ptr<SExpr> evalDef(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
-  string sym;
+  shared_ptr<SymAtom> sym;
   shared_ptr<SExpr> defSExpr;
   try {
-    sym = cast<SymAtom>(cast<SExprs>(get(defSymPos, sExpr))->first)->val;
+    sym = cast<SymAtom>(cast<SExprs>(get(defSymPos, sExpr))->first);
     defSExpr = cast<SExprs>(get(defSExprPos, sExpr))->first;
     cast<NilAtom>(get(defNilPos, sExpr));
   } catch (EvalException ee) {
     handleSyntaxError(defGrammar, sExpr);
   }
   shared_ptr<SExpr> res = eval(defSExpr, env);
-  env->def(sym, res);
+  env->def(*sym, res);
   return res;
 }
 
 shared_ptr<SExpr> evalSet(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
-  string sym;
+  shared_ptr<SymAtom> sym;
   shared_ptr<SExpr> setSExpr;
   try {
-    sym = cast<SymAtom>(cast<SExprs>(get(setSymPos, sExpr))->first)->val;
+    sym = cast<SymAtom>(cast<SExprs>(get(setSymPos, sExpr))->first);
     setSExpr = cast<SExprs>(get(setSExprPos, sExpr))->first;
     cast<NilAtom>(get(setNilPos, sExpr));
   } catch (EvalException ee) {
     handleSyntaxError(setGrammar, sExpr);
   }
   shared_ptr<SExpr> res = eval(setSExpr, env);
-  env->set(sym, res);
+  env->set(*sym, res);
   return res;
 }
 
@@ -190,7 +190,7 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
     if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) || isa<BoolAtom>(*sExpr)) {
       return sExpr;
     } else if (isa<SymAtom>(*sExpr)) {
-      return env->find(cast<SymAtom>(sExpr)->val);
+      return env->find(*cast<SymAtom>(sExpr));
     }
     shared_ptr<SExprs> sExprs = cast<SExprs>(sExpr);
     if (isa<SymAtom>(*sExprs->first)) {
