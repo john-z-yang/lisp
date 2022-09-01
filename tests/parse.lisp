@@ -19,4 +19,11 @@ x
 (display #t)
 (display #f)
 
+(display (+ (+ 1(+    (    + 2 3)4)) 6))
+;(define x 0)
+; (define x 0)
+;;;;;;
+;(define x 0)
+;
+
 (quit)

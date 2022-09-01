@@ -137,8 +137,7 @@ istream &getInput(istream &in, string &str, size_t &linesRead, string prompt,
   cout << prompt;
   while (getline(in, line)) {
     linesRead += 1;
-    replace_if(line.begin(), line.end(), ::isspace, ' ');
-    line = regex_replace(line, regex("^ +| +$|( ) +"), "$1");
+    line = regex_replace(line, regex("^\\s+|\\s+$|(\\s)\\s+|;.*"), "$1");
     if (str.empty() && line.empty()) {
       cout << prompt;
       continue;
