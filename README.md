@@ -113,6 +113,7 @@ _Happy hacking!_
 | `proc?`   | `arg`                                     | Return `#t` if `arg` is *procedure*; otherwise `#f`.                                                                                       |
 | `eq?`     | `lhs`, `rhs`                              | Return `#t` if `lhs` and `rhs` are equivalent in value; otherwise `#f`.                                                                    |
 | `list`    | `arg`<sub>1</sub>, ..., `arg`<sub>n</sub> | Return `arg`<sub>1</sub>, ..., `arg`<sub>n</sub> as a list (i.e. `(cons arg`<sub>1</sub> ... `(cons arg`<sub>n</sub>` (quote ()))`...`))`. |
+| `first`   | `list`                                    | Return the first element if `list` is not empty, otherwise `(quote ())`. (**Note:** `list` must be a properly formed list.)                |
 | `last`    | `list`                                    | Return the last element if `list` is not empty, otherwise `(quote ())`. (**Note:** `list` must be a properly formed list.)                 |
 | `progn`   | `arg`<sub>1</sub>, ..., `arg`<sub>n</sub> | Return `arg`<sub>n</sub>.                                                                                                                  |
 | `gensym`  |                                           | Return a unique, never defined *symbol*.                                                                                                   |

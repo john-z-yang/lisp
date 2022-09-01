@@ -122,9 +122,17 @@ void initEnv(shared_ptr<Env> env) {
        env);
 
   eval(parse("                          \
+  (define first                         \
+    (lambda (list)                      \
+      (if (null? list) list             \
+      (car list))))                     \
+  "),
+       env);
+
+  eval(parse("                          \
   (define last                          \
     (lambda (list)                      \
-      (if (null? list) (quote ())       \
+      (if (null? list) list             \
       (if (null? (cdr list)) (car list) \
         (last (cdr list))))))           \
   "),
