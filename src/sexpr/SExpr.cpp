@@ -11,4 +11,4 @@ ostream &operator<<(ostream &o, const SExpr &sExpr) {
   return o << (isa<SExprs>(sExpr) ? "(" : "") << sExpr.toString();
 }
 
-bool operator==(SExpr &lhs, SExpr &rhs) { return lhs.equals(rhs); }
+bool operator==(const SExpr &lhs, const SExpr &rhs) { return lhs.equals(rhs); }

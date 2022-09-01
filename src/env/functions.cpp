@@ -3,6 +3,7 @@
 #include "../sexpr/ClosureAtom.hpp"
 #include "../sexpr/IntAtom.hpp"
 #include "../sexpr/NilAtom.hpp"
+#include "../sexpr/SExpr.hpp"
 #include "../sexpr/SExprs.hpp"
 #include "../sexpr/SymAtom.hpp"
 #include "../sexpr/cast.cpp"

@@ -10,7 +10,7 @@ using std::string;
 class SExpr {
   friend class SExprs;
   friend ostream &operator<<(ostream &o, const SExpr &sExpr);
-  friend bool operator==(SExpr &lhs, SExpr &rhs);
+  friend bool operator==(const SExpr &lhs, const SExpr &rhs);
 
 protected:
   virtual string toString() const = 0;
@@ -25,6 +25,6 @@ public:
 };
 
 ostream &operator<<(ostream &o, const SExpr &sExpr);
-bool operator==(SExpr &lhs, SExpr &rhs);
+bool operator==(const SExpr &lhs, const SExpr &rhs);
 
 #endif
