@@ -154,6 +154,15 @@ void initEnv(shared_ptr<Env> env) {
   "),
        env);
 
+  eval(parse("                     \
+  (define map                      \
+    (lambda (fn lis)               \
+      (if (null? lis) (quote ())   \
+      (cons (fn (car lis))         \
+            (map fn (cdr lis)))))) \
+  "),
+       env);
+
   eval(parse("               \
   (define progn              \
     (lambda lis (last lis))) \

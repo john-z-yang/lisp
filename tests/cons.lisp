@@ -3,7 +3,6 @@
 (display (cons 1 (cons 2 (cons 3 (cons 4 5)))))
 (display (list 1 2 3))
 (display (list (+ 1 2) 2 3))
-(define map (lambda (fn lis) (if (null? lis) (quote ()) (cons (fn (car lis)) (map fn (cdr lis))))))
 (define range (lambda (a b) (if (= a b) (quote ()) (cons a (range (+ a 1) b)))))
 (define fib (lambda (n) (if (= n 1) 1 (if (= n 2) 1 (+ (fib (- n 1)) (fib (- n 2)))))))
 (display (map fib (range 1 13)))
