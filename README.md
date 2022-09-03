@@ -115,6 +115,7 @@ _Happy hacking!_
 | `list`    | `arg`<sub>1</sub>, ..., `arg`<sub>n</sub> | Return `arg`<sub>1</sub>, ..., `arg`<sub>n</sub> as a list (i.e. `(cons arg`<sub>1</sub> ... `(cons arg`<sub>n</sub>` (quote ()))`...`))`. |
 | `first`   | `list`                                    | Return the first element if `list` is not empty, otherwise `(quote ())`. (**Note:** `list` must be a properly formed list.)                |
 | `last`    | `list`                                    | Return the last element if `list` is not empty, otherwise `(quote ())`. (**Note:** `list` must be a properly formed list.)                 |
+| `foldl`   | `fn`, `cur`, `list`                       | For each element `e` in `list`, update `cur` as `(fn e cur)`, return `cur` when no element remains.                                        |
 | `map`     | `fn`, `list`                              | Return a new list where `fn` is applied to each element of `list`.                                                                         |
 | `progn`   | `arg`<sub>1</sub>, ..., `arg`<sub>n</sub> | Return `arg`<sub>n</sub>.                                                                                                                  |
 | `gensym`  |                                           | Return a unique, never defined *symbol*.                                                                                                   |

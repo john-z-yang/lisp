@@ -154,6 +154,14 @@ void initEnv(shared_ptr<Env> env) {
   "),
        env);
 
+  eval(parse("                                     \
+  (define foldl                                    \
+    (lambda (fn cur list)                          \
+      (if (null? list) cur                         \
+      (foldl fn (fn (car list) cur) (cdr list))))) \
+  "),
+       env);
+
   eval(parse("                     \
   (define map                      \
     (lambda (fn lis)               \
