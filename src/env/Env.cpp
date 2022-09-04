@@ -131,67 +131,78 @@ void initEnv(shared_ptr<Env> env) {
   env->def(SymAtom("gensym"),
            make_shared<ClosureAtom>(lispGensym, env, make_shared<NilAtom>()));
 
-  eval(parse("        \
-  (define list        \
-    (lambda lis lis)) \
+  eval(parse("                                                                \
+  (define list                                                                \
+    (lambda lis lis))                                                         \
   "),
        env);
 
-  eval(parse("                          \
-  (define first                         \
-    (lambda (list)                      \
-      (if (null? list) list             \
-      (car list))))                     \
+  eval(parse("                                                                \
+  (define first                                                               \
+    (lambda (list)                                                            \
+      (if (null? list)                                                        \
+        list                                                                  \
+      (car list))))                                                           \
   "),
        env);
 
-  eval(parse("                          \
-  (define last                          \
-    (lambda (list)                      \
-      (if (null? list) list             \
-      (if (null? (cdr list)) (car list) \
-        (last (cdr list))))))           \
+  eval(parse("                                                                \
+  (define last                                                                \
+    (lambda (list)                                                            \
+      (if (null? list)                                                        \
+        list                                                                  \
+      (if (null? (cdr list))                                                  \
+        (car list)                                                            \
+      (last (cdr list))))))                                                   \
   "),
        env);
 
-  eval(parse("                                     \
-  (define foldl                                    \
-    (lambda (fn cur list)                          \
-      (if (null? list) cur                         \
-      (foldl fn (fn (car list) cur) (cdr list))))) \
+  eval(parse("                                                                \
+  (define foldl                                                               \
+    (lambda (fn cur list)                                                     \
+      (if (null? list)                                                        \
+        cur                                                                   \
+      (foldl fn                                                               \
+             (fn (car list) cur)                                              \
+             (cdr list)))))                                                   \
   "),
        env);
 
-  eval(parse("                     \
-  (define map                      \
-    (lambda (fn lis)               \
-      (if (null? lis) (quote ())   \
-      (cons (fn (car lis))         \
-            (map fn (cdr lis)))))) \
+  eval(parse("                                                                \
+  (define map                                                                 \
+    (lambda (fn lis)                                                          \
+      (if (null? lis)                                                         \
+        (quote ())                                                            \
+      (cons (fn (car lis))                                                    \
+            (map fn (cdr lis))))))                                            \
   "),
        env);
 
-  eval(parse("               \
-  (define progn              \
-    (lambda lis (last lis))) \
+  eval(parse("                                                                \
+  (define progn                                                               \
+    (lambda lis (last lis)))                                                  \
   "),
        env);
 
-  eval(parse("                                      \
-  (define-macro and                                 \
-    (lambda args                                    \
-      (if (null? args) #t                           \
-      (if (null? (cdr args)) (car args)             \
-        `(if ,(car args) (and ,@(cdr args)) #f))))) \
+  eval(parse("                                                                \
+  (define-macro and                                                           \
+    (lambda args                                                              \
+      (if (null? args)                                                        \
+        #t                                                                    \
+      (if (null? (cdr args))                                                  \
+        (car args)                                                            \
+      `(if ,(car args) (and ,@(cdr args)) #f)))))                             \
   "),
        env);
 
-  eval(parse("                                              \
-  (define-macro or                                          \
-    (lambda args                                            \
-      (if (null? args) #f                                   \
-      (if (null? (cdr args)) (car args)                     \
-        `(if ,(car args) ,(car args) (or ,@(cdr args))))))) \
+  eval(parse("                                                                \
+  (define-macro or                                                            \
+    (lambda args                                                              \
+      (if (null? args)                                                        \
+        #f                                                                    \
+      (if (null? (cdr args))                                                  \
+        (car args)                                                            \
+      `(if ,(car args) ,(car args) (or ,@(cdr args)))))))                     \
   "),
        env);
 }
