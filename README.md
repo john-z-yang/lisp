@@ -60,7 +60,7 @@ _Happy hacking!_
 
 | Syntax                         | Description                                                                                                |
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| *symbol*                       | Return the value that *sybmol* is bound to in the closest lexical scope.                                   |
+| *symbol*                       | Return the value that *symbol* is bound to in the closest lexical scope.                                   |
 | *(`define` symbol expression)* | Evaluate *expression*, bind the result to *symbol* in current lexical scope.                               |
 | *(`set!` symbol expression)*   | Evaluate *expression*, find the closest lexical scope where *symbol* is bound, re-bind result to *symbol*. |
 
