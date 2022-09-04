@@ -117,6 +117,7 @@ _Happy hacking!_
 | `last`    | `list`                                    | Return the last element if `list` is not empty, otherwise `(quote ())`. (**Note:** `list` must be a properly formed list.)                 |
 | `foldl`   | `fn`, `cur`, `list`                       | For each element `e` in `list`, update `cur` as `(fn e cur)`, return `cur` when no element remains.                                        |
 | `map`     | `fn`, `list`                              | Return a new list where `fn` is applied to each element of `list`.                                                                         |
+| `reverse` | `list`                                    | Return `list` but with its order of elements reversed.                                                                                     |
 | `progn`   | `arg`<sub>1</sub>, ..., `arg`<sub>n</sub> | Return `arg`<sub>n</sub>.                                                                                                                  |
 | `gensym`  |                                           | Return a unique, never defined *symbol*.                                                                                                   |
 

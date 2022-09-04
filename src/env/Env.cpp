@@ -169,6 +169,16 @@ void initEnv(shared_ptr<Env> env) {
        env);
 
   eval(parse("                                                                \
+  (define reverse                                                             \
+    (lambda (list)                                                            \
+      (foldl (lambda (e v)                                                    \
+               (cons e v))                                                    \
+             (quote ())                                                       \
+             list)))                                                          \
+  "),
+       env);
+
+  eval(parse("                                                                \
   (define map                                                                 \
     (lambda (fn lis)                                                          \
       (if (null? lis)                                                         \
