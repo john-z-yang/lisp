@@ -180,11 +180,12 @@ void initEnv(shared_ptr<Env> env) {
 
   eval(parse("                                                                \
   (define map                                                                 \
-    (lambda (fn lis)                                                          \
-      (if (null? lis)                                                         \
-        (quote ())                                                            \
-      (cons (fn (car lis))                                                    \
-            (map fn (cdr lis))))))                                            \
+    (lambda (fn list)                                                         \
+      (reverse                                                                \
+        (foldl (lambda (e v)                                                  \
+                 (cons (fn e) v))                                             \
+               (quote ())                                                     \
+               list))))                                                       \
   "),
        env);
 
