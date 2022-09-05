@@ -149,9 +149,8 @@ shared_ptr<SExpr> evalLambda(shared_ptr<SExpr> sExpr, shared_ptr<Env> env,
   } catch (EvalException &ee) {
     handleSyntaxError(lambdaGrammar, sExpr);
   }
-  return make_shared<ClosureAtom>(
-      [body](shared_ptr<Env> env) { return eval(body, env); }, env, argNames,
-      isMacro);
+  return make_shared<ClosureAtom>([body](shared_ptr<Env> env) { return body; },
+                                  env, argNames, isMacro);
 }
 
 shared_ptr<SExpr> evalDefMacro(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
@@ -182,42 +181,46 @@ shared_ptr<SExpr> evalIf(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   } catch (EvalException &ee) {
     handleSyntaxError(ifGrammar, sExpr);
   }
-  return (test->val) ? eval(conseq, env) : eval(alt, env);
+  return (test->val) ? conseq : alt;
 }
 
 shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   try {
-    if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) || isa<BoolAtom>(*sExpr)) {
-      return sExpr;
-    } else if (isa<SymAtom>(*sExpr)) {
-      return env->find(*cast<SymAtom>(sExpr));
-    }
-    shared_ptr<SExprs> sExprs = cast<SExprs>(sExpr);
-    if (isa<SymAtom>(*sExprs->first)) {
-      string sym = cast<SymAtom>(sExprs->first)->val;
-      if (sym == "quote") {
-        return evalQuote(sExpr, env);
-      } else if (sym == "quasiquote") {
-        return evalQuasiquote(sExpr, env);
-      } else if (sym == "unquote") {
-        handleSyntaxError(unquoteGrammar, sExpr);
-      } else if (sym == "unquote-splicing") {
-        handleSyntaxError(unquoteSplicingGrammar, sExpr);
-      } else if (sym == "define") {
-        return evalDef(sExpr, env);
-      } else if (sym == "set!") {
-        return evalSet(sExpr, env);
-      } else if (sym == "lambda") {
-        return evalLambda(sExpr, env, false);
-      } else if (sym == "define-macro") {
-        return evalDefMacro(sExpr, env);
-      } else if (sym == "if") {
-        return evalIf(sExpr, env);
+    while (true) {
+      if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) ||
+          isa<BoolAtom>(*sExpr)) {
+        return sExpr;
+      } else if (isa<SymAtom>(*sExpr)) {
+        return env->find(*cast<SymAtom>(sExpr));
       }
+      shared_ptr<SExprs> sExprs = cast<SExprs>(sExpr);
+      if (isa<SymAtom>(*sExprs->first)) {
+        string sym = cast<SymAtom>(sExprs->first)->val;
+        if (sym == "quote") {
+          return evalQuote(sExpr, env);
+        } else if (sym == "quasiquote") {
+          return evalQuasiquote(sExpr, env);
+        } else if (sym == "unquote") {
+          handleSyntaxError(unquoteGrammar, sExpr);
+        } else if (sym == "unquote-splicing") {
+          handleSyntaxError(unquoteSplicingGrammar, sExpr);
+        } else if (sym == "define") {
+          return evalDef(sExpr, env);
+        } else if (sym == "set!") {
+          return evalSet(sExpr, env);
+        } else if (sym == "lambda") {
+          return evalLambda(sExpr, env, false);
+        } else if (sym == "define-macro") {
+          return evalDefMacro(sExpr, env);
+        } else if (sym == "if") {
+          sExpr = evalIf(sExpr, env);
+          continue;
+        }
+      }
+      shared_ptr<ClosureAtom> closure =
+          cast<ClosureAtom>(eval(sExprs->first, env));
+      tie(sExpr, env) = closure->expand(sExprs->rest, env);
     }
-    shared_ptr<ClosureAtom> closure =
-        cast<ClosureAtom>(eval(sExprs->first, env));
-    return (*closure)(sExprs->rest, env);
   } catch (EvalException &ee) {
     ee.pushStackTrace(sExpr);
     throw ee;

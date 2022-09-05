@@ -8,9 +8,11 @@
 #include <string>
 
 using std::make_shared;
+using std::make_tuple;
 using std::shared_ptr;
 using std::string;
 using std::stringstream;
+using std::tuple;
 
 ClosureAtom::ClosureAtom(Proc proc, const shared_ptr<Env> outerEnv,
                          const shared_ptr<SExpr> argNames)
@@ -69,12 +71,13 @@ void ClosureAtom::handleArgMismatch(shared_ptr<SExpr> argNames,
   throw EvalException(ss.str());
 }
 
-shared_ptr<SExpr> ClosureAtom::operator()(shared_ptr<SExpr> args,
-                                          shared_ptr<Env> curEnv) {
+tuple<shared_ptr<SExpr>, shared_ptr<Env>>
+ClosureAtom::expand(shared_ptr<SExpr> args, shared_ptr<Env> curEnv) {
+  shared_ptr<Env> env = bindArgs(args, curEnv);
   if (isMacro) {
-    return eval(proc(bindArgs(args, curEnv)), curEnv);
+    return make_tuple(eval(proc(curEnv), env), curEnv);
   }
-  return proc(bindArgs(args, curEnv));
+  return make_tuple(proc(env), env);
 }
 
 string ClosureAtom::toString() const {

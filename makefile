@@ -17,7 +17,8 @@ OBJS = $(patsubst %.hpp,$(OUTDIR)/%.o,$(subst /,_,$(_DEPS)))
 
 TESTS = $(TESTDIR)/combine $(TESTDIR)/cons $(TESTDIR)/hof $(TESTDIR)/list \
     $(TESTDIR)/logic $(TESTDIR)/macro $(TESTDIR)/parse $(TESTDIR)/quote \
-	$(TESTDIR)/pred $(TESTDIR)/recur $(TESTDIR)/set $(TESTDIR)/varargs
+	$(TESTDIR)/pred $(TESTDIR)/recur $(TESTDIR)/set $(TESTDIR)/tailcall \
+	$(TESTDIR)/varargs
 
 $(OUTDIR)/lisp: $(OBJS) $(DEPS) $(OUTDIR)/main.o
 	$(CXX) $(CXXFLAGS) $(OBJS) $(OUTDIR)/main.o -o $(OUTDIR)/lisp

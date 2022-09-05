@@ -7,9 +7,11 @@
 #include "SymAtom.hpp"
 #include <functional>
 #include <memory>
+#include <tuple>
 
 using std::function;
 using std::shared_ptr;
+using std::tuple;
 
 class ClosureAtom : public Atom {
   typedef function<shared_ptr<SExpr>(shared_ptr<Env>)> Proc;
@@ -35,7 +37,8 @@ public:
   ClosureAtom(Proc proc, const shared_ptr<Env> outerEnv,
               const shared_ptr<SExpr> argNames, const bool isMacro);
 
-  shared_ptr<SExpr> operator()(shared_ptr<SExpr> args, shared_ptr<Env> curEnv);
+  tuple<shared_ptr<SExpr>, shared_ptr<Env>> expand(shared_ptr<SExpr> args,
+                                                   shared_ptr<Env> curEnv);
 
   static bool classOf(const SExpr &sExpr);
   static const string typeName;
