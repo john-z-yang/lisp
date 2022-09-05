@@ -12,7 +12,6 @@
 #include <string>
 
 using std::make_shared;
-using std::make_tuple;
 using std::string;
 using std::stringstream;
 
@@ -182,7 +181,7 @@ shared_ptr<SExpr> evalIf(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   } catch (EvalException &ee) {
     handleSyntaxError(ifGrammar, sExpr);
   }
-  return (test->val) ? eval(conseq, env) : eval(alt, env);
+  return (test->val) ? conseq : alt;
 }
 
 shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
@@ -214,7 +213,8 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
         } else if (sym == "define-macro") {
           return evalDefMacro(sExpr, env);
         } else if (sym == "if") {
-          return evalIf(sExpr, env);
+          sExpr = evalIf(sExpr, env);
+          continue;
         }
       }
       shared_ptr<ClosureAtom> closure =
