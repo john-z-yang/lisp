@@ -1,4 +1,5 @@
 #include "functions.hpp"
+#include "../parse/parse.hpp"
 #include "../sexpr/BoolAtom.hpp"
 #include "../sexpr/ClosureAtom.hpp"
 #include "../sexpr/IntAtom.hpp"
@@ -97,16 +98,22 @@ shared_ptr<SExpr> lispNot(shared_ptr<Env> env) {
 }
 
 shared_ptr<SExpr> lispCons(shared_ptr<Env> env) {
-  return make_shared<SExprs>(env->find(SymAtom("cons_lhs")),
-                             env->find(SymAtom("cons_rhs")));
+  shared_ptr<SymAtom> sym = make_shared<SymAtom>("res");
+  env->def(*sym, make_shared<SExprs>(env->find(SymAtom("cons_lhs")),
+                                     env->find(SymAtom("cons_rhs"))));
+  return sym;
 }
 
 shared_ptr<SExpr> lispCar(shared_ptr<Env> env) {
-  return cast<SExprs>(env->find(SymAtom("car_oprand")))->first;
+  shared_ptr<SymAtom> sym = make_shared<SymAtom>("res");
+  env->def(*sym, cast<SExprs>(env->find(SymAtom("car_oprand")))->first);
+  return sym;
 }
 
 shared_ptr<SExpr> lispCdr(shared_ptr<Env> env) {
-  return cast<SExprs>(env->find(SymAtom("cdr_oprand")))->rest;
+  shared_ptr<SymAtom> sym = make_shared<SymAtom>("res");
+  env->def(*sym, cast<SExprs>(env->find(SymAtom("cdr_oprand")))->rest);
+  return sym;
 }
 
 shared_ptr<SExpr> lispIsNull(shared_ptr<Env> env) {
@@ -142,6 +149,8 @@ shared_ptr<SExpr> lispIsEqv(shared_ptr<Env> env) {
 long long cnt = 0;
 shared_ptr<SExpr> lispGensym(shared_ptr<Env> env) {
   stringstream ss;
-  ss << "(_GENSYM_)_#" << cnt++;
-  return make_shared<SymAtom>(ss.str());
+  ss << ";GENSYM_" << cnt++;
+  return make_shared<SExprs>(make_shared<SymAtom>("quote"),
+                             make_shared<SExprs>(make_shared<SymAtom>(ss.str()),
+                                                 make_shared<NilAtom>()));
 }
