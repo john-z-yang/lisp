@@ -154,17 +154,17 @@ shared_ptr<SExpr> evalLambda(shared_ptr<SExpr> sExpr, shared_ptr<Env> env,
 }
 
 shared_ptr<SExpr> evalDefMacro(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
-  string sym;
+  shared_ptr<SymAtom> sym;
   shared_ptr<SExpr> macroExpr;
   try {
-    sym = cast<SymAtom>(cast<SExprs>(get(defMacroSymPos, sExpr))->first)->val;
+    sym = cast<SymAtom>(cast<SExprs>(get(defMacroSymPos, sExpr))->first);
     macroExpr = cast<SExprs>(get(defMacroExprPos, sExpr))->first;
     cast<NilAtom>(get(defMacroNilPos, sExpr));
   } catch (EvalException &ee) {
     handleSyntaxError(defMacroGrammar, sExpr);
   }
   shared_ptr<SExpr> macro = evalLambda(macroExpr, env, true);
-  env->def(sym, macro);
+  env->def(*sym, macro);
   return macro;
 }
 

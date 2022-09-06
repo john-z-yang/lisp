@@ -10,14 +10,11 @@
 #include "functions.hpp"
 #include <iostream>
 #include <memory>
-#include <string>
 
 using std::cerr;
 using std::endl;
 using std::make_shared;
 using std::shared_ptr;
-using std::string;
-using std::to_string;
 using std::unordered_map;
 
 Env::Env() {}

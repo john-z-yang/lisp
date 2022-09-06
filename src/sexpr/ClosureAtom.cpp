@@ -31,8 +31,7 @@ shared_ptr<Env> ClosureAtom::bindArgs(shared_ptr<SExpr> args,
     shared_ptr<SExprs> argNamesIter = cast<SExprs>(argNames);
     shared_ptr<SExprs> argValsIter = cast<SExprs>(argVals);
     while (true) {
-      string argName = cast<SymAtom>(argNamesIter->first)->val;
-      env->def(argName, argValsIter->first);
+      env->def(*cast<SymAtom>(argNamesIter->first), argValsIter->first);
       if (isa<NilAtom>(*argNamesIter->rest) &&
           isa<NilAtom>(*argValsIter->rest)) {
         break;
@@ -44,8 +43,7 @@ shared_ptr<Env> ClosureAtom::bindArgs(shared_ptr<SExpr> args,
       argValsIter = cast<SExprs>(argValsIter->rest);
     }
   } else if (isa<SymAtom>(*argNames)) {
-    string argName = cast<SymAtom>(argNames)->val;
-    env->def(argName, argVals);
+    env->def(cast<SymAtom>(argNames)->val, argVals);
   } else if (!isa<NilAtom>(*argVals)) {
     handleArgMismatch(argNames, argVals);
   }
