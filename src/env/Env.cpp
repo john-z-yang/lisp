@@ -113,6 +113,10 @@ void initEnv(shared_ptr<Env> env) {
            make_shared<ClosureAtom>(lispIsSym, env,
                                     cast<SExprs>(parse("(sym?_oprand)"))));
 
+  env->def(SymAtom("string?"),
+           make_shared<ClosureAtom>(lispIsString, env,
+                                    cast<SExprs>(parse("(string?_oprand)"))));
+
   env->def(SymAtom("num?"),
            make_shared<ClosureAtom>(lispIsNum, env,
                                     cast<SExprs>(parse("(num?_oprand)"))));

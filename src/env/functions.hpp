@@ -51,6 +51,8 @@ shared_ptr<SExpr> lispIsCons(shared_ptr<Env> env);
 
 shared_ptr<SExpr> lispIsSym(shared_ptr<Env> env);
 
+shared_ptr<SExpr> lispIsString(shared_ptr<Env> env);
+
 shared_ptr<SExpr> lispIsNum(shared_ptr<Env> env);
 
 shared_ptr<SExpr> lispIsProc(shared_ptr<Env> env);

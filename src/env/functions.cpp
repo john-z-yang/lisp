@@ -6,6 +6,7 @@
 #include "../sexpr/NilAtom.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "../sexpr/SExprs.hpp"
+#include "../sexpr/StringAtom.hpp"
 #include "../sexpr/SymAtom.hpp"
 #include "../sexpr/cast.cpp"
 #include <iostream>
@@ -23,7 +24,12 @@ shared_ptr<SExpr> lispQuit(shared_ptr<Env> env) {
 }
 
 shared_ptr<SExpr> lispDisplay(shared_ptr<Env> env) {
-  cout << *env->find(SymAtom("display_oprand")) << endl;
+  shared_ptr<SExpr> arg = env->find(SymAtom("display_oprand"));
+  if (isa<StringAtom>(*arg)) {
+    cout << cast<StringAtom>(arg)->unescaped << endl;
+  } else {
+    cout << *arg << endl;
+  }
   return make_shared<NilAtom>();
 }
 
@@ -129,6 +135,11 @@ shared_ptr<SExpr> lispIsCons(shared_ptr<Env> env) {
 shared_ptr<SExpr> lispIsSym(shared_ptr<Env> env) {
   return make_shared<BoolAtom>(
       isa<SymAtom>(*env->find(SymAtom("sym?_oprand"))));
+}
+
+shared_ptr<SExpr> lispIsString(shared_ptr<Env> env) {
+  return make_shared<BoolAtom>(
+      isa<StringAtom>(*env->find(SymAtom("string?_oprand"))));
 }
 
 shared_ptr<SExpr> lispIsNum(shared_ptr<Env> env) {

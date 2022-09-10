@@ -121,19 +121,20 @@ _Happy hacking!_
 
 ### Predicates
 
-| Name    | Arguments    | Description                                                                    |
-| ------- | ------------ | ------------------------------------------------------------------------------ |
-| `=`     | `lhs`, `rhs` | Return `#t` if `lhs` = `rhs`; otherwise return `#f`.                           |
-| `>`     | `lhs`, `rhs` | Return `#t` if `lhs` > `rhs`; otherwise return `#f`.                           |
-| `>=`    | `lhs`, `rhs` | Return `#t` if `lhs` ≥ `rhs`; otherwise return `#f`.                           |
-| `<`     | `lhs`, `rhs` | Return `#t` if `lhs` < `rhs`; otherwise return `#f`.                           |
-| `<=`    | `lhs`, `rhs` | Return `#t` if `lhs` ≤ `rhs`; otherwise return `#f`.                           |
-| `null?` | `arg`        | Return `#t` if `arg` is `(quote ())`; otherwise return `#f`.                   |
-| `cons?` | `arg`        | Return `#t` if `arg` is a `cons` pair; otherwise return `#f`.                  |
-| `sym?`  | `arg`        | Return `#t` if `arg` is *symbol*; otherwise return `#f`.                       |
-| `num?`  | `arg`        | Return `#t` if `arg` is *number*; otherwise return `#f`.                       |
-| `proc?` | `arg`        | Return `#t` if `arg` is *procedure*; otherwise return `#f`.                    |
-| `eq?`   | `lhs`, `rhs` | Return `#t` if `lhs` and `rhs` are equivalent in value; otherwise return `#f`. |
+| Name      | Arguments    | Description                                                                    |
+| --------- | ------------ | ------------------------------------------------------------------------------ |
+| `=`       | `lhs`, `rhs` | Return `#t` if `lhs` = `rhs`; otherwise return `#f`.                           |
+| `>`       | `lhs`, `rhs` | Return `#t` if `lhs` > `rhs`; otherwise return `#f`.                           |
+| `>=`      | `lhs`, `rhs` | Return `#t` if `lhs` ≥ `rhs`; otherwise return `#f`.                           |
+| `<`       | `lhs`, `rhs` | Return `#t` if `lhs` < `rhs`; otherwise return `#f`.                           |
+| `<=`      | `lhs`, `rhs` | Return `#t` if `lhs` ≤ `rhs`; otherwise return `#f`.                           |
+| `null?`   | `arg`        | Return `#t` if `arg` is `(quote ())`; otherwise return `#f`.                   |
+| `cons?`   | `arg`        | Return `#t` if `arg` is a `cons` pair; otherwise return `#f`.                  |
+| `sym?`    | `arg`        | Return `#t` if `arg` is *symbol*; otherwise return `#f`.                       |
+| `string?` | `arg`        | Return `#t` if `arg` is *string*; otherwise return `#f`.                       |
+| `num?`    | `arg`        | Return `#t` if `arg` is *number*; otherwise return `#f`.                       |
+| `proc?`   | `arg`        | Return `#t` if `arg` is *procedure*; otherwise return `#f`.                    |
+| `eq?`     | `lhs`, `rhs` | Return `#t` if `lhs` and `rhs` are equivalent in value; otherwise return `#f`. |
 
 
 ### Pairs and Lists
