@@ -10,3 +10,7 @@ Similarly: (string? 1) will yield:
 #f
 
 Happy hacking
+think
+abcdef
+abc
+

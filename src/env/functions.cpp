@@ -15,6 +15,7 @@
 using std::cout;
 using std::endl;
 using std::make_shared;
+using std::out_of_range;
 using std::shared_ptr;
 
 shared_ptr<SExpr> lispQuit(shared_ptr<Env> env) {
@@ -164,4 +165,28 @@ shared_ptr<SExpr> lispGensym(shared_ptr<Env> env) {
   return make_shared<SExprs>(make_shared<SymAtom>("quote"),
                              make_shared<SExprs>(make_shared<SymAtom>(ss.str()),
                                                  make_shared<NilAtom>()));
+}
+
+shared_ptr<SExpr> lispSubStr(shared_ptr<Env> env) {
+  size_t pos = cast<IntAtom>(env->find(SymAtom("strsub_pos")))->val;
+  size_t len = cast<IntAtom>(env->find(SymAtom("strsub_len")))->val;
+  string str = cast<StringAtom>(env->find(SymAtom("strsub_s")))->unescaped;
+  stringstream ss;
+  try {
+    ss << "\"" << str.substr(pos, len) << "\"";
+  } catch (out_of_range &ofr) {
+    stringstream ess;
+    ess << "Invalid range for "
+        << cast<StringAtom>(env->find(SymAtom("strsub_s")))->literal << " ("
+        << pos << ", " << len << ")";
+    throw EvalException(ess.str());
+  }
+  return make_shared<StringAtom>(ss.str());
+}
+
+shared_ptr<SExpr> lispStrCon(shared_ptr<Env> env) {
+  stringstream ss;
+  ss << "\"" << cast<StringAtom>(env->find(SymAtom("strcon_lhs")))->unescaped
+     << cast<StringAtom>(env->find(SymAtom("strcon_rhs")))->unescaped << "\"";
+  return make_shared<StringAtom>(ss.str());
 }

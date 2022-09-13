@@ -132,6 +132,16 @@ void initEnv(shared_ptr<Env> env) {
   env->def(SymAtom("gensym"),
            make_shared<ClosureAtom>(lispGensym, env, make_shared<NilAtom>()));
 
+  env->def(SymAtom("str-sub"),
+           make_shared<ClosureAtom>(
+               lispSubStr, env,
+               cast<SExprs>(parse("(strsub_s strsub_pos strsub_len)"))));
+
+  env->def(
+      SymAtom("str-con"),
+      make_shared<ClosureAtom>(lispStrCon, env,
+                               cast<SExprs>(parse("(strcon_lhs strcon_rhs)"))));
+
   eval(parse("                                                                \
   (define list                                                                \
     (lambda lis lis))                                                         \

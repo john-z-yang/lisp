@@ -10,3 +10,7 @@
 (display (string? 1))
 (display "")
 (display "Happy hacking")
+(display (str-sub "We think in generalities, but we live in details." 3 5))
+(display (str-con "abc" "def"))
+(display (str-con "abc" ""))
+(display (str-con "" ""))
