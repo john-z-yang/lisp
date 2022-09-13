@@ -167,7 +167,7 @@ shared_ptr<SExpr> lispGensym(shared_ptr<Env> env) {
                                                  make_shared<NilAtom>()));
 }
 
-shared_ptr<SExpr> lispSubStr(shared_ptr<Env> env) {
+shared_ptr<SExpr> lispStrSub(shared_ptr<Env> env) {
   size_t pos = cast<IntAtom>(env->find(SymAtom("strsub_pos")))->val;
   size_t len = cast<IntAtom>(env->find(SymAtom("strsub_len")))->val;
   string str = cast<StringAtom>(env->find(SymAtom("strsub_s")))->unescaped;

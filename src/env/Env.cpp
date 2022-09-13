@@ -134,7 +134,7 @@ void initEnv(shared_ptr<Env> env) {
 
   env->def(SymAtom("str-sub"),
            make_shared<ClosureAtom>(
-               lispSubStr, env,
+               lispStrSub, env,
                cast<SExprs>(parse("(strsub_s strsub_pos strsub_len)"))));
 
   env->def(
