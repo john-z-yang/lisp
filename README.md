@@ -107,40 +107,47 @@ _Happy hacking!_
 
 ## Built-In Procedures
 
-### Arithmetic
+### Symbols
 
-| Name  | Arguments    | Description           |
-| ----- | ------------ | --------------------- |
-| `abs` | `arg`        | Return \|`arg`\|.     |
-| `+`   | `lhs`, `rhs` | Return `lhs` + `rhs`. |
-| `-`   | `lhs`, `rhs` | Return `lhs` - `rhs`. |
-| `*`   | `lhs`, `rhs` | Return `lhs` × `rhs`. |
-| `/`   | `lhs`, `rhs` | Return `lhs` ÷ `rhs`. |
-| `%`   | `lhs`, `rhs` | Return `lhs` % `rhs`. |
+| Name     | Arguments | Description                                              |
+| -------- | --------- | -------------------------------------------------------- |
+| `sym?`   | `arg`     | Return `#t` if `arg` is *symbol*; otherwise return `#f`. |
+| `gensym` |           | Return a unique, never defined *symbol*.                 |
 
 
-### Predicates
 
-| Name      | Arguments    | Description                                                                    |
-| --------- | ------------ | ------------------------------------------------------------------------------ |
-| `=`       | `lhs`, `rhs` | Return `#t` if `lhs` = `rhs`; otherwise return `#f`.                           |
-| `>`       | `lhs`, `rhs` | Return `#t` if `lhs` > `rhs`; otherwise return `#f`.                           |
-| `>=`      | `lhs`, `rhs` | Return `#t` if `lhs` ≥ `rhs`; otherwise return `#f`.                           |
-| `<`       | `lhs`, `rhs` | Return `#t` if `lhs` < `rhs`; otherwise return `#f`.                           |
-| `<=`      | `lhs`, `rhs` | Return `#t` if `lhs` ≤ `rhs`; otherwise return `#f`.                           |
-| `null?`   | `arg`        | Return `#t` if `arg` is `(quote ())`; otherwise return `#f`.                   |
-| `cons?`   | `arg`        | Return `#t` if `arg` is a `cons` pair; otherwise return `#f`.                  |
-| `sym?`    | `arg`        | Return `#t` if `arg` is *symbol*; otherwise return `#f`.                       |
-| `string?` | `arg`        | Return `#t` if `arg` is *string*; otherwise return `#f`.                       |
-| `num?`    | `arg`        | Return `#t` if `arg` is *number*; otherwise return `#f`.                       |
-| `proc?`   | `arg`        | Return `#t` if `arg` is *procedure*; otherwise return `#f`.                    |
-| `eq?`     | `lhs`, `rhs` | Return `#t` if `lhs` and `rhs` are equivalent in value; otherwise return `#f`. |
+### Intergers
+
+| Name   | Arguments    | Description                                              |
+| ------ | ------------ | -------------------------------------------------------- |
+| `num?` | `arg`        | Return `#t` if `arg` is *number*; otherwise return `#f`. |
+| `=`    | `lhs`, `rhs` | Return `#t` if `lhs` = `rhs`; otherwise return `#f`.     |
+| `>`    | `lhs`, `rhs` | Return `#t` if `lhs` > `rhs`; otherwise return `#f`.     |
+| `>=`   | `lhs`, `rhs` | Return `#t` if `lhs` ≥ `rhs`; otherwise return `#f`.     |
+| `<`    | `lhs`, `rhs` | Return `#t` if `lhs` < `rhs`; otherwise return `#f`.     |
+| `<=`   | `lhs`, `rhs` | Return `#t` if `lhs` ≤ `rhs`; otherwise return `#f`.     |
+| `abs`  | `arg`        | Return \|`arg`\|.                                        |
+| `+`    | `lhs`, `rhs` | Return `lhs` + `rhs`.                                    |
+| `-`    | `lhs`, `rhs` | Return `lhs` - `rhs`.                                    |
+| `*`    | `lhs`, `rhs` | Return `lhs` × `rhs`.                                    |
+| `/`    | `lhs`, `rhs` | Return `lhs` ÷ `rhs`.                                    |
+| `%`    | `lhs`, `rhs` | Return `lhs` % `rhs`.                                    |
+
+
+### Strings
+| Name       | Arguments           | Description                                                                                                                                |
+| ---------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `string?`  | `arg`               | Return `#t` if `arg` is *string*; otherwise return `#f`.                                                                                   |
+| `str-sub`  | `str`, `pos`, `len` | Return a new string that starts at character position `pos` and spans `len` characters (or until the end of `str`, whichever comes first). |
+| `str-con?` | `lhs`, `rhs`        | Return a new string that is the concatenation of `lhs` `rhs`.                                                                              |
 
 
 ### Pairs and Lists
 
 | Name      | Arguments                                 | Description                                                                                                                                |
 | --------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `null?`   | `arg`                                     | Return `#t` if `arg` is `(quote ())`; otherwise return `#f`.                                                                               |
+| `cons?`   | `arg`                                     | Return `#t` if `arg` is a `cons` pair; otherwise return `#f`.                                                                              |
 | `cons`    | `lhs`, `rhs`                              | Return a pair where first element is `lhs` and second element is `rhs`.                                                                    |
 | `car`     | `pair`                                    | Return the first element of `pair`.                                                                                                        |
 | `cdr`     | `pair`                                    | Return the second element of `pair`.                                                                                                       |
@@ -152,6 +159,14 @@ _Happy hacking!_
 | `reverse` | `list`                                    | Return `list` but with its order of elements reversed.                                                                                     |
 
 
+### Predicates
+
+| Name    | Arguments    | Description                                                                    |
+| ------- | ------------ | ------------------------------------------------------------------------------ |
+| `proc?` | `arg`        | Return `#t` if `arg` is *procedure*; otherwise return `#f`.                    |
+| `eq?`   | `lhs`, `rhs` | Return `#t` if `lhs` and `rhs` are equivalent in value; otherwise return `#f`. |
+
+
 ### Miscellaneous
 
 | Name      | Arguments                                 | Description                                       |
@@ -160,7 +175,6 @@ _Happy hacking!_
 | `display` | `arg`                                     | Print `arg` to `std::cout`, returns `(quote ())`. |
 | `not`     | `arg`                                     | Return ¬`arg`.                                    |
 | `progn`   | `arg`<sub>1</sub>, ..., `arg`<sub>n</sub> | Return `arg`<sub>n</sub>.                         |
-| `gensym`  |                                           | Return a unique, never defined *symbol*.          |
 
 
 ## Running the tests
