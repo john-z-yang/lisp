@@ -10,15 +10,15 @@ TESTDIR = tests
 _DEPS = env/Env.hpp env/functions.hpp eval/eval.hpp eval/EvalException.hpp \
 	parse/parse.hpp parse/ParseException.hpp sexpr/Atom.hpp sexpr/BoolAtom.hpp \
 	sexpr/ClosureAtom.hpp sexpr/IntAtom.hpp sexpr/NilAtom.hpp sexpr/SExpr.hpp \
-	sexpr/SExprs.hpp sexpr/SymAtom.hpp
+	sexpr/SExprs.hpp sexpr/StringAtom.hpp sexpr/SymAtom.hpp
 
 DEPS = $(addprefix $(SRCDIR)/,$(_DEPS))
 OBJS = $(patsubst %.hpp,$(OUTDIR)/%.o,$(subst /,_,$(_DEPS)))
 
 TESTS = $(TESTDIR)/combine $(TESTDIR)/cons $(TESTDIR)/hof $(TESTDIR)/list \
     $(TESTDIR)/logic $(TESTDIR)/macro $(TESTDIR)/parse $(TESTDIR)/quote \
-	$(TESTDIR)/pred $(TESTDIR)/recur $(TESTDIR)/set $(TESTDIR)/tailcall \
-	$(TESTDIR)/varargs
+	$(TESTDIR)/pred $(TESTDIR)/recur $(TESTDIR)/set $(TESTDIR)/string \
+	$(TESTDIR)/tailcall $(TESTDIR)/varargs
 
 $(OUTDIR)/lisp: $(OBJS) $(DEPS) $(OUTDIR)/main.o
 	$(CXX) $(CXXFLAGS) $(OBJS) $(OUTDIR)/main.o -o $(OUTDIR)/lisp

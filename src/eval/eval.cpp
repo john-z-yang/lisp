@@ -4,6 +4,7 @@
 #include "../sexpr/IntAtom.hpp"
 #include "../sexpr/NilAtom.hpp"
 #include "../sexpr/SExprs.hpp"
+#include "../sexpr/StringAtom.hpp"
 #include "../sexpr/SymAtom.hpp"
 #include "../sexpr/cast.cpp"
 #include "grammar.hpp"
@@ -188,7 +189,7 @@ shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env) {
   try {
     while (true) {
       if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) ||
-          isa<BoolAtom>(*sExpr)) {
+          isa<BoolAtom>(*sExpr) || isa<StringAtom>(*sExpr)) {
         return sExpr;
       } else if (isa<SymAtom>(*sExpr)) {
         return env->find(*cast<SymAtom>(sExpr));

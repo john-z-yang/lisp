@@ -6,6 +6,7 @@
 #include "../sexpr/NilAtom.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "../sexpr/SExprs.hpp"
+#include "../sexpr/StringAtom.hpp"
 #include "../sexpr/SymAtom.hpp"
 #include "../sexpr/cast.cpp"
 #include <iostream>
@@ -14,6 +15,7 @@
 using std::cout;
 using std::endl;
 using std::make_shared;
+using std::out_of_range;
 using std::shared_ptr;
 
 shared_ptr<SExpr> lispQuit(shared_ptr<Env> env) {
@@ -23,7 +25,12 @@ shared_ptr<SExpr> lispQuit(shared_ptr<Env> env) {
 }
 
 shared_ptr<SExpr> lispDisplay(shared_ptr<Env> env) {
-  cout << *env->find(SymAtom("display_oprand")) << endl;
+  shared_ptr<SExpr> arg = env->find(SymAtom("display_oprand"));
+  if (isa<StringAtom>(*arg)) {
+    cout << cast<StringAtom>(arg)->unescaped << endl;
+  } else {
+    cout << *arg << endl;
+  }
   return make_shared<NilAtom>();
 }
 
@@ -131,6 +138,11 @@ shared_ptr<SExpr> lispIsSym(shared_ptr<Env> env) {
       isa<SymAtom>(*env->find(SymAtom("sym?_oprand"))));
 }
 
+shared_ptr<SExpr> lispIsString(shared_ptr<Env> env) {
+  return make_shared<BoolAtom>(
+      isa<StringAtom>(*env->find(SymAtom("string?_oprand"))));
+}
+
 shared_ptr<SExpr> lispIsNum(shared_ptr<Env> env) {
   return make_shared<BoolAtom>(
       isa<IntAtom>(*env->find(SymAtom("num?_oprand"))));
@@ -153,4 +165,39 @@ shared_ptr<SExpr> lispGensym(shared_ptr<Env> env) {
   return make_shared<SExprs>(make_shared<SymAtom>("quote"),
                              make_shared<SExprs>(make_shared<SymAtom>(ss.str()),
                                                  make_shared<NilAtom>()));
+}
+
+shared_ptr<SExpr> lispStrSub(shared_ptr<Env> env) {
+  size_t pos = cast<IntAtom>(env->find(SymAtom("strsub_pos")))->val;
+  size_t len = cast<IntAtom>(env->find(SymAtom("strsub_len")))->val;
+  string str = cast<StringAtom>(env->find(SymAtom("strsub_s")))->unescaped;
+  stringstream ss;
+  try {
+    ss << "\"" << str.substr(pos, len) << "\"";
+  } catch (out_of_range &ofr) {
+    stringstream ess;
+    ess << "Invalid range for "
+        << cast<StringAtom>(env->find(SymAtom("strsub_s")))->literal << " ("
+        << pos << ", " << len << ")";
+    throw EvalException(ess.str());
+  }
+  return make_shared<StringAtom>(ss.str());
+}
+
+shared_ptr<SExpr> lispStrCon(shared_ptr<Env> env) {
+  stringstream ss;
+  ss << "\"" << cast<StringAtom>(env->find(SymAtom("strcon_lhs")))->unescaped
+     << cast<StringAtom>(env->find(SymAtom("strcon_rhs")))->unescaped << "\"";
+  return make_shared<StringAtom>(ss.str());
+}
+
+shared_ptr<SExpr> lispStrLen(shared_ptr<Env> env) {
+  return make_shared<IntAtom>(
+      cast<StringAtom>(env->find(SymAtom("strlen_oprand")))->unescaped.size());
+}
+
+shared_ptr<SExpr> lispToStr(shared_ptr<Env> env) {
+  stringstream ss;
+  ss << "\"" << *env->find(SymAtom("->str_oprand")) << "\"";
+  return make_shared<StringAtom>(ss.str());
 }

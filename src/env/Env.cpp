@@ -113,6 +113,10 @@ void initEnv(shared_ptr<Env> env) {
            make_shared<ClosureAtom>(lispIsSym, env,
                                     cast<SExprs>(parse("(sym?_oprand)"))));
 
+  env->def(SymAtom("string?"),
+           make_shared<ClosureAtom>(lispIsString, env,
+                                    cast<SExprs>(parse("(string?_oprand)"))));
+
   env->def(SymAtom("num?"),
            make_shared<ClosureAtom>(lispIsNum, env,
                                     cast<SExprs>(parse("(num?_oprand)"))));
@@ -127,6 +131,24 @@ void initEnv(shared_ptr<Env> env) {
 
   env->def(SymAtom("gensym"),
            make_shared<ClosureAtom>(lispGensym, env, make_shared<NilAtom>()));
+
+  env->def(SymAtom("str-len"),
+           make_shared<ClosureAtom>(lispStrLen, env,
+                                    cast<SExprs>(parse("(strlen_oprand)"))));
+
+  env->def(SymAtom("str-sub"),
+           make_shared<ClosureAtom>(
+               lispStrSub, env,
+               cast<SExprs>(parse("(strsub_s strsub_pos strsub_len)"))));
+
+  env->def(
+      SymAtom("str-con"),
+      make_shared<ClosureAtom>(lispStrCon, env,
+                               cast<SExprs>(parse("(strcon_lhs strcon_rhs)"))));
+
+  env->def(SymAtom("->str"),
+           make_shared<ClosureAtom>(lispToStr, env,
+                                    cast<SExprs>(parse("(->str_oprand)"))));
 
   eval(parse("                                                                \
   (define list                                                                \
