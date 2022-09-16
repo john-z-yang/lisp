@@ -61,8 +61,12 @@ shared_ptr<SExpr> lispIsEqv(shared_ptr<Env> env);
 
 shared_ptr<SExpr> lispGensym(shared_ptr<Env> env);
 
+shared_ptr<SExpr> lispStrLen(shared_ptr<Env> env);
+
 shared_ptr<SExpr> lispStrSub(shared_ptr<Env> env);
 
 shared_ptr<SExpr> lispStrCon(shared_ptr<Env> env);
+
+shared_ptr<SExpr> lispToStr(shared_ptr<Env> env);
 
 #endif

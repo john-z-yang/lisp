@@ -190,3 +190,14 @@ shared_ptr<SExpr> lispStrCon(shared_ptr<Env> env) {
      << cast<StringAtom>(env->find(SymAtom("strcon_rhs")))->unescaped << "\"";
   return make_shared<StringAtom>(ss.str());
 }
+
+shared_ptr<SExpr> lispStrLen(shared_ptr<Env> env) {
+  return make_shared<IntAtom>(
+      cast<StringAtom>(env->find(SymAtom("strlen_oprand")))->unescaped.size());
+}
+
+shared_ptr<SExpr> lispToStr(shared_ptr<Env> env) {
+  stringstream ss;
+  ss << "\"" << *env->find(SymAtom("->str_oprand")) << "\"";
+  return make_shared<StringAtom>(ss.str());
+}

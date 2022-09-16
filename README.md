@@ -135,11 +135,13 @@ _Happy hacking!_
 
 
 ### Strings
-| Name       | Arguments           | Description                                                                                                                                |
-| ---------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `string?`  | `arg`               | Return `#t` if `arg` is *string*; otherwise return `#f`.                                                                                   |
-| `str-sub`  | `str`, `pos`, `len` | Return a new string that starts at character position `pos` and spans `len` characters (or until the end of `str`, whichever comes first). |
-| `str-con?` | `lhs`, `rhs`        | Return a new string that is the concatenation of `lhs` `rhs`.                                                                              |
+| Name      | Arguments           | Description                                                                                                                                |
+| --------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `str?`    | `arg`               | Return `#t` if `arg` is *string*; otherwise return `#f`.                                                                                   |
+| `str-len` | `arg`               | Return the length of `arg`.                                                                                                                |
+| `str-sub` | `str`, `pos`, `len` | Return a new string that starts at character position `pos` and spans `len` characters (or until the end of `str`, whichever comes first). |
+| `str-con` | `lhs`, `rhs`        | Return a new string that is the concatenation of `lhs` `rhs`.                                                                              |
+| `->str`   | `arg`               | Return `arg` in string representation.                                                                                                     |
 
 
 ### Pairs and Lists

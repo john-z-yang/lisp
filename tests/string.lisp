@@ -14,3 +14,6 @@
 (display (str-con "abc" "def"))
 (display (str-con "abc" ""))
 (display (str-con "" ""))
+(define s "\"This string contains\"")
+(define size (str-len s))
+(display (str-con (str-con s (str-con " " (->str size))) " characters."))
