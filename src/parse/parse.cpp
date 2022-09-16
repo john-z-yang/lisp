@@ -115,13 +115,13 @@ size_t implodeTokens(const vector<string> &tokens,
   size_t pos = 0;
   for (auto it = tokens.begin(); it != tokens.end(); ++it) {
     line += *it;
-    if (it < token) {
+    if (distance(it, token) > 0) {
       pos += it->length();
     }
     if (it + 1 != tokens.end() && *it != "(" && *it != ")" &&
         *(it + 1) != "(" && *(it + 1) != ")") {
       line += " ";
-      if (it < token) {
+      if (distance(it, token) > 0) {
         pos += 1;
       }
     }
