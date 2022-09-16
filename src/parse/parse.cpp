@@ -71,9 +71,9 @@ shared_ptr<SExpr> parseAtom(string token) {
   return make_shared<SymAtom>(token);
 }
 
-shared_ptr<SExpr> parse(vector<const string>::iterator &it);
+shared_ptr<SExpr> parse(vector<string>::iterator &it);
 
-shared_ptr<SExpr> parseSexprs(vector<const string>::iterator &it) {
+shared_ptr<SExpr> parseSexprs(vector<string>::iterator &it) {
   string token = *it;
   if (token == ")") {
     it += 1;
@@ -89,7 +89,7 @@ shared_ptr<SExpr> parseSexprs(vector<const string>::iterator &it) {
   return make_shared<SExprs>(first, rest);
 }
 
-shared_ptr<SExpr> parse(vector<const string>::iterator &it) {
+shared_ptr<SExpr> parse(vector<string>::iterator &it) {
   string token = *it;
   it += 1;
   if (token == "(") {
@@ -105,7 +105,7 @@ shared_ptr<SExpr> parse(vector<const string>::iterator &it) {
 
 shared_ptr<SExpr> parse(string str) {
   vector<string> tokens = tokenize(str);
-  vector<const string>::iterator it = tokens.begin();
+  vector<string>::iterator it = tokens.begin();
   return parse(it);
 }
 
@@ -130,7 +130,7 @@ size_t implodeTokens(const vector<string> &tokens,
 }
 
 void handleUnexpectedToken(const vector<string> &tokens,
-                           const vector<const string>::iterator &token) {
+                           const vector<string>::iterator &token) {
   stringstream ss;
   ss << "Unexpected \"" << *token << "\".";
   string line;
@@ -139,8 +139,7 @@ void handleUnexpectedToken(const vector<string> &tokens,
 }
 
 void handleMissingToken(const vector<string> &tokens,
-                        const vector<const string>::iterator &token,
-                        string missing) {
+                        const vector<string>::iterator &token, string missing) {
   stringstream ss;
   ss << "Expected " << missing << ".";
   string line;
