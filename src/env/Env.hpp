@@ -7,11 +7,9 @@
 #include <memory>
 #include <unordered_map>
 
-using std::shared_ptr;
-using std::unordered_map;
-
 class Env {
-  typedef unordered_map<SymAtom, shared_ptr<SExpr>, SymAtom::HashFunction>
+  typedef std::unordered_map<SymAtom, std::shared_ptr<SExpr>,
+                             SymAtom::HashFunction>
       SymTable;
 
 private:
@@ -19,22 +17,22 @@ private:
   SymTable &findSymTable(SymAtom &sym);
 
 public:
-  const shared_ptr<Env> outer;
+  const std::shared_ptr<Env> outer;
 
   Env();
-  Env(const shared_ptr<Env> outer);
+  Env(const std::shared_ptr<Env> outer);
 
-  void def(SymAtom &sym, shared_ptr<SExpr> val);
-  void def(SymAtom &&sym, shared_ptr<SExpr> val);
+  void def(SymAtom &sym, std::shared_ptr<SExpr> val);
+  void def(SymAtom &&sym, std::shared_ptr<SExpr> val);
 
-  void set(SymAtom &sym, shared_ptr<SExpr> val);
+  void set(SymAtom &sym, std::shared_ptr<SExpr> val);
 
-  shared_ptr<SExpr> find(SymAtom &sym);
-  shared_ptr<SExpr> find(SymAtom &&sym);
+  std::shared_ptr<SExpr> find(SymAtom &sym);
+  std::shared_ptr<SExpr> find(SymAtom &&sym);
 
   void clear();
 };
 
-void initEnv(shared_ptr<Env> env);
+void initEnv(std::shared_ptr<Env> env);
 
 #endif

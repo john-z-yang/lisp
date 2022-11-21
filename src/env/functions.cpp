@@ -12,192 +12,187 @@
 #include <iostream>
 #include <memory>
 
-using std::cout;
-using std::endl;
-using std::make_shared;
-using std::out_of_range;
-using std::shared_ptr;
-
-shared_ptr<SExpr> lispQuit(shared_ptr<Env> env) {
+std::shared_ptr<SExpr> lispQuit(std::shared_ptr<Env> env) {
   env->clear();
-  cout << "Farewell." << endl;
+  std::cout << "Farewell." << std::endl;
   exit(EXIT_SUCCESS);
 }
 
-shared_ptr<SExpr> lispDisplay(shared_ptr<Env> env) {
-  shared_ptr<SExpr> arg = env->find(SymAtom("display_oprand"));
+std::shared_ptr<SExpr> lispDisplay(std::shared_ptr<Env> env) {
+  std::shared_ptr<SExpr> arg = env->find(SymAtom("display_oprand"));
   if (isa<StringAtom>(*arg)) {
-    cout << cast<StringAtom>(arg)->unescaped << endl;
+    std::cout << cast<StringAtom>(arg)->unescaped << std::endl;
   } else {
-    cout << *arg << endl;
+    std::cout << *arg << std::endl;
   }
-  return make_shared<NilAtom>();
+  return std::make_shared<NilAtom>();
 }
 
-shared_ptr<SExpr> lispAbs(shared_ptr<Env> env) {
-  return make_shared<IntAtom>(
+std::shared_ptr<SExpr> lispAbs(std::shared_ptr<Env> env) {
+  return std::make_shared<IntAtom>(
       abs(cast<IntAtom>(env->find(SymAtom("abs_oprand")))->val));
 }
 
-shared_ptr<SExpr> lispAdd(shared_ptr<Env> env) {
-  return make_shared<IntAtom>(
+std::shared_ptr<SExpr> lispAdd(std::shared_ptr<Env> env) {
+  return std::make_shared<IntAtom>(
       cast<IntAtom>(env->find(SymAtom("add_lhs")))->val +
       cast<IntAtom>(env->find(SymAtom("add_rhs")))->val);
 }
 
-shared_ptr<SExpr> lispSub(shared_ptr<Env> env) {
-  return make_shared<IntAtom>(
+std::shared_ptr<SExpr> lispSub(std::shared_ptr<Env> env) {
+  return std::make_shared<IntAtom>(
       cast<IntAtom>(env->find(SymAtom("sub_lhs")))->val -
       cast<IntAtom>(env->find(SymAtom("sub_rhs")))->val);
 }
 
-shared_ptr<SExpr> lispMult(shared_ptr<Env> env) {
-  return make_shared<IntAtom>(
+std::shared_ptr<SExpr> lispMult(std::shared_ptr<Env> env) {
+  return std::make_shared<IntAtom>(
       cast<IntAtom>(env->find(SymAtom("mult_lhs")))->val *
       cast<IntAtom>(env->find(SymAtom("mult_rhs")))->val);
 }
 
-shared_ptr<SExpr> lispDiv(shared_ptr<Env> env) {
-  return make_shared<IntAtom>(
+std::shared_ptr<SExpr> lispDiv(std::shared_ptr<Env> env) {
+  return std::make_shared<IntAtom>(
       cast<IntAtom>(env->find(SymAtom("div_lhs")))->val /
       cast<IntAtom>(env->find(SymAtom("div_rhs")))->val);
 }
 
-shared_ptr<SExpr> lispMod(shared_ptr<Env> env) {
-  return make_shared<IntAtom>(
+std::shared_ptr<SExpr> lispMod(std::shared_ptr<Env> env) {
+  return std::make_shared<IntAtom>(
       cast<IntAtom>(env->find(SymAtom("mod_lhs")))->val %
       cast<IntAtom>(env->find(SymAtom("mod_rhs")))->val);
 }
 
-shared_ptr<SExpr> lispEq(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(
+std::shared_ptr<SExpr> lispEq(std::shared_ptr<Env> env) {
+  return std::make_shared<BoolAtom>(
       (cast<IntAtom>(env->find(SymAtom("eq_lhs")))->val ==
        cast<IntAtom>(env->find(SymAtom("eq_rhs")))->val));
 }
 
-shared_ptr<SExpr> lispGt(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(
+std::shared_ptr<SExpr> lispGt(std::shared_ptr<Env> env) {
+  return std::make_shared<BoolAtom>(
       (cast<IntAtom>(env->find(SymAtom("gt_lhs")))->val >
        cast<IntAtom>(env->find(SymAtom("gt_rhs")))->val));
 }
 
-shared_ptr<SExpr> lispGteq(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(
+std::shared_ptr<SExpr> lispGteq(std::shared_ptr<Env> env) {
+  return std::make_shared<BoolAtom>(
       (cast<IntAtom>(env->find(SymAtom("gteq_lhs")))->val >=
        cast<IntAtom>(env->find(SymAtom("gteq_rhs")))->val));
 }
 
-shared_ptr<SExpr> lispLt(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(
+std::shared_ptr<SExpr> lispLt(std::shared_ptr<Env> env) {
+  return std::make_shared<BoolAtom>(
       (cast<IntAtom>(env->find(SymAtom("lt_lhs")))->val <
        cast<IntAtom>(env->find(SymAtom("lt_rhs")))->val));
 }
 
-shared_ptr<SExpr> lispLteq(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(
+std::shared_ptr<SExpr> lispLteq(std::shared_ptr<Env> env) {
+  return std::make_shared<BoolAtom>(
       (cast<IntAtom>(env->find(SymAtom("lteq_lhs")))->val <=
        cast<IntAtom>(env->find(SymAtom("lteq_rhs")))->val));
 }
 
-shared_ptr<SExpr> lispNot(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(
+std::shared_ptr<SExpr> lispNot(std::shared_ptr<Env> env) {
+  return std::make_shared<BoolAtom>(
       !BoolAtom::toBool(env->find(SymAtom("not_oprand"))));
 }
 
-shared_ptr<SExpr> lispCons(shared_ptr<Env> env) {
-  shared_ptr<SymAtom> sym = make_shared<SymAtom>("res");
-  env->def(*sym, make_shared<SExprs>(env->find(SymAtom("cons_lhs")),
-                                     env->find(SymAtom("cons_rhs"))));
+std::shared_ptr<SExpr> lispCons(std::shared_ptr<Env> env) {
+  std::shared_ptr<SymAtom> sym = std::make_shared<SymAtom>("res");
+  env->def(*sym, std::make_shared<SExprs>(env->find(SymAtom("cons_lhs")),
+                                          env->find(SymAtom("cons_rhs"))));
   return sym;
 }
 
-shared_ptr<SExpr> lispCar(shared_ptr<Env> env) {
-  shared_ptr<SymAtom> sym = make_shared<SymAtom>("res");
+std::shared_ptr<SExpr> lispCar(std::shared_ptr<Env> env) {
+  std::shared_ptr<SymAtom> sym = std::make_shared<SymAtom>("res");
   env->def(*sym, cast<SExprs>(env->find(SymAtom("car_oprand")))->first);
   return sym;
 }
 
-shared_ptr<SExpr> lispCdr(shared_ptr<Env> env) {
-  shared_ptr<SymAtom> sym = make_shared<SymAtom>("res");
+std::shared_ptr<SExpr> lispCdr(std::shared_ptr<Env> env) {
+  std::shared_ptr<SymAtom> sym = std::make_shared<SymAtom>("res");
   env->def(*sym, cast<SExprs>(env->find(SymAtom("cdr_oprand")))->rest);
   return sym;
 }
 
-shared_ptr<SExpr> lispIsNull(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(
+std::shared_ptr<SExpr> lispIsNull(std::shared_ptr<Env> env) {
+  return std::make_shared<BoolAtom>(
       isa<NilAtom>(*env->find(SymAtom("null?_oprand"))));
 }
 
-shared_ptr<SExpr> lispIsCons(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(
+std::shared_ptr<SExpr> lispIsCons(std::shared_ptr<Env> env) {
+  return std::make_shared<BoolAtom>(
       isa<SExprs>(*env->find(SymAtom("cons?_oprand"))));
 }
 
-shared_ptr<SExpr> lispIsSym(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(
+std::shared_ptr<SExpr> lispIsSym(std::shared_ptr<Env> env) {
+  return std::make_shared<BoolAtom>(
       isa<SymAtom>(*env->find(SymAtom("sym?_oprand"))));
 }
 
-shared_ptr<SExpr> lispIsString(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(
+std::shared_ptr<SExpr> lispIsString(std::shared_ptr<Env> env) {
+  return std::make_shared<BoolAtom>(
       isa<StringAtom>(*env->find(SymAtom("string?_oprand"))));
 }
 
-shared_ptr<SExpr> lispIsNum(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(
+std::shared_ptr<SExpr> lispIsNum(std::shared_ptr<Env> env) {
+  return std::make_shared<BoolAtom>(
       isa<IntAtom>(*env->find(SymAtom("num?_oprand"))));
 }
 
-shared_ptr<SExpr> lispIsProc(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(
+std::shared_ptr<SExpr> lispIsProc(std::shared_ptr<Env> env) {
+  return std::make_shared<BoolAtom>(
       isa<ClosureAtom>(*env->find(SymAtom("proc?_oprand"))));
 }
 
-shared_ptr<SExpr> lispIsEqv(shared_ptr<Env> env) {
-  return make_shared<BoolAtom>(*env->find(SymAtom("eq?_lhs")) ==
-                               *env->find(SymAtom("eq?_rhs")));
+std::shared_ptr<SExpr> lispIsEqv(std::shared_ptr<Env> env) {
+  return std::make_shared<BoolAtom>(*env->find(SymAtom("eq?_lhs")) ==
+                                    *env->find(SymAtom("eq?_rhs")));
 }
 
 long long cnt = 0;
-shared_ptr<SExpr> lispGensym(shared_ptr<Env> env) {
-  stringstream ss;
+std::shared_ptr<SExpr> lispGensym(std::shared_ptr<Env> env) {
+  std::stringstream ss;
   ss << ";GENSYM_" << cnt++;
-  return make_shared<SExprs>(make_shared<SymAtom>("quote"),
-                             make_shared<SExprs>(make_shared<SymAtom>(ss.str()),
-                                                 make_shared<NilAtom>()));
+  return std::make_shared<SExprs>(
+      std::make_shared<SymAtom>("quote"),
+      std::make_shared<SExprs>(std::make_shared<SymAtom>(ss.str()),
+                               std::make_shared<NilAtom>()));
 }
 
-shared_ptr<SExpr> lispStrSub(shared_ptr<Env> env) {
+std::shared_ptr<SExpr> lispStrSub(std::shared_ptr<Env> env) {
   size_t pos = cast<IntAtom>(env->find(SymAtom("strsub_pos")))->val;
   size_t len = cast<IntAtom>(env->find(SymAtom("strsub_len")))->val;
-  string str = cast<StringAtom>(env->find(SymAtom("strsub_s")))->unescaped;
-  stringstream ss;
+  std::string str = cast<StringAtom>(env->find(SymAtom("strsub_s")))->unescaped;
+  std::stringstream ss;
   try {
     ss << "\"" << str.substr(pos, len) << "\"";
-  } catch (out_of_range &ofr) {
-    stringstream ess;
+  } catch (std::out_of_range &ofr) {
+    std::stringstream ess;
     ess << "Invalid range for "
         << cast<StringAtom>(env->find(SymAtom("strsub_s")))->literal << " ("
         << pos << ", " << len << ")";
     throw EvalException(ess.str());
   }
-  return make_shared<StringAtom>(ss.str());
+  return std::make_shared<StringAtom>(ss.str());
 }
 
-shared_ptr<SExpr> lispStrCon(shared_ptr<Env> env) {
-  stringstream ss;
+std::shared_ptr<SExpr> lispStrCon(std::shared_ptr<Env> env) {
+  std::stringstream ss;
   ss << "\"" << cast<StringAtom>(env->find(SymAtom("strcon_lhs")))->unescaped
      << cast<StringAtom>(env->find(SymAtom("strcon_rhs")))->unescaped << "\"";
-  return make_shared<StringAtom>(ss.str());
+  return std::make_shared<StringAtom>(ss.str());
 }
 
-shared_ptr<SExpr> lispStrLen(shared_ptr<Env> env) {
-  return make_shared<IntAtom>(
+std::shared_ptr<SExpr> lispStrLen(std::shared_ptr<Env> env) {
+  return std::make_shared<IntAtom>(
       cast<StringAtom>(env->find(SymAtom("strlen_oprand")))->unescaped.size());
 }
 
-shared_ptr<SExpr> lispToStr(shared_ptr<Env> env) {
-  stringstream ss;
+std::shared_ptr<SExpr> lispToStr(std::shared_ptr<Env> env) {
+  std::stringstream ss;
   ss << "\"" << *env->find(SymAtom("->str_oprand")) << "\"";
-  return make_shared<StringAtom>(ss.str());
+  return std::make_shared<StringAtom>(ss.str());
 }

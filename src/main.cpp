@@ -18,56 +18,48 @@
 #include <memory>
 #include <string>
 
-using std::cerr;
-using std::cin;
-using std::cout;
-using std::endl;
-using std::fstream;
-using std::make_shared;
-using std::strerror;
-
 int repl() {
-  shared_ptr<Env> env = make_shared<Env>();
+  std::shared_ptr<Env> env = std::make_shared<Env>();
   initEnv(env);
 
   while (true) {
-    string input;
+    std::string input;
     size_t linesRead = 0;
     try {
-      if (getInput(cin, input, linesRead, "lisp> ", "  ... ")) {
-        cout << *eval(parse(input), env) << endl;
+      if (getInput(std::cin, input, linesRead, "lisp> ", "  ... ")) {
+        std::cout << *eval(parse(input), env) << std::endl;
       } else {
-        cout << endl;
+        std::cout << std::endl;
         lispQuit(env);
       }
     } catch (ParseException &pe) {
-      cerr << "In line " << linesRead << " of <std::cin>" << endl;
-      cerr << pe;
+      std::cerr << "In line " << linesRead << " of <std::cin>" << std::endl;
+      std::cerr << pe;
     } catch (EvalException &ee) {
-      cerr << "In line " << linesRead << " of <std::cin>" << endl;
-      cerr << ee;
+      std::cerr << "In line " << linesRead << " of <std::cin>" << std::endl;
+      std::cerr << ee;
     }
   }
   env->clear();
   return EXIT_FAILURE;
 }
 
-int repl(const string fileName) {
-  fstream fs;
-  fs.open(fileName, fstream::in);
+int repl(const std::string fileName) {
+  std::fstream fs;
+  fs.open(fileName, std::fstream::in);
 
   if (fs.fail()) {
-    cerr << "Unable to open file \"" << fileName << "\": " << strerror(errno)
-         << endl;
+    std::cerr << "Unable to open file \"" << fileName
+              << "\": " << strerror(errno) << std::endl;
     return EXIT_FAILURE;
   }
 
-  shared_ptr<Env> env = make_shared<Env>();
+  std::shared_ptr<Env> env = std::make_shared<Env>();
   initEnv(env);
 
   size_t linesRead = 0;
   while (true) {
-    string input;
+    std::string input;
     try {
       if (getInput(fs, input, linesRead, "", "")) {
         *eval(parse(input), env);
@@ -75,11 +67,13 @@ int repl(const string fileName) {
         break;
       }
     } catch (ParseException &pe) {
-      cerr << "In line " << linesRead << " of \"" << fileName << "\"" << endl;
-      cerr << pe;
+      std::cerr << "In line " << linesRead << " of \"" << fileName << "\""
+                << std::endl;
+      std::cerr << pe;
     } catch (EvalException &ee) {
-      cerr << "In line " << linesRead << " of \"" << fileName << "\"" << endl;
-      cerr << ee;
+      std::cerr << "In line " << linesRead << " of \"" << fileName << "\""
+                << std::endl;
+      std::cerr << ee;
     }
   }
   env->clear();

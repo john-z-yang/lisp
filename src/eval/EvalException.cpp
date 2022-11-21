@@ -3,27 +3,24 @@
 #include <ostream>
 #include <string>
 
-using std::endl;
-using std::shared_ptr;
-using std::string;
-
-EvalException::EvalException(const string &msg) : _msg(msg) {}
+EvalException::EvalException(const std::string &msg) : _msg(msg) {}
 
 const char *EvalException::what() const noexcept { return _msg.c_str(); }
 
-void EvalException::pushStackTrace(shared_ptr<SExpr> stack) {
+void EvalException::pushStackTrace(std::shared_ptr<SExpr> stack) {
   stackTrace.push_back(stack);
 }
 
-const vector<shared_ptr<SExpr>> &EvalException::getStackTrace() const {
+const std::vector<std::shared_ptr<SExpr>> &
+EvalException::getStackTrace() const {
   return stackTrace;
 }
 
-ostream &operator<<(ostream &o, const EvalException &ee) {
-  o << "Eval stack:" << endl;
+std::ostream &operator<<(std::ostream &o, const EvalException &ee) {
+  o << "Eval stack:" << std::endl;
   for (auto it : ee.getStackTrace()) {
-    o << "  => " << *it << endl;
+    o << "  => " << *it << std::endl;
   }
-  o << "Eval error: " << ee.what() << endl;
+  o << "Eval error: " << ee.what() << std::endl;
   return o;
 }

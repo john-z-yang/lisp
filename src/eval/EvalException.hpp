@@ -8,26 +8,20 @@
 #include <string>
 #include <vector>
 
-using std::exception;
-using std::ostream;
-using std::shared_ptr;
-using std::string;
-using std::vector;
-
-class EvalException : public exception {
-  string _msg;
-  vector<shared_ptr<SExpr>> stackTrace;
+class EvalException : public std::exception {
+  std::string _msg;
+  std::vector<std::shared_ptr<SExpr>> stackTrace;
 
 public:
-  EvalException(const string &msg);
+  EvalException(const std::string &msg);
 
   virtual const char *what() const noexcept override;
 
-  void pushStackTrace(shared_ptr<SExpr> stack);
+  void pushStackTrace(std::shared_ptr<SExpr> stack);
 
-  const vector<shared_ptr<SExpr>> &getStackTrace() const;
+  const std::vector<std::shared_ptr<SExpr>> &getStackTrace() const;
 };
 
-ostream &operator<<(ostream &o, const EvalException &ee);
+std::ostream &operator<<(std::ostream &o, const EvalException &ee);
 
 #endif

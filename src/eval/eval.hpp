@@ -5,8 +5,7 @@
 #include "../sexpr/SExpr.hpp"
 #include <memory>
 
-using std::shared_ptr;
-
-shared_ptr<SExpr> eval(shared_ptr<SExpr> sExpr, shared_ptr<Env> env);
+std::shared_ptr<SExpr> eval(std::shared_ptr<SExpr> sExpr,
+                            std::shared_ptr<Env> env);
 
 #endif

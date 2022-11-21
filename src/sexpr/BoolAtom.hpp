@@ -6,23 +6,20 @@
 #include <memory>
 #include <string>
 
-using std::shared_ptr;
-using std::string;
-
 class BoolAtom : public Atom {
 protected:
-  string toString() const;
+  std::string toString() const;
   bool equals(const SExpr &other) const;
 
 public:
   const bool val;
 
   BoolAtom(const bool val);
-  BoolAtom(const shared_ptr<SExpr> sExpr);
+  BoolAtom(const std::shared_ptr<SExpr> sExpr);
 
-  static bool toBool(const shared_ptr<SExpr> sExpr);
+  static bool toBool(const std::shared_ptr<SExpr> sExpr);
   static bool classOf(const SExpr &sExpr);
-  static const string typeName;
+  static const std::string typeName;
 };
 
 #endif

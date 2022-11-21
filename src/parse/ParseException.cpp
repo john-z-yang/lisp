@@ -2,19 +2,15 @@
 #include <ostream>
 #include <string>
 
-using std::endl;
-using std::ostream;
-using std::string;
-
-ParseException::ParseException(const string &msg, const string line,
-                               const string::size_type charPos)
+ParseException::ParseException(const std::string &msg, const std::string line,
+                               const std::string::size_type charPos)
     : _msg(msg), line(line), charPos(charPos) {}
 
 const char *ParseException::what() const noexcept { return _msg.c_str(); }
 
-ostream &operator<<(ostream &o, const ParseException &pe) {
-  o << "  " << pe.line << endl
-    << "  " << string(pe.charPos, ' ') << "^" << endl
-    << "Parse error: " << pe.what() << endl;
+std::ostream &operator<<(std::ostream &o, const ParseException &pe) {
+  o << "  " << pe.line << std::endl
+    << "  " << std::string(pe.charPos, ' ') << "^" << std::endl
+    << "Parse error: " << pe.what() << std::endl;
   return o;
 }

@@ -5,23 +5,19 @@
 #include <ostream>
 #include <string>
 
-using std::exception;
-using std::ostream;
-using std::string;
-
-class ParseException : public exception {
-  string _msg;
+class ParseException : public std::exception {
+  std::string _msg;
 
 public:
-  const string line;
-  const string::size_type charPos;
+  const std::string line;
+  const std::string::size_type charPos;
 
-  ParseException(const string &msg, const string line,
-                 const string::size_type charPos);
+  ParseException(const std::string &msg, const std::string line,
+                 const std::string::size_type charPos);
 
   virtual const char *what() const noexcept override;
 };
 
-ostream &operator<<(ostream &o, const ParseException &pe);
+std::ostream &operator<<(std::ostream &o, const ParseException &pe);
 
 #endif

@@ -5,12 +5,9 @@
 #include <memory>
 #include <string>
 
-using std::shared_ptr;
-using std::string;
-
 class IntAtom : public Atom {
 protected:
-  string toString() const;
+  std::string toString() const;
   bool equals(const SExpr &other) const;
 
 public:
@@ -19,7 +16,7 @@ public:
   IntAtom(const int val);
 
   static bool classOf(const SExpr &sExpr);
-  static const string typeName;
+  static const std::string typeName;
 };
 
 #endif

@@ -14,104 +14,87 @@
 #include <string>
 #include <vector>
 
-using std::all_of;
-using std::back_inserter;
-using std::copy;
-using std::cout;
-using std::distance;
-using std::getline;
-using std::istream;
-using std::make_shared;
-using std::regex;
-using std::regex_replace;
-using std::replace_if;
-using std::shared_ptr;
-using std::sregex_token_iterator;
-using std::stoi;
-using std::string;
-using std::stringstream;
-using std::vector;
-
-vector<string> tokenize(string str) {
-  vector<string> tokens;
-  regex rgx(
+std::vector<std::string> tokenize(std::string str) {
+  std::vector<std::string> tokens;
+  std::regex rgx(
       "\\\"(?:[^\"\\\\]*(?:\\\\.)?)*\\\"|;|\\(|\\)|,@|,|`|'|[^\\s(),@,`']+");
-  copy(sregex_token_iterator(str.begin(), str.end(), rgx, 0),
-       sregex_token_iterator(), back_inserter(tokens));
+  copy(std::sregex_token_iterator(str.begin(), str.end(), rgx, 0),
+       std::sregex_token_iterator(), back_inserter(tokens));
   return tokens;
 }
 
-shared_ptr<SExpr> parseAtom(string token) {
+std::shared_ptr<SExpr> parseAtom(std::string token) {
   if ((token.length() >= 1 && all_of(token.begin(), token.end(), ::isdigit)) ||
       (token[0] == '-' && token.length() > 1 &&
        all_of(token.begin() + 1, token.end(), ::isdigit))) {
-    return make_shared<IntAtom>(stoi(token));
+    return std::make_shared<IntAtom>(stoi(token));
   }
   if (token.front() == '\"' && token.back() == '\"') {
-    return make_shared<StringAtom>(token);
+    return std::make_shared<StringAtom>(token);
   }
   if (token == "#t") {
-    return make_shared<BoolAtom>(true);
+    return std::make_shared<BoolAtom>(true);
   }
   if (token == "#f") {
-    return make_shared<BoolAtom>(false);
+    return std::make_shared<BoolAtom>(false);
   }
   if (token == "'") {
-    return make_shared<SymAtom>("quote");
+    return std::make_shared<SymAtom>("quote");
   }
   if (token == "`") {
-    return make_shared<SymAtom>("quasiquote");
+    return std::make_shared<SymAtom>("quasiquote");
   }
   if (token == ",") {
-    return make_shared<SymAtom>("unquote");
+    return std::make_shared<SymAtom>("unquote");
   }
   if (token == ",@") {
-    return make_shared<SymAtom>("unquote-splicing");
+    return std::make_shared<SymAtom>("unquote-splicing");
   }
-  return make_shared<SymAtom>(token);
+  return std::make_shared<SymAtom>(token);
 }
 
-shared_ptr<SExpr> parse(vector<string>::const_iterator &it);
+std::shared_ptr<SExpr> parse(std::vector<std::string>::const_iterator &it);
 
-shared_ptr<SExpr> parseSexprs(vector<string>::const_iterator &it) {
-  string token = *it;
+std::shared_ptr<SExpr>
+parseSexprs(std::vector<std::string>::const_iterator &it) {
+  std::string token = *it;
   if (token == ")") {
     it += 1;
-    return make_shared<NilAtom>();
+    return std::make_shared<NilAtom>();
   } else if (token == "(") {
     it += 1;
-    shared_ptr<SExpr> first = parseSexprs(it);
-    shared_ptr<SExpr> rest = parseSexprs(it);
-    return make_shared<SExprs>(first, rest);
+    std::shared_ptr<SExpr> first = parseSexprs(it);
+    std::shared_ptr<SExpr> rest = parseSexprs(it);
+    return std::make_shared<SExprs>(first, rest);
   }
-  shared_ptr<SExpr> first = parse(it);
-  shared_ptr<SExpr> rest = parseSexprs(it);
-  return make_shared<SExprs>(first, rest);
+  std::shared_ptr<SExpr> first = parse(it);
+  std::shared_ptr<SExpr> rest = parseSexprs(it);
+  return std::make_shared<SExprs>(first, rest);
 }
 
-shared_ptr<SExpr> parse(vector<string>::const_iterator &it) {
-  string token = *it;
+std::shared_ptr<SExpr> parse(std::vector<std::string>::const_iterator &it) {
+  std::string token = *it;
   it += 1;
   if (token == "(") {
     return parseSexprs(it);
   }
   if (token == "'" || token == "`" || token == "," || token == ",@") {
-    shared_ptr<SExpr> rest =
-        make_shared<SExprs>(parse(it), make_shared<NilAtom>());
-    return make_shared<SExprs>(parseAtom(token), rest);
+    std::shared_ptr<SExpr> rest =
+        std::make_shared<SExprs>(parse(it), std::make_shared<NilAtom>());
+    return std::make_shared<SExprs>(parseAtom(token), rest);
   }
   return parseAtom(token);
 }
 
-shared_ptr<SExpr> parse(string str) {
-  vector<string> tokens = tokenize(str);
-  vector<string>::const_iterator it = tokens.begin();
+std::shared_ptr<SExpr> parse(std::string str) {
+  std::vector<std::string> tokens = tokenize(str);
+  std::vector<std::string>::const_iterator it = tokens.begin();
   return parse(it);
 }
 
-size_t implodeTokens(const vector<string> &tokens,
-                     const vector<string>::const_iterator &token,
-                     string &line) {
+size_t implodeTokens(const std::vector<std::string> &tokens,
+                     const std::vector<std::string>::const_iterator &token,
+                     std::string &line) {
   size_t pos = 0;
   for (auto it = tokens.begin(); it != tokens.end(); ++it) {
     line += *it;
@@ -129,27 +112,28 @@ size_t implodeTokens(const vector<string> &tokens,
   return pos;
 }
 
-void handleUnexpectedToken(const vector<string> &tokens,
-                           const vector<string>::const_iterator &token) {
-  stringstream ss;
+void handleUnexpectedToken(
+    const std::vector<std::string> &tokens,
+    const std::vector<std::string>::const_iterator &token) {
+  std::stringstream ss;
   ss << "Unexpected \"" << *token << "\".";
-  string line;
+  std::string line;
   size_t pos = implodeTokens(tokens, token, line);
   throw ParseException(ss.str(), line, pos);
 }
 
-void handleMissingToken(const vector<string> &tokens,
-                        const vector<string>::const_iterator &token,
-                        string missing) {
-  stringstream ss;
+void handleMissingToken(const std::vector<std::string> &tokens,
+                        const std::vector<std::string>::const_iterator &token,
+                        std::string missing) {
+  std::stringstream ss;
   ss << "Expected " << missing << ".";
-  string line;
+  std::string line;
   size_t pos = implodeTokens(tokens, token, line);
   throw ParseException(ss.str(), line, pos + token->length());
 }
 
 void verifyLex(std::string &line, uint32_t &openParen, uint32_t &closedParen) {
-  vector<string> tokens = tokenize(line);
+  std::vector<std::string> tokens = tokenize(line);
   for (auto it = tokens.begin(); it != tokens.end(); ++it) {
     if (it->front() == '"' && it->back() != '"') {
       handleMissingToken(tokens, it, "\"");
@@ -169,18 +153,18 @@ void verifyLex(std::string &line, uint32_t &openParen, uint32_t &closedParen) {
   }
 }
 
-istream &getInput(istream &in, string &str, size_t &linesRead, string prompt,
-                  string wrap) {
+std::istream &getInput(std::istream &in, std::string &str, size_t &linesRead,
+                       std::string prompt, std::string wrap) {
   uint32_t openParen = 0;
   uint32_t closedParen = 0;
-  string line;
-  cout << prompt;
+  std::string line;
+  std::cout << prompt;
   while (getline(in, line)) {
     linesRead += 1;
-    line = regex_replace(line, regex("(\\\\\"|\"(?:\\\\\"|[^\"])*\")|(;.*$)"),
-                         "$1");
+    line = std::regex_replace(
+        line, std::regex("(\\\\\"|\"(?:\\\\\"|[^\"])*\")|(;.*$)"), "$1");
     if (str.empty() && line.empty()) {
-      cout << prompt;
+      std::cout << prompt;
       continue;
     }
     verifyLex(line, openParen, closedParen);
@@ -188,7 +172,7 @@ istream &getInput(istream &in, string &str, size_t &linesRead, string prompt,
     if (openParen == closedParen) {
       return in;
     }
-    cout << wrap;
+    std::cout << wrap;
   }
   return in;
 }

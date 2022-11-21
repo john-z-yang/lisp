@@ -5,68 +5,66 @@
 #include "./Env.hpp"
 #include <memory>
 
-using std::shared_ptr;
+std::shared_ptr<SExpr> lispQuit(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispQuit(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispDisplay(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispDisplay(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispAbs(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispAbs(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispAdd(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispAdd(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispSub(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispSub(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispMult(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispMult(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispDiv(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispDiv(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispMod(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispMod(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispEq(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispEq(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispGt(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispGt(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispGteq(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispGteq(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispLt(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispLt(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispLteq(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispLteq(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispNot(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispNot(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispAnd(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispAnd(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispOr(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispOr(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispCons(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispCons(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispCar(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispCar(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispCdr(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispCdr(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispIsNull(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispIsNull(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispIsCons(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispIsCons(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispIsSym(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispIsSym(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispIsString(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispIsString(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispIsNum(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispIsNum(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispIsProc(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispIsProc(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispIsEqv(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispIsEqv(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispGensym(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispGensym(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispStrLen(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispStrLen(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispStrSub(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispStrSub(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispStrCon(std::shared_ptr<Env> env);
 
-shared_ptr<SExpr> lispStrCon(shared_ptr<Env> env);
-
-shared_ptr<SExpr> lispToStr(shared_ptr<Env> env);
+std::shared_ptr<SExpr> lispToStr(std::shared_ptr<Env> env);
 
 #endif

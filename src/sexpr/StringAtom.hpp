@@ -5,25 +5,22 @@
 #include <memory>
 #include <string>
 
-using std::shared_ptr;
-using std::string;
-
 class StringAtom : public Atom {
 private:
-  static string unescape(const string literal);
+  static std::string unescape(const std::string literal);
 
 protected:
-  string toString() const;
+  std::string toString() const;
   bool equals(const SExpr &other) const;
 
 public:
-  const string literal;
-  const string unescaped;
+  const std::string literal;
+  const std::string unescaped;
 
-  StringAtom(const string literal);
+  StringAtom(const std::string literal);
 
   static bool classOf(const SExpr &sExpr);
-  static const string typeName;
+  static const std::string typeName;
 };
 
 #endif

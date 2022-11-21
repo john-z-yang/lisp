@@ -2,12 +2,9 @@
 #include "cast.cpp"
 #include <string>
 
-using std::string;
-using std::to_string;
-
 IntAtom::IntAtom(const int val) : Atom(SExpr::Type::NUM), val(val) {}
 
-string IntAtom::toString() const { return to_string(val); }
+std::string IntAtom::toString() const { return std::to_string(val); }
 
 bool IntAtom::equals(const SExpr &other) const {
   if (isa<IntAtom>(other)) {
@@ -20,4 +17,4 @@ bool IntAtom::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::NUM;
 }
 
-const string IntAtom::typeName = "Integer";
+const std::string IntAtom::typeName = "Integer";

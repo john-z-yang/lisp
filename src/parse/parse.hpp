@@ -5,13 +5,10 @@
 #include <memory>
 #include <string>
 
-using std::istream;
-using std::shared_ptr;
-using std::string;
+std::shared_ptr<SExpr> parse(std::string str);
 
-shared_ptr<SExpr> parse(string str);
-
-istream &getInput(istream &in, string &str, size_t &linesRead, string prompt,
-                  string wrap);
+std::istream &getInput(std::istream &in, std::string &str,
+                       std::size_t &linesRead, std::string prompt,
+                       std::string wrap);
 
 #endif

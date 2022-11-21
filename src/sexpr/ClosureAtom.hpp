@@ -9,39 +9,37 @@
 #include <memory>
 #include <tuple>
 
-using std::function;
-using std::shared_ptr;
-using std::tuple;
-
 class ClosureAtom : public Atom {
-  typedef function<shared_ptr<SExpr>(shared_ptr<Env>)> Proc;
+  typedef std::function<std::shared_ptr<SExpr>(std::shared_ptr<Env>)> Proc;
 
 private:
-  void handleArgMismatch(shared_ptr<SExpr> argNames, shared_ptr<SExpr> argVals);
-  std::shared_ptr<SExpr> evalArgs(shared_ptr<SExpr> args,
-                                  shared_ptr<Env> curEnv);
-  shared_ptr<Env> bindArgs(shared_ptr<SExpr> args, shared_ptr<Env> curEnv);
+  void handleArgMismatch(std::shared_ptr<SExpr> argNames,
+                         std::shared_ptr<SExpr> argVals);
+  std::shared_ptr<SExpr> evalArgs(std::shared_ptr<SExpr> args,
+                                  std::shared_ptr<Env> curEnv);
+  std::shared_ptr<Env> bindArgs(std::shared_ptr<SExpr> args,
+                                std::shared_ptr<Env> curEnv);
 
 protected:
-  string toString() const;
+  std::string toString() const;
   bool equals(const SExpr &other) const;
 
 public:
   Proc proc;
-  const shared_ptr<Env> outerEnv;
-  const shared_ptr<SExpr> argNames;
+  const std::shared_ptr<Env> outerEnv;
+  const std::shared_ptr<SExpr> argNames;
   const bool isMacro;
 
-  ClosureAtom(Proc proc, const shared_ptr<Env> outerEnv,
-              const shared_ptr<SExpr> argNames);
-  ClosureAtom(Proc proc, const shared_ptr<Env> outerEnv,
-              const shared_ptr<SExpr> argNames, const bool isMacro);
+  ClosureAtom(Proc proc, const std::shared_ptr<Env> outerEnv,
+              const std::shared_ptr<SExpr> argNames);
+  ClosureAtom(Proc proc, const std::shared_ptr<Env> outerEnv,
+              const std::shared_ptr<SExpr> argNames, const bool isMacro);
 
-  tuple<shared_ptr<SExpr>, shared_ptr<Env>> expand(shared_ptr<SExpr> args,
-                                                   shared_ptr<Env> curEnv);
+  std::tuple<std::shared_ptr<SExpr>, std::shared_ptr<Env>>
+  expand(std::shared_ptr<SExpr> args, std::shared_ptr<Env> curEnv);
 
   static bool classOf(const SExpr &sExpr);
-  static const string typeName;
+  static const std::string typeName;
 };
 
 #endif

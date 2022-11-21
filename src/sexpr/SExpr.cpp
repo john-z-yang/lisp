@@ -3,11 +3,9 @@
 #include "cast.cpp"
 #include <iostream>
 
-using std::ostream;
-
 SExpr::SExpr(SExpr::Type type) : type(type) {}
 
-ostream &operator<<(ostream &o, const SExpr &sExpr) {
+std::ostream &operator<<(std::ostream &o, const SExpr &sExpr) {
   return o << (isa<SExprs>(sExpr) ? "(" : "") << sExpr.toString();
 }
 
