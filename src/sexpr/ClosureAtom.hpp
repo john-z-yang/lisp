@@ -12,13 +12,13 @@
 class ClosureAtom : public Atom {
   typedef std::function<std::shared_ptr<SExpr>(std::shared_ptr<Env>)> Proc;
 
-private:
-  void handleArgMismatch(std::shared_ptr<SExpr> argNames,
-                         std::shared_ptr<SExpr> argVals);
-  std::shared_ptr<SExpr> evalArgs(std::shared_ptr<SExpr> args,
-                                  std::shared_ptr<Env> curEnv);
-  std::shared_ptr<Env> bindArgs(std::shared_ptr<SExpr> args,
-                                std::shared_ptr<Env> curEnv);
+  // private:
+  //   void handleArgMismatch(std::shared_ptr<SExpr> argNames,
+  //                          std::shared_ptr<SExpr> argVals);
+  //   std::shared_ptr<SExpr> evalArgs(std::shared_ptr<SExpr> args,
+  //                                   std::shared_ptr<Env> curEnv);
+  //   std::shared_ptr<Env> bindArgs(std::shared_ptr<SExpr> args,
+  //                                 std::shared_ptr<Env> curEnv);
 
 protected:
   std::string toString() const;

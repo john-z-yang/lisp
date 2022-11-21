@@ -26,6 +26,14 @@ void handleSyntaxError(std::string expected, std::shared_ptr<SExpr> actual) {
   throw EvalException(ss.str());
 }
 
+void handleArgMismatch(std::shared_ptr<SExpr> argNames,
+                       std::shared_ptr<SExpr> argVals) {
+  std::stringstream ss;
+  ss << "Invalid number of arguments. Expected \"" << *argNames
+     << "\", but got \"" << *argVals << "\".";
+  throw EvalException(ss.str());
+}
+
 std::shared_ptr<SExpr> evalQuote(std::shared_ptr<SExpr> sExpr,
                                  std::shared_ptr<Env> env) {
   std::shared_ptr<SExpr> quoteArg;
@@ -190,6 +198,55 @@ std::shared_ptr<SExpr> evalIf(std::shared_ptr<SExpr> sExpr,
   return (test->val) ? conseq : alt;
 }
 
+std::shared_ptr<SExpr> evalArgs(std::shared_ptr<SExpr> args,
+                                std::shared_ptr<Env> curEnv) {
+  if (isa<NilAtom>(*args)) {
+    return std::make_shared<NilAtom>();
+  }
+  auto sExprs = cast<SExprs>(args);
+  auto first = eval(sExprs->first, curEnv);
+  auto rest = evalArgs(sExprs->rest, curEnv);
+  return std::make_shared<SExprs>(first, rest);
+}
+
+std::shared_ptr<Env> loadArgs(std::shared_ptr<ClosureAtom> closure,
+                              std::shared_ptr<SExpr> args,
+                              std::shared_ptr<Env> curEnv) {
+  auto env = std::make_shared<Env>(closure->outerEnv);
+  auto argVals = closure->isMacro ? args : evalArgs(args, curEnv);
+  if (isa<SExprs>(*closure->argNames)) {
+    auto argNamesIter = cast<SExprs>(closure->argNames);
+    auto argValsIter = cast<SExprs>(argVals);
+    while (true) {
+      env->def(*cast<SymAtom>(argNamesIter->first), argValsIter->first);
+      if (isa<NilAtom>(*argNamesIter->rest) &&
+          isa<NilAtom>(*argValsIter->rest)) {
+        break;
+      } else if (isa<NilAtom>(*argNamesIter->rest) ||
+                 isa<NilAtom>(*argValsIter->rest)) {
+        handleArgMismatch(closure->argNames, argVals);
+      }
+      argNamesIter = cast<SExprs>(argNamesIter->rest);
+      argValsIter = cast<SExprs>(argValsIter->rest);
+    }
+  } else if (isa<SymAtom>(*closure->argNames)) {
+    env->def(cast<SymAtom>(closure->argNames)->val, argVals);
+  } else if (!isa<NilAtom>(*argVals)) {
+    handleArgMismatch(closure->argNames, argVals);
+  }
+  return env;
+}
+
+std::tuple<std::shared_ptr<SExpr>, std::shared_ptr<Env>>
+evalClosure(std::shared_ptr<ClosureAtom> closure, std::shared_ptr<SExpr> args,
+            std::shared_ptr<Env> curEnv) {
+  auto env = loadArgs(closure, args, curEnv);
+  if (closure->isMacro) {
+    return make_tuple(eval(closure->proc(curEnv), env), curEnv);
+  }
+  return make_tuple(closure->proc(env), env);
+}
+
 std::shared_ptr<SExpr> eval(std::shared_ptr<SExpr> sExpr,
                             std::shared_ptr<Env> env) {
   try {
@@ -224,9 +281,8 @@ std::shared_ptr<SExpr> eval(std::shared_ptr<SExpr> sExpr,
           continue;
         }
       }
-      std::shared_ptr<ClosureAtom> closure =
-          cast<ClosureAtom>(eval(sExprs->first, env));
-      tie(sExpr, env) = closure->expand(sExprs->rest, env);
+      auto closure = cast<ClosureAtom>(eval(sExprs->first, env));
+      tie(sExpr, env) = evalClosure(closure, sExprs->rest, env);
     }
   } catch (EvalException &ee) {
     ee.pushStackTrace(sExpr);
