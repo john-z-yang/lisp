@@ -65,17 +65,17 @@ std::shared_ptr<SExpr> expandQuasiquote(std::shared_ptr<SExpr> sExpr,
       isa<SymAtom>(*sExpr)) {
     return sExpr;
   }
-  std::shared_ptr<SExprs> sExprs = cast<SExprs>(sExpr);
+  auto sExprs = cast<SExprs>(sExpr);
   if (level == 1) {
     if (isa<SExprs>(*sExprs->first) &&
         isa<SymAtom>(*cast<SExprs>(sExprs->first)->first) &&
         cast<SymAtom>(cast<SExprs>(sExprs->first)->first)->val ==
             "unquote-splicing") {
-      std::shared_ptr<SExpr> res = evalUnquote(sExprs->first, env);
+      auto res = evalUnquote(sExprs->first, env);
       if (isa<NilAtom>(*res)) {
         return expandQuasiquote(sExprs->rest, level, env);
       }
-      std::shared_ptr<SExprs> it = cast<SExprs>(res);
+      auto it = cast<SExprs>(res);
       while (!isa<NilAtom>(*cast<SExprs>(it)->rest)) {
         it = cast<SExprs>(cast<SExprs>(it)->rest);
       }
@@ -88,7 +88,7 @@ std::shared_ptr<SExpr> expandQuasiquote(std::shared_ptr<SExpr> sExpr,
     }
   }
   if (isa<SymAtom>(*sExprs->first)) {
-    std::string sym = cast<SymAtom>(sExprs->first)->val;
+    auto sym = cast<SymAtom>(sExprs->first)->val;
     if (sym == "unquote" || sym == "unquote-splicing") {
       return std::make_shared<SExprs>(
           expandQuasiquote(sExprs->first, level - 1, env),
@@ -127,7 +127,7 @@ std::shared_ptr<SExpr> evalDef(std::shared_ptr<SExpr> sExpr,
   } catch (EvalException &ee) {
     handleSyntaxError(defGrammar, sExpr);
   }
-  std::shared_ptr<SExpr> res = eval(defSExpr, env);
+  auto res = eval(defSExpr, env);
   env->def(*sym, res);
   return res;
 }
@@ -143,7 +143,7 @@ std::shared_ptr<SExpr> evalSet(std::shared_ptr<SExpr> sExpr,
   } catch (EvalException &ee) {
     handleSyntaxError(setGrammar, sExpr);
   }
-  std::shared_ptr<SExpr> res = eval(setSExpr, env);
+  auto res = eval(setSExpr, env);
   env->set(*sym, res);
   return res;
 }
@@ -176,7 +176,7 @@ std::shared_ptr<SExpr> evalDefMacro(std::shared_ptr<SExpr> sExpr,
   } catch (EvalException &ee) {
     handleSyntaxError(defMacroGrammar, sExpr);
   }
-  std::shared_ptr<SExpr> macro = evalLambda(macroExpr, env, true);
+  auto macro = evalLambda(macroExpr, env, true);
   env->def(*sym, macro);
   return macro;
 }
@@ -257,9 +257,9 @@ std::shared_ptr<SExpr> eval(std::shared_ptr<SExpr> sExpr,
       } else if (isa<SymAtom>(*sExpr)) {
         return env->find(*cast<SymAtom>(sExpr));
       }
-      std::shared_ptr<SExprs> sExprs = cast<SExprs>(sExpr);
+      auto sExprs = cast<SExprs>(sExpr);
       if (isa<SymAtom>(*sExprs->first)) {
-        std::string sym = cast<SymAtom>(sExprs->first)->val;
+        auto sym = cast<SymAtom>(sExprs->first)->val;
         if (sym == "quote") {
           return evalQuote(sExpr, env);
         } else if (sym == "quasiquote") {

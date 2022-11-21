@@ -19,7 +19,7 @@ std::shared_ptr<SExpr> lispQuit(std::shared_ptr<Env> env) {
 }
 
 std::shared_ptr<SExpr> lispDisplay(std::shared_ptr<Env> env) {
-  std::shared_ptr<SExpr> arg = env->find(SymAtom("display_oprand"));
+  auto arg = env->find(SymAtom("display_oprand"));
   if (isa<StringAtom>(*arg)) {
     std::cout << cast<StringAtom>(arg)->unescaped << std::endl;
   } else {
@@ -99,20 +99,20 @@ std::shared_ptr<SExpr> lispNot(std::shared_ptr<Env> env) {
 }
 
 std::shared_ptr<SExpr> lispCons(std::shared_ptr<Env> env) {
-  std::shared_ptr<SymAtom> sym = std::make_shared<SymAtom>("res");
+  auto sym = std::make_shared<SymAtom>("res");
   env->def(*sym, std::make_shared<SExprs>(env->find(SymAtom("cons_lhs")),
                                           env->find(SymAtom("cons_rhs"))));
   return sym;
 }
 
 std::shared_ptr<SExpr> lispCar(std::shared_ptr<Env> env) {
-  std::shared_ptr<SymAtom> sym = std::make_shared<SymAtom>("res");
+  auto sym = std::make_shared<SymAtom>("res");
   env->def(*sym, cast<SExprs>(env->find(SymAtom("car_oprand")))->first);
   return sym;
 }
 
 std::shared_ptr<SExpr> lispCdr(std::shared_ptr<Env> env) {
-  std::shared_ptr<SymAtom> sym = std::make_shared<SymAtom>("res");
+  auto sym = std::make_shared<SymAtom>("res");
   env->def(*sym, cast<SExprs>(env->find(SymAtom("cdr_oprand")))->rest);
   return sym;
 }
@@ -163,9 +163,9 @@ std::shared_ptr<SExpr> lispGensym(std::shared_ptr<Env> env) {
 }
 
 std::shared_ptr<SExpr> lispStrSub(std::shared_ptr<Env> env) {
-  size_t pos = cast<IntAtom>(env->find(SymAtom("strsub_pos")))->val;
-  size_t len = cast<IntAtom>(env->find(SymAtom("strsub_len")))->val;
-  std::string str = cast<StringAtom>(env->find(SymAtom("strsub_s")))->unescaped;
+  auto pos = cast<IntAtom>(env->find(SymAtom("strsub_pos")))->val;
+  auto len = cast<IntAtom>(env->find(SymAtom("strsub_len")))->val;
+  auto str = cast<StringAtom>(env->find(SymAtom("strsub_s")))->unescaped;
   std::stringstream ss;
   try {
     ss << "\"" << str.substr(pos, len) << "\"";

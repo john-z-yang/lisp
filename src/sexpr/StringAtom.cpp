@@ -9,7 +9,7 @@ StringAtom::StringAtom(const std::string literal)
 std::string StringAtom::toString() const { return literal; }
 
 std::string StringAtom::unescape(const std::string literal) {
-  std::string res = literal;
+  auto res = literal;
   res = std::regex_replace(res, std::regex("\\\\\""), "\"");
   res = std::regex_replace(res, std::regex("\\\\\\\\"), "\\");
   return res.substr(1, res.size() - 2);

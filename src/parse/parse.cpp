@@ -57,29 +57,29 @@ std::shared_ptr<SExpr> parse(std::vector<std::string>::const_iterator &it);
 
 std::shared_ptr<SExpr>
 parseSexprs(std::vector<std::string>::const_iterator &it) {
-  std::string token = *it;
+  auto token = *it;
   if (token == ")") {
     it += 1;
     return std::make_shared<NilAtom>();
   } else if (token == "(") {
     it += 1;
-    std::shared_ptr<SExpr> first = parseSexprs(it);
-    std::shared_ptr<SExpr> rest = parseSexprs(it);
+    auto first = parseSexprs(it);
+    auto rest = parseSexprs(it);
     return std::make_shared<SExprs>(first, rest);
   }
-  std::shared_ptr<SExpr> first = parse(it);
-  std::shared_ptr<SExpr> rest = parseSexprs(it);
+  auto first = parse(it);
+  auto rest = parseSexprs(it);
   return std::make_shared<SExprs>(first, rest);
 }
 
 std::shared_ptr<SExpr> parse(std::vector<std::string>::const_iterator &it) {
-  std::string token = *it;
+  auto token = *it;
   it += 1;
   if (token == "(") {
     return parseSexprs(it);
   }
   if (token == "'" || token == "`" || token == "," || token == ",@") {
-    std::shared_ptr<SExpr> rest =
+    auto rest =
         std::make_shared<SExprs>(parse(it), std::make_shared<NilAtom>());
     return std::make_shared<SExprs>(parseAtom(token), rest);
   }
@@ -87,7 +87,7 @@ std::shared_ptr<SExpr> parse(std::vector<std::string>::const_iterator &it) {
 }
 
 std::shared_ptr<SExpr> parse(std::string str) {
-  std::vector<std::string> tokens = tokenize(str);
+  auto tokens = tokenize(str);
   std::vector<std::string>::const_iterator it = tokens.begin();
   return parse(it);
 }
@@ -95,7 +95,7 @@ std::shared_ptr<SExpr> parse(std::string str) {
 size_t implodeTokens(const std::vector<std::string> &tokens,
                      const std::vector<std::string>::const_iterator &token,
                      std::string &line) {
-  size_t pos = 0;
+  auto pos = 0;
   for (auto it = tokens.begin(); it != tokens.end(); ++it) {
     line += *it;
     if (distance(it, token) > 0) {
@@ -118,7 +118,7 @@ void handleUnexpectedToken(
   std::stringstream ss;
   ss << "Unexpected \"" << *token << "\".";
   std::string line;
-  size_t pos = implodeTokens(tokens, token, line);
+  auto pos = implodeTokens(tokens, token, line);
   throw ParseException(ss.str(), line, pos);
 }
 
@@ -128,12 +128,12 @@ void handleMissingToken(const std::vector<std::string> &tokens,
   std::stringstream ss;
   ss << "Expected " << missing << ".";
   std::string line;
-  size_t pos = implodeTokens(tokens, token, line);
+  auto pos = implodeTokens(tokens, token, line);
   throw ParseException(ss.str(), line, pos + token->length());
 }
 
 void verifyLex(std::string &line, uint32_t &openParen, uint32_t &closedParen) {
-  std::vector<std::string> tokens = tokenize(line);
+  auto tokens = tokenize(line);
   for (auto it = tokens.begin(); it != tokens.end(); ++it) {
     if (it->front() == '"' && it->back() != '"') {
       handleMissingToken(tokens, it, "\"");

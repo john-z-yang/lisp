@@ -19,7 +19,7 @@
 #include <string>
 
 int repl() {
-  std::shared_ptr<Env> env = std::make_shared<Env>();
+  auto env = std::make_shared<Env>();
   initEnv(env);
 
   while (true) {
@@ -54,7 +54,7 @@ int repl(const std::string fileName) {
     return EXIT_FAILURE;
   }
 
-  std::shared_ptr<Env> env = std::make_shared<Env>();
+  auto env = std::make_shared<Env>();
   initEnv(env);
 
   size_t linesRead = 0;

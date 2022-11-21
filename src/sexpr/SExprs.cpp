@@ -24,7 +24,7 @@ std::string SExprs::toString() const {
 
 bool SExprs::equals(const SExpr &other) const {
   if (isa<SExprs>(other)) {
-    const SExprs &sExprs = dynamic_cast<const SExprs &>(other);
+    const auto sExprs = dynamic_cast<const SExprs &>(other);
     return first->equals(*sExprs.first) && rest->equals(*sExprs.rest);
   }
   return false;
