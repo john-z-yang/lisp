@@ -20,8 +20,8 @@ std::shared_ptr<SExpr> lispQuit(std::shared_ptr<Env> env) {
 
 std::shared_ptr<SExpr> lispDisplay(std::shared_ptr<Env> env) {
   auto arg = env->find(SymAtom("display_oprand"));
-  if (isa<StringAtom>(*arg)) {
-    std::cout << cast<StringAtom>(arg)->unescaped << std::endl;
+  if (auto stringAtom = std::dynamic_pointer_cast<StringAtom>(arg)) {
+    std::cout << stringAtom->unescaped << std::endl;
   } else {
     std::cout << *arg << std::endl;
   }

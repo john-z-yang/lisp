@@ -4,8 +4,8 @@
 #include <string>
 
 bool BoolAtom::toBool(std::shared_ptr<SExpr> sExpr) {
-  if (isa<BoolAtom>(*sExpr)) {
-    return cast<BoolAtom>(sExpr)->val;
+  if (auto boolAtom = std::dynamic_pointer_cast<BoolAtom>(sExpr)) {
+    return boolAtom->val;
   }
   return true;
 }

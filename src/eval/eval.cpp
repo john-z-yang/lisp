@@ -87,14 +87,13 @@ std::shared_ptr<SExpr> expandQuasiquote(std::shared_ptr<SExpr> sExpr,
       return evalUnquote(sExprs, env);
     }
   }
-  if (isa<SymAtom>(*sExprs->first)) {
-    auto sym = cast<SymAtom>(sExprs->first)->val;
-    if (sym == "unquote" || sym == "unquote-splicing") {
+  if (auto symAtom = std::dynamic_pointer_cast<SymAtom>(sExprs->first)) {
+    if (symAtom->val == "unquote" || symAtom->val == "unquote-splicing") {
       return std::make_shared<SExprs>(
           expandQuasiquote(sExprs->first, level - 1, env),
           expandQuasiquote(sExprs->rest, level - 1, env));
     }
-    if (sym == "quasiquote") {
+    if (symAtom->val == "quasiquote") {
       return std::make_shared<SExprs>(
           expandQuasiquote(sExprs->first, level + 1, env),
           expandQuasiquote(sExprs->rest, level + 1, env));
@@ -200,8 +199,8 @@ std::shared_ptr<SExpr> evalIf(std::shared_ptr<SExpr> sExpr,
 
 std::shared_ptr<SExpr> evalArgs(std::shared_ptr<SExpr> args,
                                 std::shared_ptr<Env> curEnv) {
-  if (isa<NilAtom>(*args)) {
-    return std::make_shared<NilAtom>();
+  if (auto nilAtom = std::dynamic_pointer_cast<NilAtom>(args)) {
+    return nilAtom;
   }
   auto sExprs = cast<SExprs>(args);
   auto first = eval(sExprs->first, curEnv);
@@ -229,8 +228,9 @@ std::shared_ptr<Env> loadArgs(std::shared_ptr<ClosureAtom> closure,
       argNamesIter = cast<SExprs>(argNamesIter->rest);
       argValsIter = cast<SExprs>(argValsIter->rest);
     }
-  } else if (isa<SymAtom>(*closure->argNames)) {
-    env->def(cast<SymAtom>(closure->argNames)->val, argVals);
+  } else if (auto symAtom =
+                 std::dynamic_pointer_cast<SymAtom>(closure->argNames)) {
+    env->def(symAtom->val, argVals);
   } else if (!isa<NilAtom>(*argVals)) {
     handleArgMismatch(closure->argNames, argVals);
   }
@@ -254,29 +254,28 @@ std::shared_ptr<SExpr> eval(std::shared_ptr<SExpr> sExpr,
       if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) ||
           isa<BoolAtom>(*sExpr) || isa<StringAtom>(*sExpr)) {
         return sExpr;
-      } else if (isa<SymAtom>(*sExpr)) {
-        return env->find(*cast<SymAtom>(sExpr));
+      } else if (auto symAtom = std::dynamic_pointer_cast<SymAtom>(sExpr)) {
+        return env->find(*symAtom);
       }
       auto sExprs = cast<SExprs>(sExpr);
-      if (isa<SymAtom>(*sExprs->first)) {
-        auto sym = cast<SymAtom>(sExprs->first)->val;
-        if (sym == "quote") {
+      if (auto sym = std::dynamic_pointer_cast<SymAtom>(sExprs->first)) {
+        if (sym->val == "quote") {
           return evalQuote(sExpr, env);
-        } else if (sym == "quasiquote") {
+        } else if (sym->val == "quasiquote") {
           return evalQuasiquote(sExpr, env);
-        } else if (sym == "unquote") {
+        } else if (sym->val == "unquote") {
           handleSyntaxError(unquoteGrammar, sExpr);
-        } else if (sym == "unquote-splicing") {
+        } else if (sym->val == "unquote-splicing") {
           handleSyntaxError(unquoteSplicingGrammar, sExpr);
-        } else if (sym == "define") {
+        } else if (sym->val == "define") {
           return evalDef(sExpr, env);
-        } else if (sym == "set!") {
+        } else if (sym->val == "set!") {
           return evalSet(sExpr, env);
-        } else if (sym == "lambda") {
+        } else if (sym->val == "lambda") {
           return evalLambda(sExpr, env, false);
-        } else if (sym == "define-macro") {
+        } else if (sym->val == "define-macro") {
           return evalDefMacro(sExpr, env);
-        } else if (sym == "if") {
+        } else if (sym->val == "if") {
           sExpr = evalIf(sExpr, env);
           continue;
         }
