@@ -27,7 +27,10 @@ int repl() {
     size_t linesRead = 0;
     try {
       if (getInput(std::cin, input, linesRead, "lisp> ", "  ... ")) {
-        std::cout << *eval(parse(input), env) << std::endl;
+        trampoline(parse(input), env, [](std::shared_ptr<SExpr> res) {
+          std::cout << *res << std::endl;
+          return nullptr;
+        });
       } else {
         std::cout << std::endl;
         lispQuit(env);
@@ -62,7 +65,8 @@ int repl(const std::string fileName) {
     std::string input;
     try {
       if (getInput(fs, input, linesRead, "", "")) {
-        *eval(parse(input), env);
+        trampoline(parse(input), env,
+                   [](std::shared_ptr<SExpr> _) { return nullptr; });
       } else {
         break;
       }

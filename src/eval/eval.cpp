@@ -34,8 +34,8 @@ void handleArgMismatch(std::shared_ptr<SExpr> argNames,
   throw EvalException(ss.str());
 }
 
-std::shared_ptr<SExpr> evalQuote(std::shared_ptr<SExpr> sExpr,
-                                 std::shared_ptr<Env> env) {
+std::unique_ptr<Thunk> evalQuote(std::shared_ptr<SExpr> sExpr,
+                                 std::shared_ptr<Env> env, EvalCont cont) {
   std::shared_ptr<SExpr> quoteArg;
   try {
     cast<NilAtom>(get(quoteNilPos, sExpr));
@@ -43,11 +43,11 @@ std::shared_ptr<SExpr> evalQuote(std::shared_ptr<SExpr> sExpr,
   } catch (EvalException &ee) {
     handleSyntaxError(quoteGrammar, sExpr);
   }
-  return quoteArg;
+  return cont(quoteArg);
 }
 
-std::shared_ptr<SExpr> evalUnquote(std::shared_ptr<SExpr> sExpr,
-                                   std::shared_ptr<Env> env) {
+std::unique_ptr<Thunk> evalUnquote(std::shared_ptr<SExpr> sExpr,
+                                   std::shared_ptr<Env> env, EvalCont cont) {
   std::shared_ptr<SExpr> unquoteArg;
   try {
     cast<NilAtom>(get(unquoteNilPos, sExpr));
@@ -55,15 +55,16 @@ std::shared_ptr<SExpr> evalUnquote(std::shared_ptr<SExpr> sExpr,
   } catch (EvalException &ee) {
     handleSyntaxError(unquoteGrammar, sExpr);
   }
-  return eval(unquoteArg, env);
+  return std::make_unique<Thunk>([=]() { return eval(unquoteArg, env, cont); });
 }
 
-std::shared_ptr<SExpr> expandQuasiquote(std::shared_ptr<SExpr> sExpr,
-                                        const unsigned int level,
-                                        std::shared_ptr<Env> env) {
+std::unique_ptr<Thunk> expandQuasiquote(std::shared_ptr<SExpr> sExpr,
+                                        unsigned int level,
+                                        std::shared_ptr<Env> env,
+                                        EvalCont cont) {
   if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) || isa<BoolAtom>(*sExpr) ||
       isa<SymAtom>(*sExpr)) {
-    return sExpr;
+    return cont(sExpr);
   }
   auto sExprs = cast<SExprs>(sExpr);
   if (level == 1) {
@@ -71,40 +72,44 @@ std::shared_ptr<SExpr> expandQuasiquote(std::shared_ptr<SExpr> sExpr,
         isa<SymAtom>(*cast<SExprs>(sExprs->first)->first) &&
         cast<SymAtom>(cast<SExprs>(sExprs->first)->first)->val ==
             "unquote-splicing") {
-      auto res = evalUnquote(sExprs->first, env);
-      if (isa<NilAtom>(*res)) {
-        return expandQuasiquote(sExprs->rest, level, env);
-      }
-      auto it = cast<SExprs>(res);
-      while (!isa<NilAtom>(*cast<SExprs>(it)->rest)) {
-        it = cast<SExprs>(cast<SExprs>(it)->rest);
-      }
-      it->rest = expandQuasiquote(sExprs->rest, level, env);
-      return res;
+      return evalUnquote(sExprs->first, env, [=](std::shared_ptr<SExpr> res) {
+        if (isa<NilAtom>(*res)) {
+          return expandQuasiquote(sExprs->rest, level, env, cont);
+        }
+        auto it = cast<SExprs>(res);
+        while (!isa<NilAtom>(*cast<SExprs>(it)->rest)) {
+          it = cast<SExprs>(cast<SExprs>(it)->rest);
+        }
+        return expandQuasiquote(sExprs->rest, level, env,
+                                [=](std::shared_ptr<SExpr> rest) {
+                                  it->rest = rest;
+                                  return cont(res);
+                                });
+      });
     }
     if (isa<SymAtom>(*sExprs->first) &&
         cast<SymAtom>(sExprs->first)->val == "unquote") {
-      return evalUnquote(sExprs, env);
+      return evalUnquote(sExprs, env, cont);
     }
   }
   if (auto symAtom = std::dynamic_pointer_cast<SymAtom>(sExprs->first)) {
     if (symAtom->val == "unquote" || symAtom->val == "unquote-splicing") {
-      return std::make_shared<SExprs>(
-          expandQuasiquote(sExprs->first, level - 1, env),
-          expandQuasiquote(sExprs->rest, level - 1, env));
-    }
-    if (symAtom->val == "quasiquote") {
-      return std::make_shared<SExprs>(
-          expandQuasiquote(sExprs->first, level + 1, env),
-          expandQuasiquote(sExprs->rest, level + 1, env));
+      level += 1;
+    } else if (symAtom->val == "quasiquote") {
+      level -= 1;
     }
   }
-  return std::make_shared<SExprs>(expandQuasiquote(sExprs->first, level, env),
-                                  expandQuasiquote(sExprs->rest, level, env));
+  return expandQuasiquote(
+      sExprs->first, level, env, [=](std::shared_ptr<SExpr> first) {
+        return expandQuasiquote(
+            sExprs->rest, level, env, [=](std::shared_ptr<SExpr> rest) {
+              return cont(std::make_shared<SExprs>(first, rest));
+            });
+      });
 }
 
-std::shared_ptr<SExpr> evalQuasiquote(std::shared_ptr<SExpr> sExpr,
-                                      std::shared_ptr<Env> env) {
+std::unique_ptr<Thunk> evalQuasiquote(std::shared_ptr<SExpr> sExpr,
+                                      std::shared_ptr<Env> env, EvalCont cont) {
   std::shared_ptr<SExpr> quasiquoteArg;
   try {
     cast<NilAtom>(get(quasiquoteNilPos, sExpr));
@@ -112,11 +117,11 @@ std::shared_ptr<SExpr> evalQuasiquote(std::shared_ptr<SExpr> sExpr,
   } catch (EvalException &ee) {
     handleSyntaxError(quasiquoteGrammar, sExpr);
   }
-  return expandQuasiquote(quasiquoteArg, 1, env);
+  return expandQuasiquote(quasiquoteArg, 1, env, cont);
 }
 
-std::shared_ptr<SExpr> evalDef(std::shared_ptr<SExpr> sExpr,
-                               std::shared_ptr<Env> env) {
+std::unique_ptr<Thunk> evalDef(std::shared_ptr<SExpr> sExpr,
+                               std::shared_ptr<Env> env, EvalCont cont) {
   std::shared_ptr<SymAtom> sym;
   std::shared_ptr<SExpr> defSExpr;
   try {
@@ -126,13 +131,16 @@ std::shared_ptr<SExpr> evalDef(std::shared_ptr<SExpr> sExpr,
   } catch (EvalException &ee) {
     handleSyntaxError(defGrammar, sExpr);
   }
-  auto res = eval(defSExpr, env);
-  env->def(*sym, res);
-  return res;
+  return std::make_unique<Thunk>([=]() {
+    return eval(defSExpr, env, [=](std::shared_ptr<SExpr> res) {
+      env->def(*sym, res);
+      return cont(res);
+    });
+  });
 }
 
-std::shared_ptr<SExpr> evalSet(std::shared_ptr<SExpr> sExpr,
-                               std::shared_ptr<Env> env) {
+std::unique_ptr<Thunk> evalSet(std::shared_ptr<SExpr> sExpr,
+                               std::shared_ptr<Env> env, EvalCont cont) {
   std::shared_ptr<SymAtom> sym;
   std::shared_ptr<SExpr> setSExpr;
   try {
@@ -142,14 +150,17 @@ std::shared_ptr<SExpr> evalSet(std::shared_ptr<SExpr> sExpr,
   } catch (EvalException &ee) {
     handleSyntaxError(setGrammar, sExpr);
   }
-  auto res = eval(setSExpr, env);
-  env->set(*sym, res);
-  return res;
+  return std::make_unique<Thunk>([=]() {
+    return eval(setSExpr, env, [=](std::shared_ptr<SExpr> res) {
+      env->set(*sym, res);
+      return cont(res);
+    });
+  });
 }
 
-std::shared_ptr<SExpr> evalLambda(std::shared_ptr<SExpr> sExpr,
-                                  std::shared_ptr<Env> env,
-                                  const bool isMacro) {
+std::unique_ptr<Thunk> evalLambda(std::shared_ptr<SExpr> sExpr,
+                                  std::shared_ptr<Env> env, const bool isMacro,
+                                  EvalCont cont) {
   std::shared_ptr<SExpr> argNames;
   std::shared_ptr<SExpr> body;
   try {
@@ -159,13 +170,12 @@ std::shared_ptr<SExpr> evalLambda(std::shared_ptr<SExpr> sExpr,
   } catch (EvalException &ee) {
     handleSyntaxError(lambdaGrammar, sExpr);
   }
-  return std::make_shared<ClosureAtom>(
-      [body](std::shared_ptr<Env> env) { return body; }, env, argNames,
-      isMacro);
+  return cont(std::make_shared<ClosureAtom>(
+      [body](std::shared_ptr<Env> _) { return body; }, env, argNames, isMacro));
 }
 
-std::shared_ptr<SExpr> evalDefMacro(std::shared_ptr<SExpr> sExpr,
-                                    std::shared_ptr<Env> env) {
+std::unique_ptr<Thunk> evalDefMacro(std::shared_ptr<SExpr> sExpr,
+                                    std::shared_ptr<Env> env, EvalCont cont) {
   std::shared_ptr<SymAtom> sym;
   std::shared_ptr<SExpr> macroExpr;
   try {
@@ -175,47 +185,56 @@ std::shared_ptr<SExpr> evalDefMacro(std::shared_ptr<SExpr> sExpr,
   } catch (EvalException &ee) {
     handleSyntaxError(defMacroGrammar, sExpr);
   }
-  auto macro = evalLambda(macroExpr, env, true);
-  env->def(*sym, macro);
-  return macro;
+  return evalLambda(macroExpr, env, true, [=](std::shared_ptr<SExpr> macro) {
+    env->def(*sym, macro);
+    return cont(macro);
+  });
 }
 
-std::shared_ptr<SExpr> evalIf(std::shared_ptr<SExpr> sExpr,
-                              std::shared_ptr<Env> env) {
-  std::shared_ptr<BoolAtom> test;
+std::unique_ptr<Thunk> evalIf(std::shared_ptr<SExpr> sExpr,
+                              std::shared_ptr<Env> env, EvalCont cont) {
+  std::shared_ptr<SExpr> test;
   std::shared_ptr<SExpr> conseq;
   std::shared_ptr<SExpr> alt;
   try {
-    test = std::make_shared<BoolAtom>(
-        eval(cast<SExprs>(get(ifTestPos, sExpr))->first, env));
+    test = cast<SExprs>(get(ifTestPos, sExpr))->first;
     conseq = cast<SExprs>(get(ifConseqPos, sExpr))->first;
     alt = cast<SExprs>(get(ifAltPos, sExpr))->first;
     cast<NilAtom>(get(ifNilPos, sExpr));
+    return std::make_unique<Thunk>([=]() {
+      return eval(test, env, [=](std::shared_ptr<SExpr> res) {
+        auto sExpr = std::make_shared<BoolAtom>(res)->val ? conseq : alt;
+        return std::make_unique<Thunk>(
+            [=]() { return eval(sExpr, env, cont); });
+      });
+    });
   } catch (EvalException &ee) {
     handleSyntaxError(ifGrammar, sExpr);
   }
-  return (test->val) ? conseq : alt;
 }
 
-std::shared_ptr<SExpr> evalArgs(std::shared_ptr<SExpr> args,
-                                std::shared_ptr<Env> curEnv) {
+std::unique_ptr<Thunk> evalArgs(std::shared_ptr<SExpr> args,
+                                std::shared_ptr<Env> env, EvalCont cont) {
   if (auto nilAtom = std::dynamic_pointer_cast<NilAtom>(args)) {
-    return nilAtom;
+    return cont(nilAtom);
   }
   auto sExprs = cast<SExprs>(args);
-  auto first = eval(sExprs->first, curEnv);
-  auto rest = evalArgs(sExprs->rest, curEnv);
-  return std::make_shared<SExprs>(first, rest);
+  return std::make_unique<Thunk>([=]() {
+    return eval(sExprs->first, env, [=](std::shared_ptr<SExpr> first) {
+      return evalArgs(sExprs->rest, env, [=](std::shared_ptr<SExpr> rest) {
+        return cont(std::make_shared<SExprs>(first, rest));
+      });
+    });
+  });
 }
 
 std::shared_ptr<Env> loadArgs(std::shared_ptr<ClosureAtom> closure,
                               std::shared_ptr<SExpr> args,
                               std::shared_ptr<Env> curEnv) {
   auto env = std::make_shared<Env>(closure->outerEnv);
-  auto argVals = closure->isMacro ? args : evalArgs(args, curEnv);
   if (isa<SExprs>(*closure->argNames)) {
     auto argNamesIter = cast<SExprs>(closure->argNames);
-    auto argValsIter = cast<SExprs>(argVals);
+    auto argValsIter = cast<SExprs>(args);
     while (true) {
       env->def(*cast<SymAtom>(argNamesIter->first), argValsIter->first);
       if (isa<NilAtom>(*argNamesIter->rest) &&
@@ -223,68 +242,85 @@ std::shared_ptr<Env> loadArgs(std::shared_ptr<ClosureAtom> closure,
         break;
       } else if (isa<NilAtom>(*argNamesIter->rest) ||
                  isa<NilAtom>(*argValsIter->rest)) {
-        handleArgMismatch(closure->argNames, argVals);
+        handleArgMismatch(closure->argNames, args);
       }
       argNamesIter = cast<SExprs>(argNamesIter->rest);
       argValsIter = cast<SExprs>(argValsIter->rest);
     }
   } else if (auto symAtom =
                  std::dynamic_pointer_cast<SymAtom>(closure->argNames)) {
-    env->def(symAtom->val, argVals);
-  } else if (!isa<NilAtom>(*argVals)) {
-    handleArgMismatch(closure->argNames, argVals);
+    env->def(symAtom->val, args);
+  } else if (!isa<NilAtom>(*args)) {
+    handleArgMismatch(closure->argNames, args);
   }
   return env;
 }
 
-std::tuple<std::shared_ptr<SExpr>, std::shared_ptr<Env>>
-evalClosure(std::shared_ptr<ClosureAtom> closure, std::shared_ptr<SExpr> args,
-            std::shared_ptr<Env> curEnv) {
-  auto env = loadArgs(closure, args, curEnv);
+std::unique_ptr<Thunk> evalClosure(std::shared_ptr<ClosureAtom> closure,
+                                   std::shared_ptr<SExpr> args,
+                                   std::shared_ptr<Env> curEnv, EvalCont cont) {
   if (closure->isMacro) {
-    return make_tuple(eval(closure->proc(curEnv), env), curEnv);
+    auto env = loadArgs(closure, args, curEnv);
+    return std::make_unique<Thunk>([=]() {
+      return eval(closure->proc(env), env, [=](std::shared_ptr<SExpr> body) {
+        return std::make_unique<Thunk>(
+            [=]() { return eval(body, curEnv, cont); });
+      });
+    });
   }
-  return make_tuple(closure->proc(env), env);
+  return evalArgs(args, curEnv, [=](std::shared_ptr<SExpr> args) {
+    auto env = loadArgs(closure, args, curEnv);
+    return std::make_unique<Thunk>(
+        [=]() { return eval(closure->proc(env), env, cont); });
+  });
 }
 
-std::shared_ptr<SExpr> eval(std::shared_ptr<SExpr> sExpr,
-                            std::shared_ptr<Env> env) {
+std::unique_ptr<Thunk> eval(std::shared_ptr<SExpr> sExpr,
+                            std::shared_ptr<Env> env, EvalCont cont) {
   try {
-    while (true) {
-      if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) ||
-          isa<BoolAtom>(*sExpr) || isa<StringAtom>(*sExpr)) {
-        return sExpr;
-      } else if (auto symAtom = std::dynamic_pointer_cast<SymAtom>(sExpr)) {
-        return env->find(*symAtom);
-      }
-      auto sExprs = cast<SExprs>(sExpr);
-      if (auto sym = std::dynamic_pointer_cast<SymAtom>(sExprs->first)) {
-        if (sym->val == "quote") {
-          return evalQuote(sExpr, env);
-        } else if (sym->val == "quasiquote") {
-          return evalQuasiquote(sExpr, env);
-        } else if (sym->val == "unquote") {
-          handleSyntaxError(unquoteGrammar, sExpr);
-        } else if (sym->val == "unquote-splicing") {
-          handleSyntaxError(unquoteSplicingGrammar, sExpr);
-        } else if (sym->val == "define") {
-          return evalDef(sExpr, env);
-        } else if (sym->val == "set!") {
-          return evalSet(sExpr, env);
-        } else if (sym->val == "lambda") {
-          return evalLambda(sExpr, env, false);
-        } else if (sym->val == "define-macro") {
-          return evalDefMacro(sExpr, env);
-        } else if (sym->val == "if") {
-          sExpr = evalIf(sExpr, env);
-          continue;
-        }
-      }
-      auto closure = cast<ClosureAtom>(eval(sExprs->first, env));
-      tie(sExpr, env) = evalClosure(closure, sExprs->rest, env);
+    if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) || isa<BoolAtom>(*sExpr) ||
+        isa<StringAtom>(*sExpr)) {
+      return cont(sExpr);
+    } else if (auto symAtom = std::dynamic_pointer_cast<SymAtom>(sExpr)) {
+      return cont(env->find(*symAtom));
     }
+    auto sExprs = cast<SExprs>(sExpr);
+    if (auto sym = std::dynamic_pointer_cast<SymAtom>(sExprs->first)) {
+      if (sym->val == "quote") {
+        return evalQuote(sExpr, env, cont);
+      } else if (sym->val == "quasiquote") {
+        return evalQuasiquote(sExpr, env, cont);
+      } else if (sym->val == "unquote") {
+        handleSyntaxError(unquoteGrammar, sExpr);
+      } else if (sym->val == "unquote-splicing") {
+        handleSyntaxError(unquoteSplicingGrammar, sExpr);
+      } else if (sym->val == "define") {
+        return evalDef(sExpr, env, cont);
+      } else if (sym->val == "set!") {
+        return evalSet(sExpr, env, cont);
+      } else if (sym->val == "lambda") {
+        return evalLambda(sExpr, env, false, cont);
+      } else if (sym->val == "define-macro") {
+        return evalDefMacro(sExpr, env, cont);
+      } else if (sym->val == "if") {
+        return evalIf(sExpr, env, cont);
+      }
+    }
+    return std::make_unique<Thunk>([=]() {
+      return eval(sExprs->first, env, [=](std::shared_ptr<SExpr> closure) {
+        return evalClosure(cast<ClosureAtom>(closure), sExprs->rest, env, cont);
+      });
+    });
   } catch (EvalException &ee) {
     ee.pushStackTrace(sExpr);
     throw ee;
+  }
+}
+
+void trampoline(std::shared_ptr<SExpr> sExpr, std::shared_ptr<Env> env,
+                EvalCont cont) {
+  std::unique_ptr<Thunk> thunk = eval(sExpr, env, cont);
+  while (thunk) {
+    thunk = thunk->execute();
   }
 }
