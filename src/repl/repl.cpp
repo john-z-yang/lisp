@@ -4,6 +4,7 @@
 #include "../eval/eval.hpp"
 #include "../parse/ParseException.hpp"
 #include "../parse/parse.hpp"
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <memory>
