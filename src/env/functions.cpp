@@ -1,5 +1,6 @@
 #include "functions.hpp"
 #include "../parse/parse.hpp"
+#include "../repl/repl.hpp"
 #include "../sexpr/BoolAtom.hpp"
 #include "../sexpr/ClosureAtom.hpp"
 #include "../sexpr/IntAtom.hpp"
@@ -26,6 +27,17 @@ std::shared_ptr<SExpr> lispDisplay(std::shared_ptr<Env> env) {
     std::cout << *arg << std::endl;
   }
   return std::make_shared<NilAtom>();
+}
+
+std::shared_ptr<SExpr> lispLoad(std::shared_ptr<Env> env) {
+  auto filePath =
+      cast<StringAtom>(env->find(SymAtom("load_oprand")))->unescaped;
+  if (repl(filePath, env->outer) == EXIT_SUCCESS) {
+    return std::make_shared<NilAtom>();
+  }
+  std::stringstream ss;
+  ss << "Cannot load \"" << filePath << "\"";
+  throw EvalException(ss.str());
 }
 
 std::shared_ptr<SExpr> lispAbs(std::shared_ptr<Env> env) {

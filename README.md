@@ -174,6 +174,7 @@ _Happy hacking!_
 | Name      | Arguments                                 | Description                                       |
 | --------- | ----------------------------------------- | ------------------------------------------------- |
 | `quit`    |                                           | Quit the session.                                 |
+| `load`    | `path`                                    | Execute the file at `path` in the current context |
 | `display` | `arg`                                     | Print `arg` to `std::cout`, returns `(quote ())`. |
 | `not`     | `arg`                                     | Return ¬`arg`.                                    |
 | `progn`   | `arg`<sub>1</sub>, ..., `arg`<sub>n</sub> | Return `arg`<sub>n</sub>.                         |

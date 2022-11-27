@@ -49,6 +49,9 @@ void Env::clear() { symTable.clear(); }
 void initEnv(std::shared_ptr<Env> env) {
   env->def(SymAtom("quit"), std::make_shared<ClosureAtom>(
                                 lispQuit, env, std::make_shared<NilAtom>()));
+  env->def(SymAtom("load"),
+           std::make_shared<ClosureAtom>(lispLoad, env,
+                                         cast<SExprs>(parse("(load_oprand)"))));
   env->def(SymAtom("display"),
            std::make_shared<ClosureAtom>(
                lispDisplay, env, cast<SExprs>(parse("(display_oprand)"))));

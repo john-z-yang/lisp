@@ -7,6 +7,8 @@
 
 std::shared_ptr<SExpr> lispQuit(std::shared_ptr<Env> env);
 
+std::shared_ptr<SExpr> lispLoad(std::shared_ptr<Env> env);
+
 std::shared_ptr<SExpr> lispDisplay(std::shared_ptr<Env> env);
 
 std::shared_ptr<SExpr> lispAbs(std::shared_ptr<Env> env);
