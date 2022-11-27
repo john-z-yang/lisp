@@ -5,4 +5,4 @@
 (display (fact 8))
 (display (fib 1))
 (display (fib 2))
-(display (fib 18))
+(display (fib 24))
