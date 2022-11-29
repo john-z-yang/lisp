@@ -1,6 +1,6 @@
 # Lisp Interpreter &middot; [![build](https://github.com/john-z-yang/lisp/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/john-z-yang/lisp/actions/workflows/ci.yml) [![ASan](https://github.com/john-z-yang/lisp/actions/workflows/asan.yml/badge.svg?branch=master)](https://github.com/john-z-yang/lisp/actions/workflows/asan.yml)
 
-Interpreter for lisp written in C++. This project started out as a solution to leetcode problem [736](https://leetcode.com/problems/parse-lisp-expression/) and was further inspired by Peter Norvig's blog where he [creates a lisp interpreter in 90 lines of python code](http://www.norvig.com/lispy.html).
+Interpreter for lisp written in [continuation passing style](https://en.wikipedia.org/wiki/Continuation-passing_style) and [trampolined through thunk-returning functions](https://en.wikipedia.org/wiki/Trampoline_(computing)#:~:text=As%20used%20in,programming%20languages.). This effectively allows the interpreter to maintain its own call stack on the heap and execute recursive calls of arbitary depth.
 
 <p align="center">
     <img src="https://raw.githubusercontent.com/john-z-yang/lisp/master/docs/assets/fib_seq_gen.gif" width="100%">
@@ -246,5 +246,8 @@ who participated in this project.
 
 
 ## Acknowledgments
-  - [(How to Write a (Lisp) Interpreter (in Python))](http://www.norvig.com/lispy.html) by Peter Norvig
+  - [(How to Write a (Lisp) Interpreter (in Python))](http://www.norvig.com/lispy.html) by [Peter Norvig](https://norvig.com/)
   - Special thanks to [Sophie](https://github.com/yqstan) for pointing out that parameter eval order is different across C++ compiler implementations.
+  - [Stackoverflow: What is a trampoline function?](https://stackoverflow.com/questions/189725/what-is-a-trampoline-function) Question by [Benoit](https://stackoverflow.com/users/10703/benoit), Solutions by toyvo (no longer active) and [Piotr Kukielka](https://stackoverflow.com/users/704905/piotr-kukielka).
+  - [By example: Continuation-passing style in JavaScript](https://matt.might.net/articles/by-example-continuation-passing-style/) by [Matt Might](https://matt.might.net/)
+  - [How to compile with continuations](https://matt.might.net/articles/cps-conversion/) by [Matt Might](https://matt.might.net/)
