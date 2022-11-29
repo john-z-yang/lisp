@@ -55,7 +55,7 @@ std::unique_ptr<Thunk> evalUnquote(std::shared_ptr<SExpr> sExpr,
   } catch (EvalException &ee) {
     handleSyntaxError(unquoteGrammar, sExpr);
   }
-  return std::make_unique<Thunk>([=]() { return eval(unquoteArg, env, cont); });
+  return eval(unquoteArg, env, cont);
 }
 
 std::unique_ptr<Thunk> expandQuasiquote(std::shared_ptr<SExpr> sExpr,
@@ -131,11 +131,9 @@ std::unique_ptr<Thunk> evalDef(std::shared_ptr<SExpr> sExpr,
   } catch (EvalException &ee) {
     handleSyntaxError(defGrammar, sExpr);
   }
-  return std::make_unique<Thunk>([=]() {
-    return eval(defSExpr, env, [=](std::shared_ptr<SExpr> res) {
-      env->def(*sym, res);
-      return cont(res);
-    });
+  return eval(defSExpr, env, [=](std::shared_ptr<SExpr> res) {
+    env->def(*sym, res);
+    return cont(res);
   });
 }
 
@@ -150,11 +148,9 @@ std::unique_ptr<Thunk> evalSet(std::shared_ptr<SExpr> sExpr,
   } catch (EvalException &ee) {
     handleSyntaxError(setGrammar, sExpr);
   }
-  return std::make_unique<Thunk>([=]() {
-    return eval(setSExpr, env, [=](std::shared_ptr<SExpr> res) {
-      env->set(*sym, res);
-      return cont(res);
-    });
+  return eval(setSExpr, env, [=](std::shared_ptr<SExpr> res) {
+    env->set(*sym, res);
+    return cont(res);
   });
 }
 
@@ -201,12 +197,9 @@ std::unique_ptr<Thunk> evalIf(std::shared_ptr<SExpr> sExpr,
     conseq = cast<SExprs>(get(ifConseqPos, sExpr))->first;
     alt = cast<SExprs>(get(ifAltPos, sExpr))->first;
     cast<NilAtom>(get(ifNilPos, sExpr));
-    return std::make_unique<Thunk>([=]() {
-      return eval(test, env, [=](std::shared_ptr<SExpr> res) {
-        auto sExpr = std::make_shared<BoolAtom>(res)->val ? conseq : alt;
-        return std::make_unique<Thunk>(
-            [=]() { return eval(sExpr, env, cont); });
-      });
+    return eval(test, env, [=](std::shared_ptr<SExpr> res) {
+      auto sExpr = std::make_shared<BoolAtom>(res)->val ? conseq : alt;
+      return eval(sExpr, env, cont);
     });
   } catch (EvalException &ee) {
     handleSyntaxError(ifGrammar, sExpr);
@@ -219,11 +212,9 @@ std::unique_ptr<Thunk> evalArgs(std::shared_ptr<SExpr> args,
     return cont(nilAtom);
   }
   auto sExprs = cast<SExprs>(args);
-  return std::make_unique<Thunk>([=]() {
-    return eval(sExprs->first, env, [=](std::shared_ptr<SExpr> first) {
-      return evalArgs(sExprs->rest, env, [=](std::shared_ptr<SExpr> rest) {
-        return cont(std::make_shared<SExprs>(first, rest));
-      });
+  return eval(sExprs->first, env, [=](std::shared_ptr<SExpr> first) {
+    return evalArgs(sExprs->rest, env, [=](std::shared_ptr<SExpr> rest) {
+      return cont(std::make_shared<SExprs>(first, rest));
     });
   });
 }
@@ -261,17 +252,13 @@ std::unique_ptr<Thunk> evalClosure(std::shared_ptr<ClosureAtom> closure,
                                    std::shared_ptr<Env> curEnv, EvalCont cont) {
   if (closure->isMacro) {
     auto env = loadArgs(closure, args, curEnv);
-    return std::make_unique<Thunk>([=]() {
-      return eval(closure->proc(env), env, [=](std::shared_ptr<SExpr> body) {
-        return std::make_unique<Thunk>(
-            [=]() { return eval(body, curEnv, cont); });
-      });
+    return eval(closure->proc(env), env, [=](std::shared_ptr<SExpr> body) {
+      return eval(body, curEnv, cont);
     });
   }
   return evalArgs(args, curEnv, [=](std::shared_ptr<SExpr> args) {
     auto env = loadArgs(closure, args, curEnv);
-    return std::make_unique<Thunk>(
-        [=]() { return eval(closure->proc(env), env, cont); });
+    return eval(closure->proc(env), env, cont);
   });
 }
 
