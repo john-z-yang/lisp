@@ -1,6 +1,7 @@
 #include "env/Env.hpp"
 #include "repl/repl.hpp"
 #include <memory>
+#include <string>
 
 int main(int argc, char const *argv[]) {
   auto env = std::make_shared<Env>();

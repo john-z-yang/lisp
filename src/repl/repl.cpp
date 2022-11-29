@@ -16,7 +16,10 @@ int repl(std::shared_ptr<Env> env) {
     size_t linesRead = 0;
     try {
       if (getInput(std::cin, input, linesRead, "lisp> ", "  ... ")) {
-        std::cout << *eval(parse(input), env) << std::endl;
+        eval(parse(input), env, [](std::shared_ptr<SExpr> res) {
+          std::cout << *res << std::endl;
+          return nullptr;
+        });
       } else {
         std::cout << std::endl;
         lispQuit(env);
@@ -47,7 +50,8 @@ int repl(const std::string filePath, std::shared_ptr<Env> env) {
     std::string input;
     try {
       if (getInput(fs, input, linesRead, "", "")) {
-        *eval(parse(input), env);
+        eval(parse(input), env,
+             [](std::shared_ptr<SExpr> res) { return nullptr; });
       } else {
         break;
       }

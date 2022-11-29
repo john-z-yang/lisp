@@ -1,6 +1,6 @@
 CXX = g++
 ASAN =
-CXXFLAGS = -std=c++2a -Wall $(ASAN)
+CXXFLAGS = -std=c++2a -Wall -O3 $(ASAN)
 
 PERCENT = %
 
@@ -9,8 +9,8 @@ OUTDIR = bin
 TESTDIR = tests
 
 _DEPS = env/Env.hpp env/functions.hpp eval/eval.hpp eval/EvalException.hpp \
-	parse/parse.hpp parse/ParseException.hpp repl/repl.hpp sexpr/Atom.hpp \
-	sexpr/BoolAtom.hpp sexpr/ClosureAtom.hpp sexpr/IntAtom.hpp \
+	eval/Thunk.hpp parse/parse.hpp parse/ParseException.hpp repl/repl.hpp \
+	sexpr/Atom.hpp sexpr/BoolAtom.hpp sexpr/ClosureAtom.hpp sexpr/IntAtom.hpp \
 	sexpr/NilAtom.hpp sexpr/SExpr.hpp sexpr/SExprs.hpp sexpr/StringAtom.hpp \
 	sexpr/SymAtom.hpp
 

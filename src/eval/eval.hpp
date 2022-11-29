@@ -3,9 +3,14 @@
 
 #include "../env/Env.hpp"
 #include "../sexpr/SExpr.hpp"
+#include "Thunk.hpp"
+#include <functional>
 #include <memory>
 
-std::shared_ptr<SExpr> eval(std::shared_ptr<SExpr> sExpr,
-                            std::shared_ptr<Env> env);
+typedef std::function<std::unique_ptr<Thunk>(std::shared_ptr<SExpr> sExpr)>
+    EvalCont;
+
+void eval(std::shared_ptr<SExpr> sExpr, std::shared_ptr<Env> env,
+          EvalCont cont);
 
 #endif

@@ -150,11 +150,11 @@ void initEnv(std::shared_ptr<Env> env) {
            std::make_shared<ClosureAtom>(
                lispToStr, env, cast<SExprs>(parse("(->str_oprand)"))));
 
-  eval(parse("                                                                \
+  eval(parse("                                                          \
   (define list                                                                \
     (lambda lis lis))                                                         \
   "),
-       env);
+       env, [](std::shared_ptr<SExpr> _) { return nullptr; });
 
   eval(parse("                                                                \
   (define first                                                               \
@@ -163,7 +163,7 @@ void initEnv(std::shared_ptr<Env> env) {
         list                                                                  \
       (car list))))                                                           \
   "),
-       env);
+       env, [](std::shared_ptr<SExpr> _) { return nullptr; });
 
   eval(parse("                                                                \
   (define last                                                                \
@@ -174,7 +174,7 @@ void initEnv(std::shared_ptr<Env> env) {
         (car list)                                                            \
       (last (cdr list))))))                                                   \
   "),
-       env);
+       env, [](std::shared_ptr<SExpr> _) { return nullptr; });
 
   eval(parse("                                                                \
   (define foldl                                                               \
@@ -185,7 +185,7 @@ void initEnv(std::shared_ptr<Env> env) {
              (fn (car list) cur)                                              \
              (cdr list)))))                                                   \
   "),
-       env);
+       env, [](std::shared_ptr<SExpr> _) { return nullptr; });
 
   eval(parse("                                                                \
   (define reverse                                                             \
@@ -195,7 +195,7 @@ void initEnv(std::shared_ptr<Env> env) {
              (quote ())                                                       \
              list)))                                                          \
   "),
-       env);
+       env, [](std::shared_ptr<SExpr> _) { return nullptr; });
 
   eval(parse("                                                                \
   (define map                                                                 \
@@ -206,13 +206,13 @@ void initEnv(std::shared_ptr<Env> env) {
                (quote ())                                                     \
                list))))                                                       \
   "),
-       env);
+       env, [](std::shared_ptr<SExpr> _) { return nullptr; });
 
   eval(parse("                                                                \
   (define progn                                                               \
     (lambda lis (last lis)))                                                  \
   "),
-       env);
+       env, [](std::shared_ptr<SExpr> _) { return nullptr; });
 
   eval(parse("                                                                \
   (define-macro and                                                           \
@@ -223,7 +223,7 @@ void initEnv(std::shared_ptr<Env> env) {
         (car args)                                                            \
       `(if ,(car args) (and ,@(cdr args)) #f)))))                             \
   "),
-       env);
+       env, [](std::shared_ptr<SExpr> _) { return nullptr; });
 
   eval(parse("                                                                \
   (define-macro or                                                            \
@@ -234,5 +234,5 @@ void initEnv(std::shared_ptr<Env> env) {
         (car args)                                                            \
       `(if ,(car args) ,(car args) (or ,@(cdr args)))))))                     \
   "),
-       env);
+       env, [](std::shared_ptr<SExpr> _) { return nullptr; });
 }
