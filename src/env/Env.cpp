@@ -147,22 +147,22 @@ void initEnv(std::shared_ptr<Env> env) {
            std::make_shared<ClosureAtom>(
                lispToStr, env, cast<SExprs>(parse("(->str_oprand)"))));
 
-  trampoline(parse("                                                          \
+  eval(parse("                                                          \
   (define list                                                                \
     (lambda lis lis))                                                         \
   "),
-             env, [](std::shared_ptr<SExpr> _) { return nullptr; });
+       env, [](std::shared_ptr<SExpr> _) { return nullptr; });
 
-  trampoline(parse("                                                          \
+  eval(parse("                                                                \
   (define first                                                               \
     (lambda (list)                                                            \
       (if (null? list)                                                        \
         list                                                                  \
       (car list))))                                                           \
   "),
-             env, [](std::shared_ptr<SExpr> _) { return nullptr; });
+       env, [](std::shared_ptr<SExpr> _) { return nullptr; });
 
-  trampoline(parse("                                                          \
+  eval(parse("                                                                \
   (define last                                                                \
     (lambda (list)                                                            \
       (if (null? list)                                                        \
@@ -171,9 +171,9 @@ void initEnv(std::shared_ptr<Env> env) {
         (car list)                                                            \
       (last (cdr list))))))                                                   \
   "),
-             env, [](std::shared_ptr<SExpr> _) { return nullptr; });
+       env, [](std::shared_ptr<SExpr> _) { return nullptr; });
 
-  trampoline(parse("                                                          \
+  eval(parse("                                                                \
   (define foldl                                                               \
     (lambda (fn cur list)                                                     \
       (if (null? list)                                                        \
@@ -182,9 +182,9 @@ void initEnv(std::shared_ptr<Env> env) {
              (fn (car list) cur)                                              \
              (cdr list)))))                                                   \
   "),
-             env, [](std::shared_ptr<SExpr> _) { return nullptr; });
+       env, [](std::shared_ptr<SExpr> _) { return nullptr; });
 
-  trampoline(parse("                                                          \
+  eval(parse("                                                                \
   (define reverse                                                             \
     (lambda (list)                                                            \
       (foldl (lambda (e v)                                                    \
@@ -192,9 +192,9 @@ void initEnv(std::shared_ptr<Env> env) {
              (quote ())                                                       \
              list)))                                                          \
   "),
-             env, [](std::shared_ptr<SExpr> _) { return nullptr; });
+       env, [](std::shared_ptr<SExpr> _) { return nullptr; });
 
-  trampoline(parse("                                                          \
+  eval(parse("                                                                \
   (define map                                                                 \
     (lambda (fn list)                                                         \
       (reverse                                                                \
@@ -203,15 +203,15 @@ void initEnv(std::shared_ptr<Env> env) {
                (quote ())                                                     \
                list))))                                                       \
   "),
-             env, [](std::shared_ptr<SExpr> _) { return nullptr; });
+       env, [](std::shared_ptr<SExpr> _) { return nullptr; });
 
-  trampoline(parse("                                                          \
+  eval(parse("                                                                \
   (define progn                                                               \
     (lambda lis (last lis)))                                                  \
   "),
-             env, [](std::shared_ptr<SExpr> _) { return nullptr; });
+       env, [](std::shared_ptr<SExpr> _) { return nullptr; });
 
-  trampoline(parse("                                                          \
+  eval(parse("                                                                \
   (define-macro and                                                           \
     (lambda args                                                              \
       (if (null? args)                                                        \
@@ -220,9 +220,9 @@ void initEnv(std::shared_ptr<Env> env) {
         (car args)                                                            \
       `(if ,(car args) (and ,@(cdr args)) #f)))))                             \
   "),
-             env, [](std::shared_ptr<SExpr> _) { return nullptr; });
+       env, [](std::shared_ptr<SExpr> _) { return nullptr; });
 
-  trampoline(parse("                                                          \
+  eval(parse("                                                                \
   (define-macro or                                                            \
     (lambda args                                                              \
       (if (null? args)                                                        \
@@ -231,5 +231,5 @@ void initEnv(std::shared_ptr<Env> env) {
         (car args)                                                            \
       `(if ,(car args) ,(car args) (or ,@(cdr args)))))))                     \
   "),
-             env, [](std::shared_ptr<SExpr> _) { return nullptr; });
+       env, [](std::shared_ptr<SExpr> _) { return nullptr; });
 }

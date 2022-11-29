@@ -10,10 +10,7 @@
 typedef std::function<std::unique_ptr<Thunk>(std::shared_ptr<SExpr> sExpr)>
     EvalCont;
 
-std::unique_ptr<Thunk> eval(std::shared_ptr<SExpr> sExpr,
-                            std::shared_ptr<Env> env, EvalCont cont);
-
-void trampoline(std::shared_ptr<SExpr> sExpr, std::shared_ptr<Env> env,
-                EvalCont cont);
+void eval(std::shared_ptr<SExpr> sExpr, std::shared_ptr<Env> env,
+          EvalCont cont);
 
 #endif

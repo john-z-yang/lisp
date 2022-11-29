@@ -12,6 +12,9 @@
 #include <sstream>
 #include <string>
 
+std::unique_ptr<Thunk> evalCPS(std::shared_ptr<SExpr> sExpr,
+                               std::shared_ptr<Env> env, EvalCont cont);
+
 std::shared_ptr<SExpr> get(const uint8_t n, std::shared_ptr<SExpr> sExpr) {
   std::shared_ptr<SExpr> it = cast<SExprs>(sExpr);
   for (uint8_t i = 0; i < n; ++i) {
@@ -55,7 +58,7 @@ std::unique_ptr<Thunk> evalUnquote(std::shared_ptr<SExpr> sExpr,
   } catch (EvalException &ee) {
     handleSyntaxError(unquoteGrammar, sExpr);
   }
-  return eval(unquoteArg, env, cont);
+  return evalCPS(unquoteArg, env, cont);
 }
 
 std::unique_ptr<Thunk> expandQuasiquote(std::shared_ptr<SExpr> sExpr,
@@ -131,7 +134,7 @@ std::unique_ptr<Thunk> evalDef(std::shared_ptr<SExpr> sExpr,
   } catch (EvalException &ee) {
     handleSyntaxError(defGrammar, sExpr);
   }
-  return eval(defSExpr, env, [=](std::shared_ptr<SExpr> res) {
+  return evalCPS(defSExpr, env, [=](std::shared_ptr<SExpr> res) {
     env->def(*sym, res);
     return cont(res);
   });
@@ -148,7 +151,7 @@ std::unique_ptr<Thunk> evalSet(std::shared_ptr<SExpr> sExpr,
   } catch (EvalException &ee) {
     handleSyntaxError(setGrammar, sExpr);
   }
-  return eval(setSExpr, env, [=](std::shared_ptr<SExpr> res) {
+  return evalCPS(setSExpr, env, [=](std::shared_ptr<SExpr> res) {
     env->set(*sym, res);
     return cont(res);
   });
@@ -197,9 +200,9 @@ std::unique_ptr<Thunk> evalIf(std::shared_ptr<SExpr> sExpr,
     conseq = cast<SExprs>(get(ifConseqPos, sExpr))->first;
     alt = cast<SExprs>(get(ifAltPos, sExpr))->first;
     cast<NilAtom>(get(ifNilPos, sExpr));
-    return eval(test, env, [=](std::shared_ptr<SExpr> res) {
+    return evalCPS(test, env, [=](std::shared_ptr<SExpr> res) {
       auto sExpr = std::make_shared<BoolAtom>(res)->val ? conseq : alt;
-      return eval(sExpr, env, cont);
+      return evalCPS(sExpr, env, cont);
     });
   } catch (EvalException &ee) {
     handleSyntaxError(ifGrammar, sExpr);
@@ -212,7 +215,7 @@ std::unique_ptr<Thunk> evalArgs(std::shared_ptr<SExpr> args,
     return cont(nilAtom);
   }
   auto sExprs = cast<SExprs>(args);
-  return eval(sExprs->first, env, [=](std::shared_ptr<SExpr> first) {
+  return evalCPS(sExprs->first, env, [=](std::shared_ptr<SExpr> first) {
     return evalArgs(sExprs->rest, env, [=](std::shared_ptr<SExpr> rest) {
       return cont(std::make_shared<SExprs>(first, rest));
     });
@@ -252,18 +255,18 @@ std::unique_ptr<Thunk> evalClosure(std::shared_ptr<ClosureAtom> closure,
                                    std::shared_ptr<Env> curEnv, EvalCont cont) {
   if (closure->isMacro) {
     auto env = loadArgs(closure, args, curEnv);
-    return eval(closure->proc(env), env, [=](std::shared_ptr<SExpr> body) {
-      return eval(body, curEnv, cont);
+    return evalCPS(closure->proc(env), env, [=](std::shared_ptr<SExpr> body) {
+      return evalCPS(body, curEnv, cont);
     });
   }
   return evalArgs(args, curEnv, [=](std::shared_ptr<SExpr> args) {
     auto env = loadArgs(closure, args, curEnv);
-    return eval(closure->proc(env), env, cont);
+    return evalCPS(closure->proc(env), env, cont);
   });
 }
 
-std::unique_ptr<Thunk> eval(std::shared_ptr<SExpr> sExpr,
-                            std::shared_ptr<Env> env, EvalCont cont) {
+std::unique_ptr<Thunk> evalCPS(std::shared_ptr<SExpr> sExpr,
+                               std::shared_ptr<Env> env, EvalCont cont) {
   try {
     if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) || isa<BoolAtom>(*sExpr) ||
         isa<StringAtom>(*sExpr)) {
@@ -294,7 +297,7 @@ std::unique_ptr<Thunk> eval(std::shared_ptr<SExpr> sExpr,
       }
     }
     return std::make_unique<Thunk>([=]() {
-      return eval(sExprs->first, env, [=](std::shared_ptr<SExpr> closure) {
+      return evalCPS(sExprs->first, env, [=](std::shared_ptr<SExpr> closure) {
         return evalClosure(cast<ClosureAtom>(closure), sExprs->rest, env, cont);
       });
     });
@@ -306,8 +309,12 @@ std::unique_ptr<Thunk> eval(std::shared_ptr<SExpr> sExpr,
 
 void trampoline(std::shared_ptr<SExpr> sExpr, std::shared_ptr<Env> env,
                 EvalCont cont) {
-  std::unique_ptr<Thunk> thunk = eval(sExpr, env, cont);
-  while (thunk) {
-    thunk = thunk->execute();
+  for (auto thunk = evalCPS(sExpr, env, cont); thunk;
+       thunk = thunk->execute()) {
   }
+}
+
+void eval(std::shared_ptr<SExpr> sExpr, std::shared_ptr<Env> env,
+          EvalCont cont) {
+  trampoline(sExpr, env, cont);
 }
