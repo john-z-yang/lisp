@@ -200,13 +200,13 @@ std::unique_ptr<Thunk> evalIf(std::shared_ptr<SExpr> sExpr,
     conseq = cast<SExprs>(get(ifConseqPos, sExpr))->first;
     alt = cast<SExprs>(get(ifAltPos, sExpr))->first;
     cast<NilAtom>(get(ifNilPos, sExpr));
-    return evalCPS(test, env, [=](std::shared_ptr<SExpr> res) {
-      auto sExpr = std::make_shared<BoolAtom>(res)->val ? conseq : alt;
-      return evalCPS(sExpr, env, cont);
-    });
   } catch (EvalException &ee) {
     handleSyntaxError(ifGrammar, sExpr);
   }
+  return evalCPS(test, env, [=](std::shared_ptr<SExpr> res) {
+    auto sExpr = std::make_shared<BoolAtom>(res)->val ? conseq : alt;
+    return evalCPS(sExpr, env, cont);
+  });
 }
 
 std::unique_ptr<Thunk> evalArgs(std::shared_ptr<SExpr> args,
