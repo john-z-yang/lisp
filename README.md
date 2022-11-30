@@ -19,6 +19,7 @@ your local machine.
 
 - [g++](https://gcc.gnu.org/)
 - [make](https://www.gnu.org/software/make/)
+- [GNU Readline Library](https://tiswww.case.edu/php/chet/readline/rltop.html)
 
 
 ### Installing
@@ -39,6 +40,7 @@ The executable (`lisp`) will be in the `bin` directory.
 Execute without argument to run in interactive mode.
 ```console
 foo@bar:~$ bin/lisp
+Lisp (C++ std: 202002, Nov 30 2022, 12:03:35)
 lisp> (quote (Hello World!))
 (Hello World!)
 lisp> (quit)
@@ -238,8 +240,8 @@ Use [`clang-format`](https://clang.llvm.org/docs/ClangFormat.html) for formattin
 
 ## Authors
   - **John Yang** - [john-z-yang](https://github.com/john-z-yang)
-
-  - **Billie Thompson** - *Provided README Template* -
+  - **Chet Ramey** - *Current maintainer for the GNU Readline library* - [Chet Ramey](https://tiswww.case.edu/php/chet/)
+  - **Billie Thompson** - *README Template* -
     [PurpleBooth](https://github.com/PurpleBooth)
 
 See also the list of
