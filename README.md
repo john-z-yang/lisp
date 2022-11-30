@@ -40,7 +40,8 @@ The executable (`lisp`) will be in the `bin` directory.
 Execute without argument to run in interactive mode.
 ```console
 foo@bar:~$ bin/lisp
-Lisp (C++ std: 202002, Nov 30 2022, 12:03:35)
+Lisp (C++ std: 202002, Nov 30 2022, 13:49:06)
+Type "(quit)" or trigger EOF to exit the session.
 lisp> (quote (Hello World!))
 (Hello World!)
 lisp> (quit)
