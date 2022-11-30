@@ -5,10 +5,8 @@
 #include <memory>
 #include <string>
 
-std::shared_ptr<SExpr> parse(std::string str);
+void verifyLex(std::string &line, uint32_t &openParen, uint32_t &closedParen);
 
-std::istream &getInput(std::istream &in, std::string &str,
-                       std::size_t &linesRead, std::string prompt,
-                       std::string wrap);
+std::shared_ptr<SExpr> parse(std::string str);
 
 #endif

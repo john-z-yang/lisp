@@ -8,14 +8,67 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <readline/history.h>
+#include <readline/readline.h>
+#include <regex>
 #include <string>
 
+bool getInput(std::string &str, size_t &linesRead, std::string prompt,
+              std::string wrap) {
+  uint32_t openParen = 0;
+  uint32_t closedParen = 0;
+  std::string line;
+  while (auto buf = readline(linesRead == 0 ? prompt.c_str() : wrap.c_str())) {
+    line = std::string(buf);
+    free(buf);
+    line = std::regex_replace(
+        line, std::regex("(\\\\\"|\"(?:\\\\\"|[^\"])*\")|(;.*$)"), "$1");
+    if (str.empty() && line.empty()) {
+      continue;
+    }
+    linesRead += 1;
+    add_history(line.c_str());
+    verifyLex(line, openParen, closedParen);
+    str += line + " ";
+    if (openParen == closedParen) {
+      return true;
+    }
+  }
+  return false;
+}
+
+std::istream &getInput(std::istream &in, std::string &str, size_t &linesRead) {
+  uint32_t openParen = 0;
+  uint32_t closedParen = 0;
+  std::string line;
+  while (getline(in, line)) {
+    linesRead += 1;
+    line = std::regex_replace(
+        line, std::regex("(\\\\\"|\"(?:\\\\\"|[^\"])*\")|(;.*$)"), "$1");
+    if (str.empty() && line.empty()) {
+      continue;
+    }
+    verifyLex(line, openParen, closedParen);
+    str += line + " ";
+    if (openParen == closedParen) {
+      return in;
+    }
+  }
+  return in;
+}
+
+void printTranslationInfo() {
+  std::cout << "Lisp (C++ std: " << __cplusplus << ", " << __DATE__ << ", "
+            << __TIME__ << ")" << std::endl;
+}
+
 int repl(std::shared_ptr<Env> env) {
+  printTranslationInfo();
   while (true) {
     std::string input;
     size_t linesRead = 0;
     try {
-      if (getInput(std::cin, input, linesRead, "lisp> ", "  ... ")) {
+      if (getInput(input, linesRead, "lisp> ", "  ... ")) {
         eval(parse(input), env, [](std::shared_ptr<SExpr> res) {
           std::cout << *res << std::endl;
           return nullptr;
@@ -49,7 +102,7 @@ int repl(const std::string filePath, std::shared_ptr<Env> env) {
   while (true) {
     std::string input;
     try {
-      if (getInput(fs, input, linesRead, "", "")) {
+      if (getInput(fs, input, linesRead)) {
         eval(parse(input), env,
              [](std::shared_ptr<SExpr> res) { return nullptr; });
       } else {

@@ -152,27 +152,3 @@ void verifyLex(std::string &line, uint32_t &openParen, uint32_t &closedParen) {
     handleUnexpectedToken(tokens, tokens.begin() + 1);
   }
 }
-
-std::istream &getInput(std::istream &in, std::string &str, size_t &linesRead,
-                       std::string prompt, std::string wrap) {
-  uint32_t openParen = 0;
-  uint32_t closedParen = 0;
-  std::string line;
-  std::cout << prompt;
-  while (getline(in, line)) {
-    linesRead += 1;
-    line = std::regex_replace(
-        line, std::regex("(\\\\\"|\"(?:\\\\\"|[^\"])*\")|(;.*$)"), "$1");
-    if (str.empty() && line.empty()) {
-      std::cout << prompt;
-      continue;
-    }
-    verifyLex(line, openParen, closedParen);
-    str += line + " ";
-    if (openParen == closedParen) {
-      return in;
-    }
-    std::cout << wrap;
-  }
-  return in;
-}
