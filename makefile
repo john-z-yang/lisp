@@ -23,7 +23,7 @@ TESTS = $(TESTDIR)/combine $(TESTDIR)/cons $(TESTDIR)/hof $(TESTDIR)/list \
 	$(TESTDIR)/string $(TESTDIR)/tailcall $(TESTDIR)/varargs
 
 $(OUTDIR)/lisp: $(OBJS) $(DEPS) $(OUTDIR)/main.o
-	$(CXX) $(CXXFLAGS) $(OBJS) $(OUTDIR)/main.o -o $(OUTDIR)/lisp
+	$(CXX) $(CXXFLAGS) $(OBJS) $(OUTDIR)/main.o -lreadline -o $(OUTDIR)/lisp
 
 $(OUTDIR)/main.o: $(SRCDIR)/main.cpp $(DEPS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
