@@ -57,13 +57,15 @@ std::istream &getInput(std::istream &in, std::string &str, size_t &linesRead) {
   return in;
 }
 
-void printTranslationInfo() {
+void printInfo() {
   std::cout << "Lisp (C++ std: " << __cplusplus << ", " << __DATE__ << ", "
             << __TIME__ << ")" << std::endl;
+  std::cout << "Type \"(quit)\" or trigger EOF to exit the session."
+            << std::endl;
 }
 
 int repl(std::shared_ptr<Env> env) {
-  printTranslationInfo();
+  printInfo();
   while (true) {
     std::string input;
     size_t linesRead = 0;
