@@ -146,7 +146,7 @@ std::shared_ptr<SExpr> lispIsSym(std::shared_ptr<Env> env) {
 
 std::shared_ptr<SExpr> lispIsString(std::shared_ptr<Env> env) {
   return std::make_shared<BoolAtom>(
-      isa<StringAtom>(*env->find(SymAtom("string?_oprand"))));
+      isa<StringAtom>(*env->find(SymAtom("str?_oprand"))));
 }
 
 std::shared_ptr<SExpr> lispIsNum(std::shared_ptr<Env> env) {
