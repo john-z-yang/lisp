@@ -1,6 +1,6 @@
 # Lisp Interpreter &middot; [![build](https://github.com/john-z-yang/lisp/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/john-z-yang/lisp/actions/workflows/ci.yml) [![ASan](https://github.com/john-z-yang/lisp/actions/workflows/asan.yml/badge.svg?branch=master)](https://github.com/john-z-yang/lisp/actions/workflows/asan.yml)
 
-Lisp interpreter written in [continuation passing style](https://en.wikipedia.org/wiki/Continuation-passing_style) and [trampolined through thunk-returning functions](https://en.wikipedia.org/wiki/Trampoline_(computing)#:~:text=As%20used%20in,programming%20languages.), allowing the interpreter to maintain its own call stack on the heap and execute recursive calls of arbitary depth.
+Lisp interpreter written in [continuation passing style](https://en.wikipedia.org/wiki/Continuation-passing_style) and [trampolined through thunk-returning functions](https://en.wikipedia.org/wiki/Trampoline_(computing)#:~:text=As%20used%20in,programming%20languages.), allowing the interpreter to maintain its own call stack on the heap and execute recursive calls of arbitrary depth.
 
 This project started out as a solution to leetcode problem [736](https://leetcode.com/problems/parse-lisp-expression/) and was further inspired by Peter Norvig's blog where he [creates a lisp interpreter in 90 lines of python code](http://www.norvig.com/lispy.html).
 
