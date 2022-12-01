@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-class SExprs : public SExpr {
+class SExprs final : public SExpr {
 protected:
   std::string toString() const;
   bool equals(const SExpr &other) const;

@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-class BoolAtom : public Atom {
+class BoolAtom final : public Atom {
 protected:
   std::string toString() const;
   bool equals(const SExpr &other) const;

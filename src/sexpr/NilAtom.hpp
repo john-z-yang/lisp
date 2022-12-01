@@ -4,7 +4,7 @@
 #include "Atom.hpp"
 #include <memory>
 
-class NilAtom : public Atom {
+class NilAtom final : public Atom {
 protected:
   std::string toString() const;
   bool equals(const SExpr &other) const;

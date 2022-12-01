@@ -9,7 +9,7 @@
 #include <memory>
 #include <tuple>
 
-class ClosureAtom : public Atom {
+class ClosureAtom final : public Atom {
   typedef std::function<std::shared_ptr<SExpr>(std::shared_ptr<Env>)> Proc;
 
   // private:

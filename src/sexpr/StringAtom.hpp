@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-class StringAtom : public Atom {
+class StringAtom final : public Atom {
 private:
   static std::string unescape(const std::string literal);
 
