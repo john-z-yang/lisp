@@ -63,61 +63,61 @@ _Happy hacking!_
 
 ### Symbols
 
-| Syntax                         | Description                                                                                                |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| *symbol*                       | Return the value that *symbol* is bound to in the closest lexical scope.                                   |
-| *(`define` symbol expression)* | Evaluate *expression*, bind the result to *symbol* in current lexical scope.                               |
-| *(`set!` symbol expression)*   | Evaluate *expression*, find the closest lexical scope where *symbol* is bound, re-bind result to *symbol*. |
+| Syntax                | Description                                                                                    |
+| --------------------- | ---------------------------------------------------------------------------------------------- |
+| *sym*                 | Return the value that *sym* is bound to in the closest lexical scope.                          |
+| *(`define` sym expr)* | Evaluate *expr*, bind the result to *sym* in current lexical scope.                            |
+| *(`set!` sym expr)*   | Evaluate *expr*, find the closest lexical scope where *sym* is bound, re-bind result to *sym*. |
 
 
 ### Macros
 
-| Syntax                                   | Description                                                                                                                                                                                                                                                                                                           |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| *(`quote` expression)*                   | Return *expression* without evaluating it.                                                                                                                                                                                                                                                                            |
-| *(`quasiquote` expression)*              | Increase the level of quasiquotation of *expression* by 1.                                                                                                                                                                                                                                                            |
-| *(`unquote` expression)*                 | Decrease the level of quasiquotation of *expression* by 1.<br>If the level of quasiquotation reaches 0, evaluate *expression*; otherwise, the expression is not evaluated.                                                                                                                                            |
-| *(`unquote-splicing` expression)*        | Decrease the level of quasiquotation of *expression* by 1.<br>If the level of quasiquotation reaches 0, evaluate *expression* and splice the resulting as multiple values; otherwise, the expression is not evaluated. (**Note:** if in an escaping position, the result of evaluating *expresson* must be a *list*.) |
-| *(`define-macro` symbol `(lambda ...)`)* | Evaluate the `lambda` expression as a *macro*, bind the *macro* to *symbol* the in current lexical scope.                                                                                                                                                                                                             |
-| *(macro expression\*)*                   | Invoke *macro* with the *expressions* as arguments, evaluate the result.                                                                                                                                                                                                                                              |
+| Syntax                                | Description                                                                                                                                                                                                                                                                                       |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| *(`quote` expr)*                      | Return *expr* without evaluating it.                                                                                                                                                                                                                                                              |
+| *(`quasiquote` expr)*                 | Increase the level of quasiquotation of *expr* by 1.                                                                                                                                                                                                                                              |
+| *(`unquote` expr)*                    | Decrease the level of quasiquotation of *expr* by 1.<br>If the level of quasiquotation reaches 0, evaluate *expr*; otherwise, *expr* is not evaluated.                                                                                                                                            |
+| *(`unquote-splicing` expr)*           | Decrease the level of quasiquotation of *expr* by 1.<br>If the level of quasiquotation reaches 0, evaluate *expr* and splice the resulting as multiple values; otherwise, *expr* is not evaluated. (**Note:** if in an escaping position, the result of evaluating *expresson* must be a *list*.) |
+| *(`define-macro` sym `(lambda ...)`)* | Evaluate the `lambda` expression as a *macro*, bind the *macro* to *sym* the in current lexical scope.                                                                                                                                                                                            |
+| *(macro expr\*)*                      | Invoke *macro* with the *exprs* as arguments, evaluate the result.                                                                                                                                                                                                                                |
 
 
 ### Procedures
 
-| Syntax                             | Description                                                                                                                                                        |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| *(`lambda` (symbol\*) expression)* | Return a *procedure* that accepts *n* arguments. When invoked, bind each argument to a *symbol*, evalulate *expression* and return the result.                     |
-| *(`lambda` symbol expression)*     | Return a *procedure* that accepts arbitary number of arguments. When invoked, bind parameters to *symbol* as a list, evalulate *expression* and return the result. |
-| *(procedure expression\*)*         | Evaluates each *expression*, invoke *procedure* with the results as arguments.                                                                                     |
+| Syntax                    | Description                                                                                                                                               |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| *(`lambda` (sym\*) expr)* | Return a *procedure* that accepts *n* arguments. When invoked, bind each argument to a *sym*, evalulate *expr* and return the result.                     |
+| *(`lambda` sym expr)*     | Return a *procedure* that accepts arbitary number of arguments. When invoked, bind parameters to *sym* as a list, evalulate *expr* and return the result. |
+| *(procedure expr\*)*      | Evaluates each *expr*, invoke *procedure* with the results as arguments.                                                                                  |
 
 
 ### Logic
 
-| Syntax                                                                        | Description                                                                                                                                                                                  |
-| ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| *(`if` expression<sub>1</sub> expression<sub>2</sub> expression<sub>3</sub>)* | Evaluate *expression<sub>1</sub>*, if the result is *truthy*, evalulate *expression<sub>2</sub>* and return the result; otherwise, evalulate *expression<sub>3</sub>* and return the result. |
-| *(`and` expression\*)*                                                        | Evaluate *expression* from left to right. When one of them evaluates to `#f`, immediately return `#f`. If all of them are *truthy*, return the result of the last expression.                |
-| *(`or` expression\*)*                                                         | Evaluate *expression* from left to right. When one of them evaluates to a *truthy* value, immediately return the result. If all of them are `#f`, return `#f`.                               |
+| Syntax                                                      | Description                                                                                                                                                                |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| *(`if` expr<sub>1</sub> expr<sub>2</sub> expr<sub>3</sub>)* | Evaluate *expr<sub>1</sub>*, if the result is *truthy*, evalulate *expr<sub>2</sub>* and return the result; otherwise, evalulate *expr<sub>3</sub>* and return the result. |
+| *(`and` expr\*)*                                            | Evaluate *expr* from left to right. When one of them evaluates to `#f`, immediately return `#f`. If all of them are *truthy*, return the result of the last *expr*.        |
+| *(`or` expr\*)*                                             | Evaluate *expr* from left to right. When one of them evaluates to a *truthy* value, immediately return the result. If all of them are `#f`, return `#f`.                   |
 
 
 ### Syntactic Sugar
 
-| Syntax              | Equivalence                       |
-| ------------------- | --------------------------------- |
-| `'`*expression*     | *(`quote` expression)*            |
-| `` ` ``*expression* | *(`quasiquote` expression)*       |
-| `,`*expression*     | *(`unquote` expression)*          |
-| `,@`*expression*    | *(`unquote-splicing` expression)* |
+| Syntax        | Equivalence                 |
+| ------------- | --------------------------- |
+| `'`*expr*     | *(`quote` expr)*            |
+| `` ` ``*expr* | *(`quasiquote` expr)*       |
+| `,`*expr*     | *(`unquote` expr)*          |
+| `,@`*expr*    | *(`unquote-splicing` expr)* |
 
 
 ## Built-In Procedures
 
 ### Symbols
 
-| Name     | Arguments | Description                                              |
-| -------- | --------- | -------------------------------------------------------- |
-| `sym?`   | `arg`     | Return `#t` if `arg` is *symbol*; otherwise return `#f`. |
-| `gensym` |           | Return a unique, never defined *symbol*.                 |
+| Name     | Arguments | Description                                                |
+| -------- | --------- | ---------------------------------------------------------- |
+| `sym?`   | `arg`     | Return `#t` if `arg` is a *symbol*; otherwise return `#f`. |
+| `gensym` |           | Return a unique, never defined *symbol*.                   |
 
 
 
