@@ -1,5 +1,5 @@
-#ifndef LISP_SRC_PARSE_PARSE_HPP_
-#define LISP_SRC_PARSE_PARSE_HPP_
+#ifndef LISP_SRC_COMPILE_PARSE_HPP_
+#define LISP_SRC_COMPILE_PARSE_HPP_
 
 #include "../sexpr/SExpr.hpp"
 #include <memory>

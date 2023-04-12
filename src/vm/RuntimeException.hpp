@@ -1,5 +1,5 @@
-#ifndef LISP_SRC_EVAL_EVALEXCEPTION_HPP_
-#define LISP_SRC_EVAL_EVALEXCEPTION_HPP_
+#ifndef LISP_SRC_VM_RUNTIMEEXCEPTION_HPP_
+#define LISP_SRC_VM_RUNTIMEEXCEPTION_HPP_
 
 #include "../sexpr/SExpr.hpp"
 #include <exception>
@@ -8,12 +8,12 @@
 #include <string>
 #include <vector>
 
-class EvalException : public std::exception {
+class RuntimeException : public std::exception {
   std::string _msg;
   std::vector<std::shared_ptr<SExpr>> stackTrace;
 
 public:
-  EvalException(const std::string &msg);
+  RuntimeException(const std::string &msg);
 
   virtual const char *what() const noexcept override;
 
@@ -22,6 +22,6 @@ public:
   const std::vector<std::shared_ptr<SExpr>> &getStackTrace() const;
 };
 
-std::ostream &operator<<(std::ostream &o, const EvalException &ee);
+std::ostream &operator<<(std::ostream &o, const RuntimeException &ee);
 
 #endif

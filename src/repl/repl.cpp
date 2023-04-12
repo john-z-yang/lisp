@@ -1,9 +1,10 @@
 #include "repl.hpp"
-#include "../env/functions.hpp"
-#include "../eval/EvalException.hpp"
-#include "../eval/eval.hpp"
-#include "../parse/ParseException.hpp"
-#include "../parse/parse.hpp"
+#include "../code/OpCode.hpp"
+#include "../compile/Compiler.hpp"
+#include "../compile/ParseException.hpp"
+#include "../compile/parse.hpp"
+#include "../vm/RuntimeException.hpp"
+#include "../vm/VM.hpp"
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -64,25 +65,28 @@ void printInfo() {
             << std::endl;
 }
 
-int repl(std::shared_ptr<Env> env) {
+int repl() {
   printInfo();
+  Env globals;
   while (true) {
     std::string input;
     size_t linesRead = 0;
     try {
       if (getInput(input, linesRead, "lisp> ", "  ... ")) {
-        eval(parse(input), env, [](std::shared_ptr<SExpr> res) {
-          std::cout << *res << std::endl;
-          return nullptr;
-        });
+        Compiler compiler(parse(input));
+        auto main = compiler.compile();
+        std::cout << std::endl;
+        main->dissassemble(std::cout);
+        VM vm(main, globals);
+        std::cout << ">> " << *vm.exec() << std::endl;
       } else {
         std::cout << std::endl;
-        lispQuit(env);
+        exit(0);
       }
     } catch (ParseException &pe) {
       std::cerr << "In line " << linesRead << " of <std::cin>" << std::endl;
       std::cerr << pe;
-    } catch (EvalException &ee) {
+    } catch (RuntimeException &ee) {
       std::cerr << "In line " << linesRead << " of <std::cin>" << std::endl;
       std::cerr << ee;
     }
@@ -90,35 +94,4 @@ int repl(std::shared_ptr<Env> env) {
   return EXIT_FAILURE;
 }
 
-int repl(const std::string filePath, std::shared_ptr<Env> env) {
-  std::fstream fs;
-  fs.open(filePath, std::fstream::in);
-
-  if (fs.fail()) {
-    std::cerr << "Unable to open file \"" << filePath
-              << "\": " << strerror(errno) << std::endl;
-    return EXIT_FAILURE;
-  }
-
-  size_t linesRead = 0;
-  while (true) {
-    std::string input;
-    try {
-      if (getInput(fs, input, linesRead)) {
-        eval(parse(input), env,
-             [](std::shared_ptr<SExpr> res) { return nullptr; });
-      } else {
-        break;
-      }
-    } catch (ParseException &pe) {
-      std::cerr << "In line " << linesRead << " of \"" << filePath << "\""
-                << std::endl;
-      std::cerr << pe;
-    } catch (EvalException &ee) {
-      std::cerr << "In line " << linesRead << " of \"" << filePath << "\""
-                << std::endl;
-      std::cerr << ee;
-    }
-  }
-  return EXIT_SUCCESS;
-}
+int repl(const std::string fileName) { return 0; }

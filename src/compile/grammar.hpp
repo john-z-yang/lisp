@@ -1,5 +1,5 @@
-#ifndef LISP_SRC_EVAL_GRAMMAR_HPP_
-#define LISP_SRC_EVAL_GRAMMAR_HPP_
+#ifndef LISP_SRC_COMPILE_GRAMMAR_HPP_
+#define LISP_SRC_COMPILE_GRAMMAR_HPP_
 
 #include <cstdint>
 #include <string>
@@ -30,6 +30,16 @@ const auto setGrammar = "(set symbol expression)";
 const auto setSymPos = 1;
 const auto setSExprPos = 2;
 const auto setNilPos = 3;
+
+const auto letStarGrammer = "(let* ((symbol expression) ...) expression)";
+const auto letStarinitPos = 1;
+const auto letStarExprPos = 2;
+const auto letStarNilPos = 3;
+
+const auto initGrammer = "(symbol expression)";
+const auto initSymbolPos = 0;
+const auto initExprPos = 1;
+const auto initNilPos = 2;
 
 const auto lambdaGrammar =
     "(lambda (symbol_1 ... symbol_n) expression) or (lambda symbol expression)";

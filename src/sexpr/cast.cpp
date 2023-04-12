@@ -1,4 +1,4 @@
-#include "../eval/EvalException.hpp"
+#include "../vm/RuntimeException.hpp"
 #include <memory>
 #include <sstream>
 
@@ -14,5 +14,5 @@ std::shared_ptr<To> cast(std::shared_ptr<From> f) {
   std::stringstream ss;
   ss << "Mismatched types. Expected \"" << To::typeName << "\", but got \""
      << *f << "\".";
-  throw EvalException(ss.str());
+  throw RuntimeException(ss.str());
 }
