@@ -7,14 +7,6 @@
 #include <memory>
 
 class Compiler {
-public:
-  Compiler(std::shared_ptr<SExpr> root);
-  Compiler(std::shared_ptr<SExpr> argNames, std::shared_ptr<SExpr> body,
-           uint scopeDepth);
-
-  std::shared_ptr<FunctionAtom> compile();
-
-private:
   typedef std::function<void(std::shared_ptr<SExpr>)> Visitor;
 
   struct Local {
@@ -44,6 +36,13 @@ private:
   void setScope(uint scope);
   std::vector<Local>::reverse_iterator findLocal(std::shared_ptr<SymAtom> sym);
   Code &getCode();
+
+public:
+  Compiler(std::shared_ptr<SExpr> root);
+  Compiler(std::shared_ptr<SExpr> argNames, std::shared_ptr<SExpr> body,
+           uint scopeDepth);
+
+  std::shared_ptr<FunctionAtom> compile();
 };
 
 #endif

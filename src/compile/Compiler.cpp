@@ -15,24 +15,6 @@
 #include <string>
 #include <unordered_map>
 
-Compiler::Compiler(std::shared_ptr<SExpr> root)
-    : function(std::make_shared<FunctionAtom>(0)),
-      argNames(std::make_shared<NilAtom>()), body(root), scopeDepth(0) {}
-
-Compiler::Compiler(std::shared_ptr<SExpr> argNames, std::shared_ptr<SExpr> body,
-                   uint scopeDepth)
-    : function(nullptr), argNames(argNames), body(body),
-      scopeDepth(scopeDepth) {
-  locals.push_back({std::make_unique<SymAtom>(""), 0});
-  uint arity = 0;
-  visitEach(argNames, [&](std::shared_ptr<SExpr> sExpr) {
-    arity += 1;
-    auto sym = cast<SymAtom>(sExpr);
-    locals.push_back({sym, scopeDepth});
-  });
-  function = std::make_unique<FunctionAtom>(arity);
-}
-
 std::shared_ptr<FunctionAtom> Compiler::compile() {
   compile(body);
   getCode().pushCode(OpCode::RETURN, -1);
@@ -56,9 +38,6 @@ void Compiler::compile(std::shared_ptr<SExpr> sExpr) {
       return;
     } else if (sym->val == "set!") {
       compileSet(sExpr);
-      return;
-    } else if (sym->val == "let*") {
-      compileLetStar(sExpr);
       return;
     } else if (sym->val == "if") {
       compileIf(sExpr);
@@ -135,31 +114,6 @@ void Compiler::compileSet(std::shared_ptr<SExpr> sExpr) {
     getCode().pushCode(getCode().pushConst(sym), -1);
   } catch (RuntimeException &ee) {
     handleSyntaxError(setGrammar, sExpr);
-  }
-}
-
-void Compiler::compileLetStar(std::shared_ptr<SExpr> sExpr) {
-  try {
-    auto init = cast<SExprs>(cast<SExprs>(at(letStarinitPos, sExpr))->first);
-    auto expr = cast<SExprs>(at(letStarExprPos, sExpr))->first;
-    cast<NilAtom>(at(letStarNilPos, sExpr));
-    auto originalScopeDepth = scopeDepth;
-    visitEach(init, [&](std::shared_ptr<SExpr> cur) {
-      beginScope();
-      try {
-        auto sym = cast<SymAtom>(cast<SExprs>(at(initSymbolPos, cur))->first);
-        auto expr = cast<SExprs>(at(initExprPos, cur))->first;
-        compile(expr);
-        locals.push_back({sym, scopeDepth});
-        cast<NilAtom>(at(initNilPos, cur));
-      } catch (RuntimeException &ee) {
-        handleSyntaxError(letStarGrammer, sExpr);
-      }
-    });
-    compile(expr);
-    setScope(originalScopeDepth);
-  } catch (RuntimeException &ee) {
-    handleSyntaxError(letStarGrammer, sExpr);
   }
 }
 
@@ -251,3 +205,21 @@ void Compiler::handleSyntaxError(std::string expected,
 }
 
 Code &Compiler::getCode() { return function->getCode(); }
+
+Compiler::Compiler(std::shared_ptr<SExpr> root)
+    : function(std::make_shared<FunctionAtom>(0)),
+      argNames(std::make_shared<NilAtom>()), body(root), scopeDepth(0) {}
+
+Compiler::Compiler(std::shared_ptr<SExpr> argNames, std::shared_ptr<SExpr> body,
+                   uint scopeDepth)
+    : function(nullptr), argNames(argNames), body(body),
+      scopeDepth(scopeDepth) {
+  locals.push_back({std::make_unique<SymAtom>(""), 0});
+  uint arity = 0;
+  visitEach(argNames, [&](std::shared_ptr<SExpr> sExpr) {
+    arity += 1;
+    auto sym = cast<SymAtom>(sExpr);
+    locals.push_back({sym, scopeDepth});
+  });
+  function = std::make_unique<FunctionAtom>(arity);
+}
