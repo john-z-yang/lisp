@@ -5,7 +5,7 @@
 #include "../sexpr/SExprs.hpp"
 #include "../sexpr/StringAtom.hpp"
 #include "../sexpr/SymAtom.hpp"
-#include "ParseException.hpp"
+#include "SyntaxError.hpp"
 #include <algorithm>
 #include <iterator>
 #include <memory>
@@ -119,7 +119,7 @@ void handleUnexpectedToken(
   ss << "Unexpected \"" << *token << "\".";
   std::string line;
   auto pos = implodeTokens(tokens, token, line);
-  throw ParseException(ss.str(), line, pos);
+  throw SyntaxError(ss.str(), line, pos);
 }
 
 void handleMissingToken(const std::vector<std::string> &tokens,
@@ -129,7 +129,7 @@ void handleMissingToken(const std::vector<std::string> &tokens,
   ss << "Expected " << missing << ".";
   std::string line;
   auto pos = implodeTokens(tokens, token, line);
-  throw ParseException(ss.str(), line, pos + token->length());
+  throw SyntaxError(ss.str(), line, pos + token->length());
 }
 
 void verifyLex(std::string &line, uint32_t &openParen, uint32_t &closedParen) {

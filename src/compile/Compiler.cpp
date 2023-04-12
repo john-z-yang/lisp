@@ -7,6 +7,7 @@
 #include "../sexpr/SExprs.hpp"
 #include "../sexpr/StringAtom.hpp"
 #include "../sexpr/SymAtom.hpp"
+#include "../sexpr/TypeError.hpp"
 #include "../sexpr/cast.cpp"
 #include "grammar.hpp"
 #include <algorithm>
@@ -107,7 +108,7 @@ void Compiler::compileDef(std::shared_ptr<SExpr> sExpr) {
     compile(expr);
     getCode().pushCode(OpCode::DEF_SYM, -1);
     getCode().pushCode(getCode().pushConst(sym), -1);
-  } catch (RuntimeException &ee) {
+  } catch (TypeError &te) {
     handleSyntaxError(defGrammar, sExpr);
   }
 }
@@ -127,7 +128,7 @@ void Compiler::compileSet(std::shared_ptr<SExpr> sExpr) {
     }
     getCode().pushCode(OpCode::SET_SYM, -1);
     getCode().pushCode(getCode().pushConst(sym), -1);
-  } catch (RuntimeException &ee) {
+  } catch (TypeError &te) {
     handleSyntaxError(setGrammar, sExpr);
   }
 }
@@ -149,7 +150,7 @@ void Compiler::compileIf(std::shared_ptr<SExpr> sExpr) {
     getCode().patchJump(jifIdx);
     compile(alt);
     getCode().patchJump(jIdx);
-  } catch (RuntimeException &ee) {
+  } catch (TypeError &te) {
     handleSyntaxError(ifGrammar, sExpr);
   }
 }
@@ -163,7 +164,7 @@ void Compiler::compileLambda(std::shared_ptr<SExpr> sExpr) {
     auto function = compiler.compile();
     getCode().pushCode(OpCode::LOAD_CONST, -1);
     getCode().pushCode(getCode().pushConst(function), -1);
-  } catch (RuntimeException &ee) {
+  } catch (TypeError &te) {
     handleSyntaxError(lambdaGrammar, sExpr);
   }
 }

@@ -1,7 +1,7 @@
 #include "repl.hpp"
 #include "../code/OpCode.hpp"
 #include "../compile/Compiler.hpp"
-#include "../compile/ParseException.hpp"
+#include "../compile/SyntaxError.hpp"
 #include "../compile/parse.hpp"
 #include "../vm/RuntimeException.hpp"
 #include "../vm/VM.hpp"
@@ -83,9 +83,9 @@ int repl() {
         std::cout << std::endl;
         exit(0);
       }
-    } catch (ParseException &pe) {
+    } catch (SyntaxError &se) {
       std::cerr << "In line " << linesRead << " of <std::cin>" << std::endl;
-      std::cerr << pe;
+      std::cerr << se;
     } catch (RuntimeException &ee) {
       std::cerr << "In line " << linesRead << " of <std::cin>" << std::endl;
       std::cerr << ee;
