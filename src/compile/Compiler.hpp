@@ -24,12 +24,10 @@ class Compiler {
   void compileSym(std::shared_ptr<SymAtom> sym);
   void compileDef(std::shared_ptr<SExpr> sExpr);
   void compileSet(std::shared_ptr<SExpr> sExpr);
-  void compileLetStar(std::shared_ptr<SExpr> sExpr);
   void compileIf(std::shared_ptr<SExpr> sExpr);
   void compileLambda(std::shared_ptr<SExpr> sExpr);
-  inline uint8_t compileParams(std::shared_ptr<SExpr> sExpr);
-  uint visitEach(std::shared_ptr<SExpr> sExpr, Visitor visitor);
-  std::shared_ptr<SExpr> at(const uint8_t n, std::shared_ptr<SExpr> sExpr);
+  const uint visitEach(std::shared_ptr<SExpr> sExpr, Visitor visitor);
+  std::shared_ptr<SExpr> at(const uint n, std::shared_ptr<SExpr> sExpr);
   void handleSyntaxError(std::string expected, std::shared_ptr<SExpr> actual);
   void beginScope();
   void endScope();

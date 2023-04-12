@@ -46,27 +46,35 @@ void Compiler::compile(std::shared_ptr<SExpr> sExpr) {
       compileLambda(sExpr);
       return;
     } else if (sym->val == "=") {
-      compileParams(sExprs->rest);
+      visitEach(sExprs->rest,
+                [&](std::shared_ptr<SExpr> sExpr) { this->compile(sExpr); });
       getCode().pushCode(OpCode::EQ, -1);
       return;
     } else if (sym->val == "+") {
-      compileParams(sExprs->rest);
+      visitEach(sExprs->rest,
+                [&](std::shared_ptr<SExpr> sExpr) { this->compile(sExpr); });
       getCode().pushCode(OpCode::ADD, -1);
       return;
     } else if (sym->val == "-") {
-      auto numParams = compileParams(sExprs->rest);
+      auto numParams =
+          visitEach(sExprs->rest, [&](std::shared_ptr<SExpr> sExpr) {
+            this->compile(sExpr);
+          });
       getCode().pushCode(numParams == 2 ? OpCode::SUB : OpCode::NEG, -1);
       return;
     } else if (sym->val == "*") {
-      compileParams(sExprs->rest);
+      visitEach(sExprs->rest,
+                [&](std::shared_ptr<SExpr> sExpr) { this->compile(sExpr); });
       getCode().pushCode(OpCode::MULT, -1);
       return;
     } else if (sym->val == "/") {
-      compileParams(sExprs->rest);
+      visitEach(sExprs->rest,
+                [&](std::shared_ptr<SExpr> sExpr) { this->compile(sExpr); });
       getCode().pushCode(OpCode::DIV, -1);
       return;
     } else if (sym->val == "%") {
-      compileParams(sExprs->rest);
+      visitEach(sExprs->rest,
+                [&](std::shared_ptr<SExpr> sExpr) { this->compile(sExpr); });
       getCode().pushCode(OpCode::MOD, -1);
       return;
     }
@@ -160,12 +168,7 @@ void Compiler::compileLambda(std::shared_ptr<SExpr> sExpr) {
   }
 }
 
-inline uint8_t Compiler::compileParams(std::shared_ptr<SExpr> sExpr) {
-  return visitEach(sExpr,
-                   [&](std::shared_ptr<SExpr> sExpr) { this->compile(sExpr); });
-}
-
-uint Compiler::visitEach(std::shared_ptr<SExpr> sExprs, Visitor visitor) {
+const uint Compiler::visitEach(std::shared_ptr<SExpr> sExprs, Visitor visitor) {
   auto numVisited = 0U;
   auto cur = sExprs;
   while (isa<SExprs>(*cur)) {
@@ -177,7 +180,7 @@ uint Compiler::visitEach(std::shared_ptr<SExpr> sExprs, Visitor visitor) {
   return numVisited;
 }
 
-std::shared_ptr<SExpr> Compiler::at(const uint8_t n,
+std::shared_ptr<SExpr> Compiler::at(const uint n,
                                     std::shared_ptr<SExpr> sExpr) {
   std::shared_ptr<SExpr> it = cast<SExprs>(sExpr);
   for (uint8_t i = 0; i < n; ++i) {
