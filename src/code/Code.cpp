@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <iomanip>
 
-uint8_t Code::pushCode(uint8_t code, int lineNum) {
+uint8_t Code::pushCode(const uint8_t code, const uint lineNum) {
   byteCodes.push_back(code);
   lineNums.push_back(lineNum);
   return byteCodes.size() - 1;
@@ -14,7 +14,7 @@ uint8_t Code::pushConst(std::shared_ptr<SExpr> sExpr) {
   return consts.size() - 1;
 }
 
-void Code::patchJump(std::vector<uint8_t>::size_type idx) {
+void Code::patchJump(const std::vector<uint8_t>::size_type idx) {
   uint16_t offset = byteCodes.size() - idx - 2;
   byteCodes[idx] = (offset >> 8) & 0xFF;
   byteCodes[idx + 1] = offset & 0xFF;
@@ -29,20 +29,16 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
     o << **i;
   }
   o << "]" << std::endl;
-  // o << "-> bytecodes (raw): [";
-  // for (auto i = code.byteCodes.begin(); i != code.byteCodes.end(); ++i) {
-  //   if (i != code.byteCodes.begin()) {
-  //     o << ", ";
-  //   }
-  //   o << "0x" << std::hex << (int)*i << std::dec;
-  // }
-  // o << "]" << std::endl;
+  o << "-> bytecodes (raw): [";
+  for (auto i = code.byteCodes.begin(); i != code.byteCodes.end(); ++i) {
+    o << "0x" << std::hex << (int)*i << std::dec;
+  }
+  o << "]" << std::endl;
   o << "-> bytecodes:" << std::endl;
 
 #define READ_BYTE() ((uint8_t)code.byteCodes[ip++])
 #define READ_SHORT()                                                           \
   (ip += 2, (uint16_t)((code.byteCodes[ip - 2] << 8 | code.byteCodes[ip - 1])))
-
   std::vector<uint8_t>::size_type ip = 0;
   for (;;) {
     o << std::right << std::setw(16) << ip << " " << std::setw(24) << std::left;
@@ -71,8 +67,8 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
     case OpCode::LOAD_FAST:
       o << "LOAD_FAST" << unsigned(READ_BYTE()) << std::endl;
       break;
-    case OpCode::DEF_SYM_FAST:
-      o << "DEF_SYM_FAST" << unsigned(READ_BYTE()) << std::endl;
+    case OpCode::DEF_FAST:
+      o << "DEF_FAST" << unsigned(READ_BYTE()) << std::endl;
       break;
     case OpCode::SET_SYM_FAST:
       o << "SET_SYM_FAST" << unsigned(READ_BYTE()) << std::endl;
