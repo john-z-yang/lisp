@@ -81,14 +81,14 @@ void Compiler::compile(std::shared_ptr<SExpr> sExpr) {
 
 void Compiler::compileSym(std::shared_ptr<SymAtom> sym) {
   auto it = findLocal(sym);
-  if (it == locals.rend()) {
-    getCode().pushCode(OpCode::LOAD_SYM, -1);
-    getCode().pushCode(getCode().pushConst(sym), -1);
+  if (it != locals.rend()) {
+    auto idx = std::distance(locals.begin(), it.base()) - 1;
+    getCode().pushCode(OpCode::LOAD_FAST, -1);
+    getCode().pushCode((uint8_t)idx, -1);
     return;
   }
-  auto idx = std::distance(locals.begin(), it.base()) - 1;
-  getCode().pushCode(OpCode::LOAD_FAST, -1);
-  getCode().pushCode((uint8_t)idx, -1);
+  getCode().pushCode(OpCode::LOAD_SYM, -1);
+  getCode().pushCode(getCode().pushConst(sym), -1);
 }
 
 void Compiler::compileDef(std::shared_ptr<SExpr> sExpr) {
@@ -110,6 +110,13 @@ void Compiler::compileSet(std::shared_ptr<SExpr> sExpr) {
     auto expr = cast<SExprs>(at(setSExprPos, sExpr))->first;
     cast<NilAtom>(at(setNilPos, sExpr));
     compile(expr);
+    auto it = findLocal(sym);
+    if (it != locals.rend()) {
+      auto idx = std::distance(locals.begin(), it.base()) - 1;
+      getCode().pushCode(OpCode::SET_FAST, -1);
+      getCode().pushCode(idx, -1);
+      return;
+    }
     getCode().pushCode(OpCode::SET_SYM, -1);
     getCode().pushCode(getCode().pushConst(sym), -1);
   } catch (RuntimeException &ee) {
