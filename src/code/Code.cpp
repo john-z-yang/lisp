@@ -67,8 +67,8 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
     case OpCode::LOAD_FAST:
       o << "LOAD_FAST" << unsigned(READ_BYTE()) << std::endl;
       break;
-    case OpCode::SET_SYM_FAST:
-      o << "SET_SYM_FAST" << unsigned(READ_BYTE()) << std::endl;
+    case OpCode::SET_FAST:
+      o << "SET_FAST" << unsigned(READ_BYTE()) << std::endl;
       break;
     case OpCode::JUMP:
       o << "JUMP" << unsigned(READ_SHORT()) << std::endl;

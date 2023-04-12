@@ -12,7 +12,7 @@ enum OpCode : uint8_t {
   DEF_SYM,
   SET_SYM,
   LOAD_FAST,
-  SET_SYM_FAST,
+  SET_FAST,
   JUMP,
   POP_JUMP_IF_FALSE,
   EQ,
