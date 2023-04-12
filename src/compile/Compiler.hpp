@@ -11,14 +11,14 @@ class Compiler {
 
   struct Local {
     std::shared_ptr<SymAtom> symbol;
-    uint depth;
+    unsigned int depth;
   };
 
   std::shared_ptr<FunctionAtom> function;
   const std::shared_ptr<SExpr> argNames;
   const std::shared_ptr<SExpr> body;
   std::vector<Local> locals;
-  uint scopeDepth;
+  unsigned int scopeDepth;
 
   void compile(std::shared_ptr<SExpr> sExpr);
   void compileSym(std::shared_ptr<SymAtom> sym);
@@ -26,19 +26,19 @@ class Compiler {
   void compileSet(std::shared_ptr<SExpr> sExpr);
   void compileIf(std::shared_ptr<SExpr> sExpr);
   void compileLambda(std::shared_ptr<SExpr> sExpr);
-  const uint visitEach(std::shared_ptr<SExpr> sExpr, Visitor visitor);
-  std::shared_ptr<SExpr> at(const uint n, std::shared_ptr<SExpr> sExpr);
+  const unsigned int visitEach(std::shared_ptr<SExpr> sExpr, Visitor visitor);
+  std::shared_ptr<SExpr> at(const unsigned int n, std::shared_ptr<SExpr> sExpr);
   void handleSyntaxError(std::string expected, std::shared_ptr<SExpr> actual);
   void beginScope();
   void endScope();
-  void setScope(uint scope);
+  void setScope(unsigned int scope);
   std::vector<Local>::reverse_iterator findLocal(std::shared_ptr<SymAtom> sym);
   Code &getCode();
 
 public:
   Compiler(std::shared_ptr<SExpr> root);
   Compiler(std::shared_ptr<SExpr> argNames, std::shared_ptr<SExpr> body,
-           uint scopeDepth);
+           unsigned int scopeDepth);
 
   std::shared_ptr<FunctionAtom> compile();
 };

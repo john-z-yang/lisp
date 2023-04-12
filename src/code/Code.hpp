@@ -17,7 +17,7 @@ public:
 
   std::vector<int> lineNums;
 
-  uint8_t pushCode(const uint8_t code, const uint lineNum);
+  uint8_t pushCode(const uint8_t code, const unsigned int lineNum);
   uint8_t pushConst(std::shared_ptr<SExpr> sExpr);
   void patchJump(const std::vector<uint8_t>::size_type idx);
 };

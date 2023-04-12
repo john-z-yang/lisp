@@ -168,7 +168,8 @@ void Compiler::compileLambda(std::shared_ptr<SExpr> sExpr) {
   }
 }
 
-const uint Compiler::visitEach(std::shared_ptr<SExpr> sExprs, Visitor visitor) {
+const unsigned int Compiler::visitEach(std::shared_ptr<SExpr> sExprs,
+                                       Visitor visitor) {
   auto numVisited = 0U;
   auto cur = sExprs;
   while (isa<SExprs>(*cur)) {
@@ -180,10 +181,10 @@ const uint Compiler::visitEach(std::shared_ptr<SExpr> sExprs, Visitor visitor) {
   return numVisited;
 }
 
-std::shared_ptr<SExpr> Compiler::at(const uint n,
+std::shared_ptr<SExpr> Compiler::at(const unsigned int n,
                                     std::shared_ptr<SExpr> sExpr) {
   std::shared_ptr<SExpr> it = cast<SExprs>(sExpr);
-  for (uint8_t i = 0; i < n; ++i) {
+  for (auto i = 0; i < n; ++i) {
     it = cast<SExprs>(it)->rest;
   }
   return it;
@@ -193,7 +194,7 @@ void Compiler::beginScope() { scopeDepth += 1; }
 
 void Compiler::endScope() { setScope(scopeDepth - 1); }
 
-void Compiler::setScope(uint scope) {
+void Compiler::setScope(unsigned int scope) {
   scopeDepth = scope;
   while (locals.size() && locals.back().depth > scopeDepth) {
     locals.pop_back();
@@ -221,11 +222,11 @@ Compiler::Compiler(std::shared_ptr<SExpr> root)
       argNames(std::make_shared<NilAtom>()), body(root), scopeDepth(0) {}
 
 Compiler::Compiler(std::shared_ptr<SExpr> argNames, std::shared_ptr<SExpr> body,
-                   uint scopeDepth)
+                   unsigned int scopeDepth)
     : function(nullptr), argNames(argNames), body(body),
       scopeDepth(scopeDepth) {
   locals.push_back({std::make_unique<SymAtom>(""), 0});
-  uint arity = 0;
+  unsigned int arity = 0;
   visitEach(argNames, [&](std::shared_ptr<SExpr> sExpr) {
     arity += 1;
     auto sym = cast<SymAtom>(sExpr);

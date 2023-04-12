@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <iomanip>
 
-uint8_t Code::pushCode(const uint8_t code, const uint lineNum) {
+uint8_t Code::pushCode(const uint8_t code, const unsigned int lineNum) {
   byteCodes.push_back(code);
   lineNums.push_back(lineNum);
   return byteCodes.size() - 1;
