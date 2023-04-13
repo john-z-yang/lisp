@@ -15,8 +15,9 @@ public:
   std::vector<uint8_t> byteCodes;
   std::vector<std::shared_ptr<SExpr>> consts;
 
-  std::vector<int> lineNums;
+  std::vector<unsigned int> lineNums;
 
+  uint8_t pushCode(const uint8_t code);
   uint8_t pushCode(const uint8_t code, const unsigned int lineNum);
   uint8_t pushConst(std::shared_ptr<SExpr> sExpr);
   void patchJump(const std::vector<uint8_t>::size_type idx);

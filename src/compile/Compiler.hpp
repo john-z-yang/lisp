@@ -4,7 +4,9 @@
 #include "../code/Code.hpp"
 #include "../sexpr/FunctionAtom.hpp"
 #include "../sexpr/SExpr.hpp"
+#include "SourceLoc.hpp"
 #include <memory>
+#include <unordered_map>
 
 class Compiler {
   typedef std::function<void(std::shared_ptr<SExpr>)> Visitor;
@@ -14,9 +16,10 @@ class Compiler {
     unsigned int depth;
   };
 
-  std::shared_ptr<FunctionAtom> function;
+  SourceLoc sourceLoc;
   const std::shared_ptr<SExpr> argNames;
   const std::shared_ptr<SExpr> body;
+  std::shared_ptr<FunctionAtom> function;
   std::vector<Local> locals;
   unsigned int scopeDepth;
 
@@ -28,17 +31,17 @@ class Compiler {
   void compileLambda(std::shared_ptr<SExpr> sExpr);
   const unsigned int visitEach(std::shared_ptr<SExpr> sExpr, Visitor visitor);
   std::shared_ptr<SExpr> at(const unsigned int n, std::shared_ptr<SExpr> sExpr);
-  void handleSyntaxError(std::string expected, std::shared_ptr<SExpr> actual);
   void beginScope();
   void endScope();
   void setScope(unsigned int scope);
   std::vector<Local>::reverse_iterator findLocal(std::shared_ptr<SymAtom> sym);
   Code &getCode();
+  void handleSyntaxError(std::string expected, std::shared_ptr<SExpr> actual);
 
 public:
-  Compiler(std::shared_ptr<SExpr> root);
+  Compiler(std::vector<std::string> lines);
   Compiler(std::shared_ptr<SExpr> argNames, std::shared_ptr<SExpr> body,
-           unsigned int scopeDepth);
+           unsigned int scopeDepth, SourceLoc sourceLoc);
 
   std::shared_ptr<FunctionAtom> compile();
 };

@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <iomanip>
 
+uint8_t Code::pushCode(const uint8_t code) { return pushCode(code, 0); }
+
 uint8_t Code::pushCode(const uint8_t code, const unsigned int lineNum) {
   byteCodes.push_back(code);
   lineNums.push_back(lineNum);
@@ -31,7 +33,7 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
   o << "]" << std::endl;
   o << "-> bytecodes (raw): [";
   for (auto i = code.byteCodes.begin(); i != code.byteCodes.end(); ++i) {
-    o << "0x" << std::hex << (int)*i << std::dec;
+    o << "x" << std::hex << (int)*i << std::dec;
   }
   o << "]" << std::endl;
   o << "-> bytecodes:" << std::endl;
@@ -41,7 +43,9 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
   (ip += 2, (uint16_t)((code.byteCodes[ip - 2] << 8 | code.byteCodes[ip - 1])))
   std::vector<uint8_t>::size_type ip = 0;
   for (;;) {
-    o << std::right << std::setw(16) << ip << " " << std::setw(24) << std::left;
+    o << std::right << std::setw(4)
+      << (code.lineNums[ip] > 0 ? std::to_string(code.lineNums[ip]) : "?")
+      << std::setw(16) << ip << " " << std::setw(24) << std::left;
     uint8_t byte = READ_BYTE();
     switch (byte) {
     case OpCode::RETURN:

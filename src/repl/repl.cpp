@@ -2,6 +2,7 @@
 #include "../code/OpCode.hpp"
 #include "../compile/Compiler.hpp"
 #include "../compile/SyntaxError.hpp"
+#include "../compile/Token.hpp"
 #include "../compile/parse.hpp"
 #include "../vm/RuntimeException.hpp"
 #include "../vm/VM.hpp"
@@ -14,48 +15,28 @@
 #include <regex>
 #include <string>
 
-bool getInput(std::string &str, size_t &linesRead, std::string prompt,
+bool getInput(std::vector<std::string> &lines, std::string prompt,
               std::string wrap) {
+
   uint32_t openParen = 0;
   uint32_t closedParen = 0;
   std::string line;
-  while (auto buf = readline(linesRead == 0 ? prompt.c_str() : wrap.c_str())) {
+  while (auto buf = readline(lines.empty() ? prompt.c_str() : wrap.c_str())) {
     line = std::string(buf);
     free(buf);
     line = std::regex_replace(
         line, std::regex("(\\\\\"|\"(?:\\\\\"|[^\"])*\")|(;.*$)"), "$1");
-    if (str.empty() && line.empty()) {
+    if (lines.empty() && line.empty()) {
       continue;
     }
-    linesRead += 1;
     add_history(line.c_str());
     verifyLex(line, openParen, closedParen);
-    str += line + " ";
+    lines.push_back(line + " ");
     if (openParen == closedParen) {
       return true;
     }
   }
   return false;
-}
-
-std::istream &getInput(std::istream &in, std::string &str, size_t &linesRead) {
-  uint32_t openParen = 0;
-  uint32_t closedParen = 0;
-  std::string line;
-  while (getline(in, line)) {
-    linesRead += 1;
-    line = std::regex_replace(
-        line, std::regex("(\\\\\"|\"(?:\\\\\"|[^\"])*\")|(;.*$)"), "$1");
-    if (str.empty() && line.empty()) {
-      continue;
-    }
-    verifyLex(line, openParen, closedParen);
-    str += line + " ";
-    if (openParen == closedParen) {
-      return in;
-    }
-  }
-  return in;
 }
 
 void printInfo() {
@@ -69,11 +50,10 @@ int repl() {
   printInfo();
   Env globals;
   while (true) {
-    std::string input;
-    size_t linesRead = 0;
+    std::vector<std::string> lines;
     try {
-      if (getInput(input, linesRead, "lisp> ", "  ... ")) {
-        Compiler compiler(parse(input));
+      if (getInput(lines, "lisp> ", "  ... ")) {
+        Compiler compiler(lines);
         auto main = compiler.compile();
         std::cout << std::endl;
         main->dissassemble(std::cout);
@@ -84,10 +64,10 @@ int repl() {
         exit(0);
       }
     } catch (SyntaxError &se) {
-      std::cerr << "In line " << linesRead << " of <std::cin>" << std::endl;
+      std::cerr << "In line " << lines.size() << " of <std::cin>" << std::endl;
       std::cerr << se;
     } catch (RuntimeException &ee) {
-      std::cerr << "In line " << linesRead << " of <std::cin>" << std::endl;
+      std::cerr << "In line " << lines.size() << " of <std::cin>" << std::endl;
       std::cerr << ee;
     }
   }
