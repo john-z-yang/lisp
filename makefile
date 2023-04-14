@@ -1,6 +1,6 @@
 CXX = g++
-CXXFLAGS_EXTRA =
-CXXFLAGS = -std=c++2a -Wall $(ASAN)
+CXXFLAGS_EXTRA = 
+CXXFLAGS = -std=c++2a -Wall $(CXXFLAGS_EXTRA)
 
 PERCENT = %
 
