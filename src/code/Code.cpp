@@ -80,42 +80,6 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
     case OpCode::POP_JUMP_IF_FALSE:
       o << "POP_JUMP_IF_FALSE" << unsigned(READ_SHORT()) << std::endl;
       break;
-    case OpCode::EQ:
-      o << "EQ" << std::endl;
-      break;
-    case OpCode::GT:
-      o << "GT" << std::endl;
-      break;
-    case OpCode::GT_EQ:
-      o << "GT_EQ" << std::endl;
-      break;
-    case OpCode::LT:
-      o << "LT" << std::endl;
-      break;
-    case OpCode::LT_EQ:
-      o << "LT_EQ" << std::endl;
-      break;
-    case OpCode::ABS:
-      o << "ABS" << std::endl;
-      break;
-    case OpCode::NEG:
-      o << "NEG" << std::endl;
-      break;
-    case OpCode::ADD:
-      o << "ADD" << std::endl;
-      break;
-    case OpCode::SUB:
-      o << "SUB" << std::endl;
-      break;
-    case OpCode::MULT:
-      o << "MULT" << std::endl;
-      break;
-    case OpCode::DIV:
-      o << "DIV" << std::endl;
-      break;
-    case OpCode::MOD:
-      o << "MOD" << std::endl;
-      break;
     default:
       break;
     }
