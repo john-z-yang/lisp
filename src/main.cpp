@@ -1,4 +1,5 @@
 #include "repl/repl.hpp"
+#include <iostream>
 #include <memory>
 #include <string>
 

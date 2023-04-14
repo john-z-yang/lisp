@@ -15,9 +15,8 @@
 #include <regex>
 #include <string>
 
-bool getInput(std::vector<std::string> &lines, std::string prompt,
-              std::string wrap) {
-
+bool getConsoleInput(std::vector<std::string> &lines, std::string prompt,
+                     std::string wrap) {
   uint32_t openParen = 0;
   uint32_t closedParen = 0;
   std::string line;
@@ -39,6 +38,22 @@ bool getInput(std::vector<std::string> &lines, std::string prompt,
   return false;
 }
 
+std::istream &getInput(std::istream &in, std::vector<std::string> &lines) {
+  uint32_t openParen = 0;
+  uint32_t closedParen = 0;
+  std::string line;
+  while (getline(in, line)) {
+    line = std::regex_replace(
+        line, std::regex("(\\\\\"|\"(?:\\\\\"|[^\"])*\")|(;.*$)"), "$1");
+    lines.push_back(line + " ");
+    verifyLex(line, openParen, closedParen);
+    if (openParen == closedParen) {
+      return in;
+    }
+  }
+  return in;
+}
+
 void printInfo() {
   std::cout << "Lisp (C++ std: " << __cplusplus << ", " << __DATE__ << ", "
             << __TIME__ << ")" << std::endl;
@@ -52,10 +67,9 @@ int repl() {
   while (true) {
     std::vector<std::string> lines;
     try {
-      if (getInput(lines, "lisp> ", "  ... ")) {
+      if (getConsoleInput(lines, "lisp> ", "  ... ")) {
         Compiler compiler(lines);
         auto main = compiler.compile();
-        std::cout << std::endl;
         main->dissassemble(std::cout);
         VM vm(main, globals);
         std::cout << ">> " << *vm.exec() << std::endl;
@@ -74,4 +88,37 @@ int repl() {
   return EXIT_FAILURE;
 }
 
-int repl(const std::string fileName) { return 0; }
+int repl(const std::string filePath) {
+  std::fstream fs;
+  fs.open(filePath, std::fstream::in);
+
+  if (fs.fail()) {
+    std::cerr << "Unable to open file \"" << filePath
+              << "\": " << strerror(errno) << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  Env globals;
+  while (true) {
+    std::vector<std::string> lines;
+    try {
+      if (getInput(fs, lines)) {
+        Compiler compiler(lines);
+        auto main = compiler.compile();
+        VM vm(main, globals);
+        vm.exec();
+      } else {
+        break;
+      }
+    } catch (SyntaxError &se) {
+      std::cerr << "In line " << lines.size() << " of \"" << filePath << "\""
+                << std::endl;
+      std::cerr << se;
+    } catch (RuntimeException &re) {
+      std::cerr << "In line " << lines.size() << " of \"" << filePath << "\""
+                << std::endl;
+      std::cerr << re;
+    }
+  }
+  return EXIT_SUCCESS;
+}

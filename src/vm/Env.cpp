@@ -10,6 +10,8 @@
 #include <memory>
 
 Env::Env() {
+  symTable.insert({SymAtom("display"),
+                   std::make_shared<NativeFunctionAtom>(&lispDisplay, 1)});
   symTable.insert(
       {SymAtom("="), std::make_shared<NativeFunctionAtom>(&lispEq, -1)});
   symTable.insert(
@@ -46,6 +48,13 @@ std::shared_ptr<SExpr> Env::find(SymAtom &sym) {
     throw RuntimeException("Symbol \"" + sym.val + "\" is not defined.");
   }
   return it->second;
+}
+
+std::shared_ptr<SExpr>
+lispDisplay(std::vector<std::shared_ptr<SExpr>>::iterator params,
+            const uint8_t argc) {
+  std::cout << **params << std::endl;
+  return std::make_shared<NilAtom>();
 }
 
 std::shared_ptr<BoolAtom>

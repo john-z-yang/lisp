@@ -27,6 +27,10 @@ public:
   std::shared_ptr<SExpr> find(SymAtom &sym);
 };
 
+std::shared_ptr<SExpr>
+lispDisplay(std::vector<std::shared_ptr<SExpr>>::iterator params,
+            const uint8_t argc);
+
 std::shared_ptr<BoolAtom>
 lispEq(std::vector<std::shared_ptr<SExpr>>::iterator params,
        const uint8_t argc);
