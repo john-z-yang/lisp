@@ -14,7 +14,7 @@ protected:
   virtual bool equals(const SExpr &other) const = 0;
 
 public:
-  enum Type { NIL, SYM, NUM, BOOL, STR, SEXPRS, FUNCTION, CLOSURE };
+  enum Type { NIL, SYM, NUM, BOOL, STR, SEXPRS, FUNCTION, CLOSURE, NATIVE_FN };
 
   const Type type;
 

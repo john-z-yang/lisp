@@ -2,6 +2,7 @@
 #include "../code/OpCode.hpp"
 #include "../sexpr/BoolAtom.hpp"
 #include "../sexpr/IntAtom.hpp"
+#include "../sexpr/NativeFunctionAtom.hpp"
 #include "../sexpr/cast.cpp"
 #include <cstdint>
 
@@ -11,12 +12,20 @@ VM::VM(std::shared_ptr<FunctionAtom> main, Env &globals) : globals(globals) {
 }
 
 void VM::call(const uint8_t argc) {
-  const auto callee = cast<FunctionAtom>(peak(argc));
-  if (stack.size() == 1) {
-    frames.push_back({callee, 0, 0});
+  const auto callee = peak(argc);
+  if (isa<FunctionAtom>(*callee)) {
+    frames.push_back({cast<FunctionAtom>(callee), 0, stack.size() - argc - 1});
     return;
   }
-  frames.push_back({callee, 0, stack.size() - (argc + 1)});
+  if (isa<NativeFunctionAtom>(*callee)) {
+    const auto res =
+        cast<NativeFunctionAtom>(callee)->invoke(stack.end() - argc, argc);
+    for (auto i = 0; i < argc + 1; i += 1) {
+      stack.pop_back();
+    }
+    stack.push_back(res);
+    return;
+  }
 }
 
 std::shared_ptr<SExpr>
@@ -31,22 +40,8 @@ std::shared_ptr<SExpr> VM::exec() {
   (curFrame.ip += 2,                                                           \
    (uint16_t)((curFrame.function->getCode().byteCodes[curFrame.ip - 2] << 8 |  \
                curFrame.function->getCode().byteCodes[curFrame.ip - 1])))
-#define UNARY_MATH_OP(op, resType)                                             \
-  do {                                                                         \
-    auto oprand = cast<IntAtom>(stack.back())->val;                            \
-    stack.pop_back();                                                          \
-    stack.push_back(std::make_shared<resType>(op(oprand)));                    \
-  } while (false)
-#define BINARY_MATH_OP(op, resType)                                            \
-  do {                                                                         \
-    auto rhs = cast<IntAtom>(stack.back())->val;                               \
-    stack.pop_back();                                                          \
-    auto lhs = cast<IntAtom>(stack.back())->val;                               \
-    stack.pop_back();                                                          \
-    stack.push_back(std::make_shared<resType>(lhs op rhs));                    \
-  } while (false)
 
-  for (;;) {
+  while (true) {
     auto &curFrame = frames.back();
     uint8_t byte = READ_BYTE();
     switch (byte) {
@@ -108,62 +103,12 @@ std::shared_ptr<SExpr> VM::exec() {
       stack.pop_back();
       break;
     }
-    case OpCode::EQ: {
-      BINARY_MATH_OP(==, BoolAtom);
-      break;
-    }
-    case OpCode::GT: {
-      BINARY_MATH_OP(>, BoolAtom);
-      break;
-    }
-    case OpCode::GT_EQ: {
-      BINARY_MATH_OP(>=, BoolAtom);
-      break;
-    }
-    case OpCode::LT: {
-      BINARY_MATH_OP(<, BoolAtom);
-      break;
-    }
-    case OpCode::LT_EQ: {
-      BINARY_MATH_OP(<=, BoolAtom);
-      break;
-    }
-    case OpCode::ABS: {
-      UNARY_MATH_OP(abs, IntAtom);
-      break;
-    }
-    case OpCode::NEG: {
-      UNARY_MATH_OP(-, IntAtom);
-      break;
-    }
-    case OpCode::ADD: {
-      BINARY_MATH_OP(+, IntAtom);
-      break;
-    }
-    case OpCode::SUB: {
-      BINARY_MATH_OP(-, IntAtom);
-      break;
-    }
-    case OpCode::MULT: {
-      BINARY_MATH_OP(*, IntAtom);
-      break;
-    }
-    case OpCode::DIV: {
-      BINARY_MATH_OP(/, IntAtom);
-      break;
-    }
-    case OpCode::MOD: {
-      BINARY_MATH_OP(%, IntAtom);
-      break;
-    }
     default:
       break;
     }
   }
-
   return stack.back();
+
 #undef READ_BYTE
 #undef READ_SHORT
-#undef UNARY_MATH_OP
-#undef BINARY_MATH_OP
 }

@@ -15,18 +15,6 @@ enum OpCode : uint8_t {
   SET_FAST,
   JUMP,
   POP_JUMP_IF_FALSE,
-  EQ,
-  GT,
-  GT_EQ,
-  LT,
-  LT_EQ,
-  ABS,
-  NEG,
-  ADD,
-  SUB,
-  MULT,
-  DIV,
-  MOD,
 };
 
 #endif

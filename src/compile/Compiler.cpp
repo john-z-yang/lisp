@@ -48,39 +48,6 @@ void Compiler::compile(std::shared_ptr<SExpr> sExpr) {
     } else if (sym->val == "lambda") {
       compileLambda(sExpr);
       return;
-    } else if (sym->val == "=") {
-      visitEach(sExprs->rest,
-                [&](std::shared_ptr<SExpr> sExpr) { this->compile(sExpr); });
-      getCode().pushCode(OpCode::EQ, sourceLoc[sym]);
-      return;
-    } else if (sym->val == "+") {
-      visitEach(sExprs->rest,
-                [&](std::shared_ptr<SExpr> sExpr) { this->compile(sExpr); });
-      getCode().pushCode(OpCode::ADD, sourceLoc[sym]);
-      return;
-    } else if (sym->val == "-") {
-      auto numParams =
-          visitEach(sExprs->rest, [&](std::shared_ptr<SExpr> sExpr) {
-            this->compile(sExpr);
-          });
-      getCode().pushCode(numParams == 2 ? OpCode::SUB : OpCode::NEG,
-                         sourceLoc[sym]);
-      return;
-    } else if (sym->val == "*") {
-      visitEach(sExprs->rest,
-                [&](std::shared_ptr<SExpr> sExpr) { this->compile(sExpr); });
-      getCode().pushCode(OpCode::MULT, sourceLoc[sym]);
-      return;
-    } else if (sym->val == "/") {
-      visitEach(sExprs->rest,
-                [&](std::shared_ptr<SExpr> sExpr) { this->compile(sExpr); });
-      getCode().pushCode(OpCode::DIV, sourceLoc[sym]);
-      return;
-    } else if (sym->val == "%") {
-      visitEach(sExprs->rest,
-                [&](std::shared_ptr<SExpr> sExpr) { this->compile(sExpr); });
-      getCode().pushCode(OpCode::MOD, sourceLoc[sym]);
-      return;
     }
   }
   compile(sExprs->first);
