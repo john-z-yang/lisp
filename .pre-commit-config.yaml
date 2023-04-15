@@ -1,0 +1,11 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 84e478bc42d27f9c214de50dd331ca7602beb2f1
+    hooks:
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+-   repo: https://github.com/pocc/pre-commit-hooks
+    rev: 336fdd7c3cab698ead0b1c95157b9e74d3906b62
+    hooks:
+      - id: clang-format

@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS_EXTRA = 
+CXXFLAGS_EXTRA =
 CXXFLAGS = -std=c++2a -Wall $(CXXFLAGS_EXTRA)
 
 PERCENT = %

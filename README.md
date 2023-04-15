@@ -46,15 +46,15 @@ lisp> (quote (Hello World!))
 (Hello World!)
 lisp> (quit)
 Farewell.
-foo@bar:~$ 
+foo@bar:~$
 ```
 
 Supply the file name of a lisp script as the argument to run them.
 ```console
-foo@bar:~$ echo '(display (quote (Hello World!)))' > hello_world.lisp 
+foo@bar:~$ echo '(display (quote (Hello World!)))' > hello_world.lisp
 foo@bar:~$ bin/lisp hello_world.lisp
 (Hello World!)
-foo@bar:~$ 
+foo@bar:~$
 ```
 _Happy hacking!_
 
@@ -199,7 +199,7 @@ Lisp code (`combine.lisp`)
 ```lisp
 (define combine
   (lambda (f)
-    (lambda (x y) 
+    (lambda (x y)
       (if (null? x) (quote ())
         (f (list (car x) (car y))
            ((combine f) (cdr x) (cdr y)))))))
@@ -213,7 +213,7 @@ When executed, it should behave like this
 ```console
 foo@bar:~$ bin/lisp combine.lisp
 ((1 5) (2 6) (3 7) (4 8))
-foo@bar:~$ 
+foo@bar:~$
 ```
 
 So we create the `.expect` file for expected output (`tests/combine.expect`).
