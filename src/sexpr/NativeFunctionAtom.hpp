@@ -1,21 +1,20 @@
 #ifndef LISP_SRC_SEXPR_NATIVEFUNCTION_HPP_
 #define LISP_SRC_SEXPR_NATIVEFUNCTION_HPP_
 
+#include "../vm/NativeFns.hpp"
 #include "Atom.hpp"
 #include <functional>
 #include <memory>
 #include <vector>
 
 class NativeFunctionAtom final : public Atom {
-  typedef std::shared_ptr<SExpr> (*NativeFn)(
-      std::vector<std::shared_ptr<SExpr>>::iterator, const uint8_t argc);
 
 protected:
   std::string toString() const;
   bool equals(const SExpr &other) const;
 
 public:
-  const NativeFn fn;
+  NativeFn *fn;
   const int argc;
 
   NativeFunctionAtom(NativeFn fn, const int argc);
