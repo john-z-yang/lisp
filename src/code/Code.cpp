@@ -23,20 +23,22 @@ void Code::patchJump(const std::vector<uint8_t>::size_type idx) {
 }
 
 std::ostream &operator<<(std::ostream &o, const Code &code) {
-  o << "-> consts: [";
+  o << "-> consts:" << std::endl;
   for (auto i = code.consts.begin(); i != code.consts.end(); ++i) {
     if (i != code.consts.begin()) {
       o << ", ";
     }
     o << **i;
   }
-  o << "]" << std::endl;
-  o << "-> bytecodes (raw): [";
+  o << std::endl << "-> bytecodes (raw):" << std::endl;
   for (auto i = code.byteCodes.begin(); i != code.byteCodes.end(); ++i) {
-    o << "x" << std::hex << (int)*i << std::dec;
+    if (i != code.byteCodes.begin()) {
+      o << " ";
+    }
+    o << "0x" << std::setfill('0') << std::setw(2) << std::hex << (int)*i
+      << std::setfill(' ') << std::dec;
   }
-  o << "]" << std::endl;
-  o << "-> bytecodes:" << std::endl;
+  o << std::endl << "-> bytecodes:" << std::endl;
 
 #define READ_BYTE() ((uint8_t)code.byteCodes[ip++])
 #define READ_SHORT()                                                           \
