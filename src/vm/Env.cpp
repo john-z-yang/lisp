@@ -172,3 +172,7 @@ lispMod(std::vector<std::shared_ptr<SExpr>>::iterator params,
   const auto rhs = cast<IntAtom>(*params)->val;
   return std::make_shared<IntAtom>(lhs % rhs);
 }
+
+#undef MATH_CMP_OP
+#undef MATH_CUM_OP
+#undef MATH_DIM_OP
