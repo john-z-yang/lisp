@@ -2,24 +2,23 @@
 #include "../code/OpCode.hpp"
 #include "../sexpr/BoolAtom.hpp"
 #include "../sexpr/IntAtom.hpp"
-#include "../sexpr/NativeFunctionAtom.hpp"
+#include "../sexpr/NatFnAtom.hpp"
 #include "../sexpr/cast.cpp"
 #include <cstdint>
 
-VM::VM(std::shared_ptr<FunctionAtom> main, Env &globals) : globals(globals) {
+VM::VM(std::shared_ptr<FnAtom> main, Env &globals) : globals(globals) {
   stack.push_back(main);
   call(0);
 }
 
 void VM::call(const uint8_t argc) {
   const auto callee = peak(argc);
-  if (isa<FunctionAtom>(*callee)) {
-    frames.push_back({cast<FunctionAtom>(callee), 0, stack.size() - argc - 1});
+  if (isa<FnAtom>(*callee)) {
+    frames.push_back({cast<FnAtom>(callee), 0, stack.size() - argc - 1});
     return;
   }
-  if (isa<NativeFunctionAtom>(*callee)) {
-    const auto res =
-        cast<NativeFunctionAtom>(callee)->invoke(stack.end() - argc, argc);
+  if (isa<NatFnAtom>(*callee)) {
+    const auto res = cast<NatFnAtom>(callee)->invoke(stack.end() - argc, argc);
     for (auto i = 0; i < argc + 1; i += 1) {
       stack.pop_back();
     }

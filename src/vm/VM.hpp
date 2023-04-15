@@ -2,7 +2,7 @@
 #define LISP_SRC_VM_VM_HPP_
 
 #include "../code/Code.hpp"
-#include "../sexpr/FunctionAtom.hpp"
+#include "../sexpr/FnAtom.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "Env.hpp"
 #include <memory>
@@ -10,7 +10,7 @@
 
 class VM {
   struct CallFrame {
-    std::shared_ptr<FunctionAtom> function;
+    std::shared_ptr<FnAtom> function;
     std::vector<uint8_t>::size_type ip;
     std::vector<std::shared_ptr<SExpr>>::size_type bp;
   };
@@ -24,7 +24,7 @@ class VM {
   peak(std::vector<std::shared_ptr<SExpr>>::size_type distance);
 
 public:
-  VM(std::shared_ptr<FunctionAtom> main, Env &globals);
+  VM(std::shared_ptr<FnAtom> main, Env &globals);
   std::shared_ptr<SExpr> exec();
 };
 

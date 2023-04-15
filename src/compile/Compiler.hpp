@@ -2,7 +2,7 @@
 #define LISP_SRC_COMPILE_COMPILER_HPP_
 
 #include "../code/Code.hpp"
-#include "../sexpr/FunctionAtom.hpp"
+#include "../sexpr/FnAtom.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "SourceLoc.hpp"
 #include <memory>
@@ -19,7 +19,7 @@ class Compiler {
   SourceLoc sourceLoc;
   const std::shared_ptr<SExpr> argNames;
   const std::shared_ptr<SExpr> body;
-  std::shared_ptr<FunctionAtom> function;
+  std::shared_ptr<FnAtom> function;
   std::vector<Local> locals;
   unsigned int scopeDepth;
 
@@ -43,7 +43,7 @@ public:
   Compiler(std::shared_ptr<SExpr> argNames, std::shared_ptr<SExpr> body,
            unsigned int scopeDepth, SourceLoc sourceLoc);
 
-  std::shared_ptr<FunctionAtom> compile();
+  std::shared_ptr<FnAtom> compile();
 };
 
 #endif

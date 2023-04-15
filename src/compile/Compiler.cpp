@@ -17,7 +17,7 @@
 #include <string>
 #include <unordered_map>
 
-std::shared_ptr<FunctionAtom> Compiler::compile() {
+std::shared_ptr<FnAtom> Compiler::compile() {
   compile(body);
   getCode().pushCode(OpCode::RETURN);
   return function;
@@ -197,12 +197,12 @@ Code &Compiler::getCode() { return function->getCode(); }
 
 Compiler::Compiler(std::vector<std::string> lines)
     : argNames(std::make_shared<NilAtom>()), body(parse(lines, sourceLoc)),
-      function(std::make_shared<FunctionAtom>(0)), scopeDepth(0) {}
+      function(std::make_shared<FnAtom>(0)), scopeDepth(0) {}
 
 Compiler::Compiler(std::shared_ptr<SExpr> argNames, std::shared_ptr<SExpr> body,
                    unsigned int scopeDepth, SourceLoc sourceLoc)
     : sourceLoc(sourceLoc), argNames(argNames), body(body),
-      function(std::make_shared<FunctionAtom>(0)), scopeDepth(scopeDepth) {
+      function(std::make_shared<FnAtom>(0)), scopeDepth(scopeDepth) {
   locals.push_back({std::make_unique<SymAtom>(""), 0});
   unsigned int arity = 0;
   visitEach(argNames, [&](std::shared_ptr<SExpr> sExpr) {
@@ -210,5 +210,5 @@ Compiler::Compiler(std::shared_ptr<SExpr> argNames, std::shared_ptr<SExpr> body,
     auto sym = cast<SymAtom>(sExpr);
     locals.push_back({sym, scopeDepth});
   });
-  function = std::make_unique<FunctionAtom>(arity);
+  function = std::make_unique<FnAtom>(arity);
 }

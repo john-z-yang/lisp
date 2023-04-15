@@ -1,6 +1,6 @@
 #include "Env.hpp"
 #include "../sexpr/BoolAtom.hpp"
-#include "../sexpr/NativeFunctionAtom.hpp"
+#include "../sexpr/NatFnAtom.hpp"
 #include "../sexpr/NilAtom.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "../sexpr/SExprs.hpp"
@@ -13,7 +13,7 @@ Env::Env() {
 #define BIND_NATIVE_FN(sym, func, argc)                                        \
   do {                                                                         \
     symTable.insert(                                                           \
-        {SymAtom(#sym), std::make_shared<NativeFunctionAtom>(&func, argc)});   \
+        {SymAtom(#sym), std::make_shared<NatFnAtom>(&func, argc)});            \
   } while (false)
 
   BIND_NATIVE_FN(display, lispDisplay, 1);

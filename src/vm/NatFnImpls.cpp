@@ -1,4 +1,4 @@
-#include "NativeFns.hpp"
+#include "NatFnImpls.hpp"
 #include "../sexpr/BoolAtom.hpp"
 #include "../sexpr/IntAtom.hpp"
 #include "../sexpr/NilAtom.hpp"
