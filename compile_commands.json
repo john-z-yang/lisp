@@ -1,0 +1,310 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/code_Code.o",
+      "src/code/Code.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/code/Code.cpp",
+    "output": "/Users/john/workspace/lisp/bin/code_Code.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/compile_Compiler.o",
+      "src/compile/Compiler.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/compile/Compiler.cpp",
+    "output": "/Users/john/workspace/lisp/bin/compile_Compiler.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/vm_Env.o",
+      "src/vm/Env.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/vm/Env.cpp",
+    "output": "/Users/john/workspace/lisp/bin/vm_Env.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/compile_parse.o",
+      "src/compile/parse.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/compile/parse.cpp",
+    "output": "/Users/john/workspace/lisp/bin/compile_parse.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/compile_SyntaxError.o",
+      "src/compile/SyntaxError.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/compile/SyntaxError.cpp",
+    "output": "/Users/john/workspace/lisp/bin/compile_SyntaxError.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/compile_Token.o",
+      "src/compile/Token.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/compile/Token.cpp",
+    "output": "/Users/john/workspace/lisp/bin/compile_Token.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/repl_repl.o",
+      "src/repl/repl.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/repl/repl.cpp",
+    "output": "/Users/john/workspace/lisp/bin/repl_repl.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/sexpr_Atom.o",
+      "src/sexpr/Atom.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/Atom.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_Atom.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/sexpr_BoolAtom.o",
+      "src/sexpr/BoolAtom.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/BoolAtom.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_BoolAtom.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/sexpr_FnAtom.o",
+      "src/sexpr/FnAtom.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/FnAtom.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_FnAtom.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/sexpr_IntAtom.o",
+      "src/sexpr/IntAtom.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/IntAtom.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_IntAtom.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/sexpr_NatFnAtom.o",
+      "src/sexpr/NatFnAtom.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/NatFnAtom.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_NatFnAtom.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/sexpr_NilAtom.o",
+      "src/sexpr/NilAtom.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/NilAtom.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_NilAtom.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/sexpr_SExpr.o",
+      "src/sexpr/SExpr.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/SExpr.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_SExpr.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/sexpr_SExprs.o",
+      "src/sexpr/SExprs.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/SExprs.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_SExprs.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/sexpr_StringAtom.o",
+      "src/sexpr/StringAtom.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/StringAtom.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_StringAtom.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/sexpr_TypeError.o",
+      "src/sexpr/TypeError.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/TypeError.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_TypeError.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/sexpr_SymAtom.o",
+      "src/sexpr/SymAtom.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/SymAtom.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_SymAtom.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/vm_NatFnImpls.o",
+      "src/vm/NatFnImpls.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/vm/NatFnImpls.cpp",
+    "output": "/Users/john/workspace/lisp/bin/vm_NatFnImpls.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/vm_RuntimeException.o",
+      "src/vm/RuntimeException.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/vm/RuntimeException.cpp",
+    "output": "/Users/john/workspace/lisp/bin/vm_RuntimeException.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/vm_VM.o",
+      "src/vm/VM.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/vm/VM.cpp",
+    "output": "/Users/john/workspace/lisp/bin/vm_VM.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
+      "bin/main.o",
+      "src/main.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/main.cpp",
+    "output": "/Users/john/workspace/lisp/bin/main.o"
+  }
+]
