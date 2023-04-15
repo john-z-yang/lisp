@@ -31,27 +31,27 @@ std::shared_ptr<SExpr>
 lispDisplay(std::vector<std::shared_ptr<SExpr>>::iterator params,
             const uint8_t argc);
 
-std::shared_ptr<BoolAtom>
+std::shared_ptr<SExpr>
 lispEq(std::vector<std::shared_ptr<SExpr>>::iterator params,
        const uint8_t argc);
 
-std::shared_ptr<IntAtom>
+std::shared_ptr<SExpr>
 lispAdd(std::vector<std::shared_ptr<SExpr>>::iterator params,
         const uint8_t argc);
 
-std::shared_ptr<IntAtom>
+std::shared_ptr<SExpr>
 lispSub(std::vector<std::shared_ptr<SExpr>>::iterator params,
         const uint8_t argc);
 
-std::shared_ptr<IntAtom>
+std::shared_ptr<SExpr>
 lispMult(std::vector<std::shared_ptr<SExpr>>::iterator params,
          const uint8_t argc);
 
-std::shared_ptr<IntAtom>
+std::shared_ptr<SExpr>
 lispDiv(std::vector<std::shared_ptr<SExpr>>::iterator params,
         const uint8_t argc);
 
-std::shared_ptr<IntAtom>
+std::shared_ptr<SExpr>
 lispMod(std::vector<std::shared_ptr<SExpr>>::iterator params,
         const uint8_t argc);
 

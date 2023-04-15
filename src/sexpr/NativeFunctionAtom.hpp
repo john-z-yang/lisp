@@ -7,9 +7,8 @@
 #include <vector>
 
 class NativeFunctionAtom final : public Atom {
-  typedef std::function<std::shared_ptr<SExpr>(
-      std::vector<std::shared_ptr<SExpr>>::iterator, const uint8_t argc)>
-      NativeFn;
+  typedef std::shared_ptr<SExpr> (*NativeFn)(
+      std::vector<std::shared_ptr<SExpr>>::iterator, const uint8_t argc);
 
 protected:
   std::string toString() const;

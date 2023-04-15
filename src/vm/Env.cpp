@@ -57,7 +57,7 @@ lispDisplay(std::vector<std::shared_ptr<SExpr>>::iterator params,
   return std::make_shared<NilAtom>();
 }
 
-std::shared_ptr<BoolAtom>
+std::shared_ptr<SExpr>
 lispEq(std::vector<std::shared_ptr<SExpr>>::iterator params,
        const uint8_t argc) {
   const auto val = cast<IntAtom>(*params)->val;
@@ -70,7 +70,7 @@ lispEq(std::vector<std::shared_ptr<SExpr>>::iterator params,
   return std::make_shared<BoolAtom>(true);
 }
 
-std::shared_ptr<IntAtom>
+std::shared_ptr<SExpr>
 lispAdd(std::vector<std::shared_ptr<SExpr>>::iterator params,
         const uint8_t argc) {
   int res = 0;
@@ -81,7 +81,7 @@ lispAdd(std::vector<std::shared_ptr<SExpr>>::iterator params,
   return std::make_shared<IntAtom>(res);
 }
 
-std::shared_ptr<IntAtom>
+std::shared_ptr<SExpr>
 lispSub(std::vector<std::shared_ptr<SExpr>>::iterator params,
         const uint8_t argc) {
   if (argc == 1) {
@@ -96,7 +96,7 @@ lispSub(std::vector<std::shared_ptr<SExpr>>::iterator params,
   return std::make_shared<IntAtom>(res);
 }
 
-std::shared_ptr<IntAtom>
+std::shared_ptr<SExpr>
 lispMult(std::vector<std::shared_ptr<SExpr>>::iterator params,
          const uint8_t argc) {
   int res = 1;
@@ -107,7 +107,7 @@ lispMult(std::vector<std::shared_ptr<SExpr>>::iterator params,
   return std::make_shared<IntAtom>(res);
 }
 
-std::shared_ptr<IntAtom>
+std::shared_ptr<SExpr>
 lispDiv(std::vector<std::shared_ptr<SExpr>>::iterator params,
         const uint8_t argc) {
   if (argc == 1) {
@@ -122,7 +122,7 @@ lispDiv(std::vector<std::shared_ptr<SExpr>>::iterator params,
   return std::make_shared<IntAtom>(res);
 }
 
-std::shared_ptr<IntAtom>
+std::shared_ptr<SExpr>
 lispMod(std::vector<std::shared_ptr<SExpr>>::iterator params,
         const uint8_t argc) {
   const auto lhs = cast<IntAtom>(*params)->val;
