@@ -113,8 +113,8 @@ lispDisplay(std::vector<std::shared_ptr<SExpr>>::iterator params,
 MATH_CMP_OP(lispEq, ==);
 MATH_CMP_OP(lispGt, >);
 MATH_CMP_OP(lispGteq, >=);
-MATH_CMP_OP(lispLt, >);
-MATH_CMP_OP(lispLteq, >);
+MATH_CMP_OP(lispLt, <);
+MATH_CMP_OP(lispLteq, <=);
 
 MATH_CUM_OP(lispAdd, +=, 0);
 MATH_CUM_OP(lispMult, *=, 1);
