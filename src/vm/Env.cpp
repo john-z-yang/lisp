@@ -67,8 +67,10 @@ lispDisplay(std::vector<std::shared_ptr<SExpr>>::iterator params,
   return std::make_shared<NilAtom>();
 }
 
-#define MATH_CMP_OP(op)                                                        \
-  do {                                                                         \
+#define MATH_CMP_OP(name, op)                                                  \
+  std::shared_ptr<SExpr> name(                                                 \
+      std::vector<std::shared_ptr<SExpr>>::iterator params,                    \
+      const uint8_t argc) {                                                    \
     const auto prev = cast<IntAtom>(*params)->val;                             \
     ++params;                                                                  \
     for (auto i = 1; i < argc; i += 1) {                                       \
@@ -78,20 +80,24 @@ lispDisplay(std::vector<std::shared_ptr<SExpr>>::iterator params,
       ++params;                                                                \
     }                                                                          \
     return std::make_shared<BoolAtom>(true);                                   \
-  } while (false)
+  }
 
-#define MATH_CUM_OP(op, init)                                                  \
-  do {                                                                         \
+#define MATH_CUM_OP(name, op, init)                                            \
+  std::shared_ptr<SExpr> name(                                                 \
+      std::vector<std::shared_ptr<SExpr>>::iterator params,                    \
+      const uint8_t argc) {                                                    \
     int res = init;                                                            \
     for (auto i = 0; i < argc; i += 1) {                                       \
       res op cast<IntAtom>(*params)->val;                                      \
       ++params;                                                                \
     }                                                                          \
     return std::make_shared<IntAtom>(res);                                     \
-  } while (false)
+  }
 
-#define MATH_DIM_OP(op, unaryOp)                                               \
-  do {                                                                         \
+#define MATH_DIM_OP(name, op, unaryOp)                                         \
+  std::shared_ptr<SExpr> name(                                                 \
+      std::vector<std::shared_ptr<SExpr>>::iterator params,                    \
+      const uint8_t argc) {                                                    \
     if (argc == 1) {                                                           \
       return std::make_shared<IntAtom>(unaryOp cast<IntAtom>(*params)->val);   \
     }                                                                          \
@@ -102,61 +108,19 @@ lispDisplay(std::vector<std::shared_ptr<SExpr>>::iterator params,
       ++params;                                                                \
     }                                                                          \
     return std::make_shared<IntAtom>(res);                                     \
-  } while (false)
+  }
 
-std::shared_ptr<SExpr>
-lispEq(std::vector<std::shared_ptr<SExpr>>::iterator params,
-       const uint8_t argc) {
-  MATH_CMP_OP(==);
-}
+MATH_CMP_OP(lispEq, ==);
+MATH_CMP_OP(lispGt, >);
+MATH_CMP_OP(lispGteq, >=);
+MATH_CMP_OP(lispLt, >);
+MATH_CMP_OP(lispLteq, >);
 
-std::shared_ptr<SExpr>
-lispGt(std::vector<std::shared_ptr<SExpr>>::iterator params,
-       const uint8_t argc) {
-  MATH_CMP_OP(>);
-}
+MATH_CUM_OP(lispAdd, +=, 0);
+MATH_CUM_OP(lispMult, *=, 1);
 
-std::shared_ptr<SExpr>
-lispGteq(std::vector<std::shared_ptr<SExpr>>::iterator params,
-         const uint8_t argc) {
-  MATH_CMP_OP(>=);
-}
-
-std::shared_ptr<SExpr>
-lispLt(std::vector<std::shared_ptr<SExpr>>::iterator params,
-       const uint8_t argc) {
-  MATH_CMP_OP(<);
-}
-
-std::shared_ptr<SExpr>
-lispLteq(std::vector<std::shared_ptr<SExpr>>::iterator params,
-         const uint8_t argc) {
-  MATH_CMP_OP(>=);
-}
-
-std::shared_ptr<SExpr>
-lispAdd(std::vector<std::shared_ptr<SExpr>>::iterator params,
-        const uint8_t argc) {
-  MATH_CUM_OP(+=, 0);
-}
-
-std::shared_ptr<SExpr>
-lispMult(std::vector<std::shared_ptr<SExpr>>::iterator params,
-         const uint8_t argc) {
-  MATH_CUM_OP(*=, 1);
-}
-
-std::shared_ptr<SExpr>
-lispSub(std::vector<std::shared_ptr<SExpr>>::iterator params,
-        const uint8_t argc) {
-  MATH_DIM_OP(-=, 0 -);
-}
-
-std::shared_ptr<SExpr>
-lispDiv(std::vector<std::shared_ptr<SExpr>>::iterator params,
-        const uint8_t argc) {
-  MATH_DIM_OP(/=, 1 /);
-}
+MATH_DIM_OP(lispSub, -=, 0 -);
+MATH_DIM_OP(lispDiv, /=, 1 /);
 
 std::shared_ptr<SExpr>
 lispAbs(std::vector<std::shared_ptr<SExpr>>::iterator params,
