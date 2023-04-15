@@ -32,8 +32,28 @@ lispDisplay(std::vector<std::shared_ptr<SExpr>>::iterator params,
             const uint8_t argc);
 
 std::shared_ptr<SExpr>
+lispIsNum(std::vector<std::shared_ptr<SExpr>>::iterator params,
+          const uint8_t argc);
+
+std::shared_ptr<SExpr>
 lispEq(std::vector<std::shared_ptr<SExpr>>::iterator params,
        const uint8_t argc);
+
+std::shared_ptr<SExpr>
+lispGt(std::vector<std::shared_ptr<SExpr>>::iterator params,
+       const uint8_t argc);
+
+std::shared_ptr<SExpr>
+lispGteq(std::vector<std::shared_ptr<SExpr>>::iterator params,
+         const uint8_t argc);
+
+std::shared_ptr<SExpr>
+lispLt(std::vector<std::shared_ptr<SExpr>>::iterator params,
+       const uint8_t argc);
+
+std::shared_ptr<SExpr>
+lispLteq(std::vector<std::shared_ptr<SExpr>>::iterator params,
+         const uint8_t argc);
 
 std::shared_ptr<SExpr>
 lispAdd(std::vector<std::shared_ptr<SExpr>>::iterator params,
@@ -49,6 +69,10 @@ lispMult(std::vector<std::shared_ptr<SExpr>>::iterator params,
 
 std::shared_ptr<SExpr>
 lispDiv(std::vector<std::shared_ptr<SExpr>>::iterator params,
+        const uint8_t argc);
+
+std::shared_ptr<SExpr>
+lispAbs(std::vector<std::shared_ptr<SExpr>>::iterator params,
         const uint8_t argc);
 
 std::shared_ptr<SExpr>
