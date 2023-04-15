@@ -1,11 +1,8 @@
 #ifndef LISP_SRC_VM_ENV_HPP_
 #define LISP_SRC_VM_ENV_HPP_
 
-#include "../sexpr/BoolAtom.hpp"
-#include "../sexpr/IntAtom.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "../sexpr/SymAtom.hpp"
-#include "../vm/RuntimeException.hpp"
 #include <memory>
 #include <unordered_map>
 

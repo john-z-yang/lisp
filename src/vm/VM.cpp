@@ -1,7 +1,6 @@
 #include "VM.hpp"
 #include "../code/OpCode.hpp"
 #include "../sexpr/BoolAtom.hpp"
-#include "../sexpr/IntAtom.hpp"
 #include "../sexpr/NatFnAtom.hpp"
 #include "../sexpr/cast.cpp"
 #include <cstdint>

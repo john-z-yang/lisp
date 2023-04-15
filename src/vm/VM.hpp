@@ -1,7 +1,6 @@
 #ifndef LISP_SRC_VM_VM_HPP_
 #define LISP_SRC_VM_VM_HPP_
 
-#include "../code/Code.hpp"
 #include "../sexpr/FnAtom.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "Env.hpp"

@@ -1,8 +1,6 @@
 #include "repl.hpp"
-#include "../code/OpCode.hpp"
 #include "../compile/Compiler.hpp"
 #include "../compile/SyntaxError.hpp"
-#include "../compile/Token.hpp"
 #include "../compile/parse.hpp"
 #include "../vm/RuntimeException.hpp"
 #include "../vm/VM.hpp"

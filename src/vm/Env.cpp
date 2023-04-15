@@ -1,9 +1,6 @@
 #include "Env.hpp"
-#include "../sexpr/BoolAtom.hpp"
 #include "../sexpr/NatFnAtom.hpp"
-#include "../sexpr/NilAtom.hpp"
 #include "../sexpr/SExpr.hpp"
-#include "../sexpr/SExprs.hpp"
 #include "../sexpr/cast.cpp"
 #include "../vm/RuntimeException.hpp"
 #include <iostream>
