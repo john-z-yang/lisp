@@ -1,5 +1,5 @@
-#ifndef LISP_SRC_SEXPR_CLOSUREATOM_HPP_
-#define LISP_SRC_SEXPR_CLOSUREATOM_HPP_
+#ifndef LISP_SRC_SEXPR_FNATOM_HPP_
+#define LISP_SRC_SEXPR_FNATOM_HPP_
 
 #include "../code/Code.hpp"
 #include "Atom.hpp"
