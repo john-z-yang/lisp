@@ -1,7 +1,7 @@
 #ifndef LISP_SRC_VM_VM_HPP_
 #define LISP_SRC_VM_VM_HPP_
 
-#include "../sexpr/FnAtom.hpp"
+#include "../sexpr/ClosureAtom.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "Env.hpp"
 #include <memory>
@@ -9,7 +9,7 @@
 
 class VM {
   struct CallFrame {
-    std::shared_ptr<FnAtom> function;
+    std::shared_ptr<ClosureAtom> closure;
     std::vector<uint8_t>::size_type ip;
     std::vector<std::shared_ptr<SExpr>>::size_type bp;
   };

@@ -1,5 +1,7 @@
 #include "Code.hpp"
 #include "../code/OpCode.hpp"
+#include "../sexpr/FnAtom.hpp"
+#include "../sexpr/cast.cpp"
 #include <cstdint>
 #include <iomanip>
 
@@ -35,8 +37,8 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
     if (i != code.byteCodes.begin()) {
       o << " ";
     }
-    o << "0x" << std::setfill('0') << std::setw(2) << std::hex << (int)*i
-      << std::setfill(' ') << std::dec;
+    o << "0x" << std::right << std::setfill('0') << std::setw(2) << std::hex
+      << (int)*i << std::setfill(' ') << std::dec;
   }
   o << std::endl << "-> bytecodes:" << std::endl;
 
@@ -50,38 +52,68 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
       << std::setw(16) << ip << " " << std::setw(24) << std::left;
     uint8_t byte = READ_BYTE();
     switch (byte) {
-    case OpCode::RETURN:
+    case OpCode::RETURN: {
       return o << "RETURN" << std::endl;
-    case OpCode::CALL:
+    }
+    case OpCode::CALL: {
       o << "CALL" << unsigned(READ_BYTE()) << std::endl;
       break;
-    case OpCode::POP_TOP:
+    }
+    case OpCode::MAKE_CLOSURE: {
+      auto fn = cast<FnAtom>(code.consts[READ_BYTE()]);
+      o << "MAKE_CLOSURE" << *fn << std::endl;
+      for (auto i = 0; i < fn->numUpVals; i++) {
+        const auto isLocal = unsigned(READ_BYTE());
+        const auto idx = unsigned(READ_BYTE());
+        o << std::right << std::setw(23) << "| "
+          << (isLocal == 1 ? "local" : "upval") << " " << idx << std::endl;
+      }
+      break;
+    }
+    case OpCode::POP_TOP: {
       o << "POP_TOP" << std::endl;
       break;
-    case OpCode::LOAD_CONST:
+    }
+    case OpCode::LOAD_CONST: {
       o << "LOAD_CONST" << *code.consts[READ_BYTE()] << std::endl;
       break;
-    case OpCode::LOAD_SYM:
+    }
+    case OpCode::LOAD_SYM: {
       o << "LOAD_SYM" << *code.consts[READ_BYTE()] << std::endl;
       break;
-    case OpCode::DEF_SYM:
+    }
+    case OpCode::DEF_SYM: {
       o << "DEF_SYM" << *code.consts[READ_BYTE()] << std::endl;
       break;
-    case OpCode::SET_SYM:
+    }
+    case OpCode::SET_SYM: {
       o << "SET_SYM" << *code.consts[READ_BYTE()] << std::endl;
       break;
-    case OpCode::LOAD_FAST:
+    }
+    case OpCode::LOAD_UPVALUE: {
+      o << "LOAD_UPVALUE" << unsigned(READ_BYTE()) << std::endl;
+      break;
+    }
+    case OpCode::SET_UPVALUE: {
+      o << "SET_UPVALUE" << unsigned(READ_BYTE()) << std::endl;
+      break;
+    }
+    case OpCode::LOAD_STACK: {
       o << "LOAD_FAST" << unsigned(READ_BYTE()) << std::endl;
       break;
-    case OpCode::SET_FAST:
+    }
+    case OpCode::SET_STACK: {
       o << "SET_FAST" << unsigned(READ_BYTE()) << std::endl;
       break;
-    case OpCode::JUMP:
+    }
+    case OpCode::JUMP: {
       o << "JUMP" << unsigned(READ_SHORT()) << std::endl;
       break;
-    case OpCode::POP_JUMP_IF_FALSE:
+    }
+    case OpCode::POP_JUMP_IF_FALSE: {
       o << "POP_JUMP_IF_FALSE" << unsigned(READ_SHORT()) << std::endl;
       break;
+    }
     default:
       break;
     }

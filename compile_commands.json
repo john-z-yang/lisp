@@ -132,6 +132,20 @@
       "-Wall",
       "-c",
       "-o",
+      "bin/sexpr_ClosureAtom.o",
+      "src/sexpr/ClosureAtom.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/ClosureAtom.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_ClosureAtom.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++2a",
+      "-Wall",
+      "-c",
+      "-o",
       "bin/sexpr_FnAtom.o",
       "src/sexpr/FnAtom.cpp"
     ],

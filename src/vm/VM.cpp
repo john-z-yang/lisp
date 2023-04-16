@@ -1,19 +1,21 @@
 #include "VM.hpp"
 #include "../code/OpCode.hpp"
 #include "../sexpr/BoolAtom.hpp"
+#include "../sexpr/ClosureAtom.hpp"
 #include "../sexpr/NatFnAtom.hpp"
 #include "../sexpr/cast.cpp"
 #include <cstdint>
+#include <memory>
 
 VM::VM(std::shared_ptr<FnAtom> main, Env &globals) : globals(globals) {
-  stack.push_back(main);
+  stack.push_back(std::make_shared<ClosureAtom>(main));
   call(0);
 }
 
 void VM::call(const uint8_t argc) {
   const auto callee = peak(argc);
-  if (isa<FnAtom>(*callee)) {
-    frames.push_back({cast<FnAtom>(callee), 0, stack.size() - argc - 1});
+  if (isa<ClosureAtom>(*callee)) {
+    frames.push_back({cast<ClosureAtom>(callee), 0, stack.size() - argc - 1});
     return;
   }
   if (isa<NatFnAtom>(*callee)) {
@@ -33,11 +35,14 @@ VM::peak(std::vector<std::shared_ptr<SExpr>>::size_type distance) {
 
 std::shared_ptr<SExpr> VM::exec() {
 
-#define READ_BYTE() (curFrame.function->getCode().byteCodes[curFrame.ip++])
+#define READ_BYTE()                                                            \
+  (curFrame.closure->fnAtom->getCode().byteCodes[curFrame.ip++])
 #define READ_SHORT()                                                           \
   (curFrame.ip += 2,                                                           \
-   (uint16_t)((curFrame.function->getCode().byteCodes[curFrame.ip - 2] << 8 |  \
-               curFrame.function->getCode().byteCodes[curFrame.ip - 1])))
+   (uint16_t)((                                                                \
+       curFrame.closure->fnAtom->getCode().byteCodes[curFrame.ip - 2] << 8 |   \
+       curFrame.closure->fnAtom->getCode().byteCodes[curFrame.ip - 1])))
+#define READ_CONST() (curFrame.closure->fnAtom->getCode().consts[READ_BYTE()])
 
   while (true) {
     auto &curFrame = frames.back();
@@ -60,32 +65,49 @@ std::shared_ptr<SExpr> VM::exec() {
       call(argc);
       break;
     }
+    case OpCode::MAKE_CLOSURE: {
+      auto closure = std::make_shared<ClosureAtom>(cast<FnAtom>(READ_CONST()));
+      for (auto i = 0; i < closure->fnAtom->numUpVals; i++) {
+        auto isLocal = READ_BYTE();
+        auto idx = READ_BYTE();
+        if (isLocal == 1) {
+          closure->upValues.push_back(stack[curFrame.bp + idx]);
+        } else {
+          closure->upValues.push_back(curFrame.closure->upValues[idx]);
+        }
+      }
+      stack.push_back(closure);
+      break;
+    }
     case OpCode::POP_TOP: {
       stack.pop_back();
       break;
     }
     case OpCode::LOAD_CONST: {
-      stack.push_back(curFrame.function->getCode().consts[READ_BYTE()]);
+      stack.push_back(READ_CONST());
       break;
     }
     case OpCode::LOAD_SYM: {
-      stack.push_back(globals.find(
-          *cast<SymAtom>(curFrame.function->getCode().consts[READ_BYTE()])));
+      stack.push_back(globals.find(*cast<SymAtom>(READ_CONST())));
       break;
     }
     case OpCode::DEF_SYM: {
-      globals.def(
-          *cast<SymAtom>(curFrame.function->getCode().consts[READ_BYTE()]),
-          stack.back());
+      globals.def(*cast<SymAtom>(READ_CONST()), stack.back());
       break;
     }
     case OpCode::SET_SYM: {
-      globals.set(
-          *cast<SymAtom>(curFrame.function->getCode().consts[READ_BYTE()]),
-          stack.back());
+      globals.set(*cast<SymAtom>(READ_CONST()), stack.back());
       break;
     }
-    case OpCode::LOAD_FAST: {
+    case OpCode::LOAD_UPVALUE: {
+      stack.push_back(curFrame.closure->upValues[READ_BYTE()]);
+      break;
+    }
+    case OpCode::SET_UPVALUE: {
+      curFrame.closure->upValues[READ_BYTE()] = stack.back();
+      break;
+    }
+    case OpCode::LOAD_STACK: {
       stack.push_back(stack[curFrame.bp + READ_BYTE()]);
       break;
     }

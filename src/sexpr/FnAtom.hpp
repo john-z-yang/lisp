@@ -14,6 +14,7 @@ protected:
 public:
   FnAtom(int8_t arity);
   const int8_t arity;
+  unsigned int numUpVals;
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;
   Code &getCode();

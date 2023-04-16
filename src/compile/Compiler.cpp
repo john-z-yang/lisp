@@ -12,15 +12,40 @@
 #include "grammar.hpp"
 #include "parse.hpp"
 #include <algorithm>
+#include <cstddef>
+#include <iterator>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <vector>
+
+Compiler::Compiler(std::vector<std::string> lines)
+    : argNames(std::make_shared<NilAtom>()), body(parse(lines, sourceLoc)),
+      function(std::make_shared<FnAtom>(0)), scopeDepth(0), enclosing(nullptr) {
+}
 
 std::shared_ptr<FnAtom> Compiler::compile() {
   compile(body);
   getCode().pushCode(OpCode::RETURN);
+  function->numUpVals = upValues.size();
   return function;
+}
+
+Compiler::Compiler(std::shared_ptr<SExpr> argNames, std::shared_ptr<SExpr> body,
+                   unsigned int scopeDepth, SourceLoc sourceLoc,
+                   Compiler *enclosing)
+    : sourceLoc(sourceLoc), argNames(argNames), body(body),
+      function(std::make_shared<FnAtom>(0)), scopeDepth(scopeDepth),
+      enclosing(enclosing) {
+  locals.push_back({std::make_unique<SymAtom>(""), 0});
+  unsigned int arity = 0;
+  visitEach(argNames, [&](std::shared_ptr<SExpr> sExpr) {
+    arity += 1;
+    auto sym = cast<SymAtom>(sExpr);
+    locals.push_back({sym, scopeDepth});
+  });
+  function = std::make_unique<FnAtom>(arity);
 }
 
 void Compiler::compile(std::shared_ptr<SExpr> sExpr) {
@@ -60,11 +85,15 @@ void Compiler::compile(std::shared_ptr<SExpr> sExpr) {
 }
 
 void Compiler::compileSym(std::shared_ptr<SymAtom> sym) {
-  auto it = findLocal(sym);
   const auto lineNum = sourceLoc[sym];
-  if (it != locals.rend()) {
-    auto idx = std::distance(locals.begin(), it.base()) - 1;
-    getCode().pushCode(OpCode::LOAD_FAST, lineNum);
+
+  if (auto idx = resolveLocal(sym); idx != -1) {
+    getCode().pushCode(OpCode::LOAD_STACK, lineNum);
+    getCode().pushCode((uint8_t)idx, lineNum);
+    return;
+  }
+  if (auto idx = resolveUpvalue(*this, sym); idx != -1) {
+    getCode().pushCode(OpCode::LOAD_UPVALUE, lineNum);
     getCode().pushCode((uint8_t)idx, lineNum);
     return;
   }
@@ -93,11 +122,14 @@ void Compiler::compileSet(std::shared_ptr<SExpr> sExpr) {
     cast<NilAtom>(at(setNilPos, sExpr));
     compile(expr);
     const auto lineNum = sourceLoc[sExpr];
-    auto it = findLocal(sym);
-    if (it != locals.rend()) {
-      auto idx = std::distance(locals.begin(), it.base()) - 1;
-      getCode().pushCode(OpCode::SET_FAST, lineNum);
+    if (auto idx = resolveLocal(sym); idx != -1) {
+      getCode().pushCode(OpCode::SET_STACK, lineNum);
       getCode().pushCode(idx, lineNum);
+      return;
+    }
+    if (auto idx = resolveUpvalue(*this, sym); idx != -1) {
+      getCode().pushCode(OpCode::SET_UPVALUE, lineNum);
+      getCode().pushCode((uint8_t)idx, lineNum);
       return;
     }
     getCode().pushCode(OpCode::SET_SYM, lineNum);
@@ -137,13 +169,24 @@ void Compiler::compileLambda(std::shared_ptr<SExpr> sExpr) {
     auto body = cast<SExprs>(at(lambdaBodyPos, sExpr))->first;
     cast<NilAtom>(at(lambdaNilPos, sExpr));
     const auto lineNum = sourceLoc[sExpr];
-    Compiler compiler(argNames, body, scopeDepth + 1, sourceLoc);
+    Compiler compiler(argNames, body, scopeDepth + 1, sourceLoc, this);
     auto function = compiler.compile();
-    getCode().pushCode(OpCode::LOAD_CONST, lineNum);
+    getCode().pushCode(OpCode::MAKE_CLOSURE, lineNum);
     getCode().pushCode(getCode().pushConst(function), lineNum);
+    for (const auto &upValue : compiler.upValues) {
+      getCode().pushCode(upValue.isLocal ? 1 : 0);
+      getCode().pushCode(upValue.idx);
+    }
   } catch (TypeError &te) {
     handleSyntaxError(lambdaGrammar, sExpr);
   }
+}
+
+void Compiler::handleSyntaxError(std::string expected,
+                                 std::shared_ptr<SExpr> actual) {
+  std::stringstream ss;
+  ss << "Expected \"" << expected << "\", but got \"" << *actual << "\".";
+  std::cout << ss.str();
 }
 
 const unsigned int Compiler::visitEach(std::shared_ptr<SExpr> sExprs,
@@ -168,6 +211,42 @@ std::shared_ptr<SExpr> Compiler::at(const unsigned int n,
   return it;
 }
 
+Code &Compiler::getCode() { return function->getCode(); }
+
+int Compiler::resolveLocal(std::shared_ptr<SymAtom> sym) {
+  auto it = std::find_if(locals.rbegin(), locals.rend(),
+                         [&sym](Local local) { return *local.symbol == *sym; });
+  if (it == locals.rend()) {
+    return -1;
+  }
+  return std::distance(locals.begin(), it.base()) - 1;
+}
+
+int Compiler::resolveUpvalue(Compiler &caller, std::shared_ptr<SymAtom> sym) {
+  if (enclosing) {
+    if (auto idx = enclosing->resolveLocal(sym); idx != -1) {
+      return caller.addUpvalue(idx, true);
+    }
+    if (auto idx = enclosing->resolveUpvalue(*enclosing, sym); idx != -1) {
+      return caller.addUpvalue(idx, false);
+    }
+  }
+  return -1;
+}
+
+int Compiler::addUpvalue(int idx, bool isLocal) {
+  if (auto it = std::find_if(upValues.begin(), upValues.end(),
+                             [=](UpValue upValue) {
+                               return upValue.idx == idx &&
+                                      upValue.isLocal == isLocal;
+                             });
+      it != upValues.end()) {
+    return std::distance(upValues.begin(), it);
+  }
+  upValues.push_back({idx, isLocal});
+  return upValues.size() - 1;
+}
+
 void Compiler::beginScope() { scopeDepth += 1; }
 
 void Compiler::endScope() { setScope(scopeDepth - 1); }
@@ -178,37 +257,4 @@ void Compiler::setScope(unsigned int scope) {
     locals.pop_back();
     getCode().pushCode(OpCode::POP_TOP);
   }
-}
-
-std::vector<Compiler::Local>::reverse_iterator
-Compiler::findLocal(std::shared_ptr<SymAtom> sym) {
-  return std::find_if(locals.rbegin(), locals.rend(),
-                      [&sym](Local local) { return *local.symbol == *sym; });
-}
-
-void Compiler::handleSyntaxError(std::string expected,
-                                 std::shared_ptr<SExpr> actual) {
-  std::stringstream ss;
-  ss << "Expected \"" << expected << "\", but got \"" << *actual << "\".";
-  std::cout << ss.str();
-}
-
-Code &Compiler::getCode() { return function->getCode(); }
-
-Compiler::Compiler(std::vector<std::string> lines)
-    : argNames(std::make_shared<NilAtom>()), body(parse(lines, sourceLoc)),
-      function(std::make_shared<FnAtom>(0)), scopeDepth(0) {}
-
-Compiler::Compiler(std::shared_ptr<SExpr> argNames, std::shared_ptr<SExpr> body,
-                   unsigned int scopeDepth, SourceLoc sourceLoc)
-    : sourceLoc(sourceLoc), argNames(argNames), body(body),
-      function(std::make_shared<FnAtom>(0)), scopeDepth(scopeDepth) {
-  locals.push_back({std::make_unique<SymAtom>(""), 0});
-  unsigned int arity = 0;
-  visitEach(argNames, [&](std::shared_ptr<SExpr> sExpr) {
-    arity += 1;
-    auto sym = cast<SymAtom>(sExpr);
-    locals.push_back({sym, scopeDepth});
-  });
-  function = std::make_unique<FnAtom>(arity);
 }

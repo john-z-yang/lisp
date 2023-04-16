@@ -2,7 +2,8 @@
 #include "../sexpr/cast.cpp"
 #include <sstream>
 
-FnAtom::FnAtom(int8_t arity) : Atom(SExpr::Type::FUNCTION), arity(arity) {}
+FnAtom::FnAtom(int8_t arity)
+    : Atom(SExpr::Type::FUNCTION), arity(arity), numUpVals(0) {}
 
 std::string FnAtom::toString() const {
   std::stringstream ss;
@@ -15,7 +16,8 @@ bool FnAtom::equals(const SExpr &other) const { return false; }
 Code &FnAtom::getCode() { return code; }
 
 std::ostream &FnAtom::dissassemble(std::ostream &o) {
-  o << "<Function at " << this << "> with code:" << std::endl
+  o << "<Function at " << this << ", arity: " << unsigned(arity)
+    << ", upvalues: " << numUpVals << ">" << std::endl
     << code << std::endl;
   for (auto i = code.consts.begin(); i != code.consts.end(); ++i) {
     if (isa<FnAtom>(**i)) {
