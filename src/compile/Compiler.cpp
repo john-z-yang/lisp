@@ -61,6 +61,10 @@ void Compiler::compile(std::shared_ptr<SExpr> sExpr) {
   }
   auto sExprs = cast<SExprs>(sExpr);
   if (auto sym = std::dynamic_pointer_cast<SymAtom>(sExprs->first)) {
+    if (sym->val == "quote") {
+      compileQuote(sExpr);
+      return;
+    }
     if (sym->val == "define") {
       compileDef(sExpr);
       return;
@@ -99,6 +103,16 @@ void Compiler::compileSym(std::shared_ptr<SymAtom> sym) {
   }
   getCode().pushCode(OpCode::LOAD_SYM, lineNum);
   getCode().pushCode(getCode().pushConst(sym), lineNum);
+}
+
+void Compiler::compileQuote(std::shared_ptr<SExpr> sExpr) {
+  auto expr = cast<SExprs>(at(quoteArgPos, sExpr))->first;
+  cast<NilAtom>(at(quoteNilPos, sExpr));
+
+  const auto lineNum = sourceLoc[sExpr];
+
+  getCode().pushCode(OpCode::LOAD_CONST, lineNum);
+  getCode().pushCode(getCode().pushConst(expr), lineNum);
 }
 
 void Compiler::compileDef(std::shared_ptr<SExpr> sExpr) {

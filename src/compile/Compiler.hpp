@@ -42,6 +42,7 @@ private:
 
   void compile(std::shared_ptr<SExpr> sExpr);
   void compileSym(std::shared_ptr<SymAtom> sym);
+  void compileQuote(std::shared_ptr<SExpr> sExpr);
   void compileDef(std::shared_ptr<SExpr> sExpr);
   void compileSet(std::shared_ptr<SExpr> sExpr);
   void compileIf(std::shared_ptr<SExpr> sExpr);
