@@ -10,12 +10,12 @@
 #include <iterator>
 #include <memory>
 
-VM::VM(std::shared_ptr<FnAtom> main, Env &globals) : globals(globals) {
+VM::VM() {}
+
+std::shared_ptr<SExpr> VM::exec(std::shared_ptr<FnAtom> main) {
   stack.push_back(std::make_shared<ClosureAtom>(main));
   call(0);
-}
 
-std::shared_ptr<SExpr> VM::exec() {
 #define READ_BYTE() (curFrame.closure->fnAtom->code.byteCodes[curFrame.ip++])
 #define READ_SHORT()                                                           \
   (curFrame.ip += 2,                                                           \
@@ -31,6 +31,8 @@ std::shared_ptr<SExpr> VM::exec() {
     case OpCode::RETURN: {
       auto res = stack.back();
       if (frames.size() == 1) {
+        frames.clear();
+        stack.clear();
         return res;
       }
       while (stack.size() > frames.back().bp) {

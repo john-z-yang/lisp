@@ -61,7 +61,7 @@ void printInfo() {
 
 int repl() {
   printInfo();
-  Env globals;
+  VM vm;
   while (true) {
     std::vector<std::string> lines;
     try {
@@ -69,8 +69,7 @@ int repl() {
         Compiler compiler(lines);
         auto main = compiler.compile();
         main->dissassemble(std::cout);
-        VM vm(main, globals);
-        std::cout << ">> " << *vm.exec() << std::endl;
+        std::cout << ">> " << *vm.exec(main) << std::endl;
       } else {
         std::cout << std::endl;
         exit(0);
@@ -96,15 +95,14 @@ int repl(const std::string filePath) {
     return EXIT_FAILURE;
   }
 
-  Env globals;
+  VM vm;
   while (true) {
     std::vector<std::string> lines;
     try {
       if (getInput(fs, lines)) {
         Compiler compiler(lines);
         auto main = compiler.compile();
-        VM vm(main, globals);
-        vm.exec();
+        vm.exec(main);
       } else {
         break;
       }

@@ -10,8 +10,8 @@
 
 class VM {
 public:
-  VM(std::shared_ptr<FnAtom> main, Env &globals);
-  std::shared_ptr<SExpr> exec();
+  VM();
+  std::shared_ptr<SExpr> exec(std::shared_ptr<FnAtom> main);
 
 private:
   struct CallFrame {
@@ -20,7 +20,7 @@ private:
     std::vector<std::shared_ptr<SExpr>>::size_type bp;
   };
 
-  Env &globals;
+  Env globals;
   std::vector<std::shared_ptr<SExpr>> stack;
   std::vector<CallFrame> frames;
 
