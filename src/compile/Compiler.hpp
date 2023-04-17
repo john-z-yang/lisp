@@ -32,6 +32,7 @@ private:
   Compiler(std::shared_ptr<SExpr> argNames, std::shared_ptr<SExpr> body,
            unsigned int scopeDepth, SourceLoc sourceLoc, Compiler *enclosing);
 
+  Compiler *const enclosing;
   SourceLoc sourceLoc;
   const std::shared_ptr<SExpr> argNames;
   const std::shared_ptr<SExpr> body;
@@ -39,7 +40,6 @@ private:
   std::vector<Local> locals;
   std::vector<UpValue> upValues;
   unsigned int scopeDepth;
-  Compiler *const enclosing;
 
   void compile(std::shared_ptr<SExpr> sExpr);
   void compileSym(std::shared_ptr<SymAtom> sym);

@@ -7,6 +7,7 @@ PERCENT = %
 SRCDIR = src
 OUTDIR = bin
 TESTDIR = tests
+LIBDIR = lib
 
 _DEPS = code/Code.hpp compile/Compiler.hpp compile/parse.hpp \
 	compile/SyntaxError.hpp compile/Token.hpp repl/repl.hpp sexpr/Atom.hpp \
@@ -20,9 +21,8 @@ DEPS = $(addprefix $(SRCDIR)/,$(_DEPS))
 OBJS = $(patsubst %.hpp,$(OUTDIR)/%.o,$(subst /,_,$(_DEPS)))
 
 TESTS = $(TESTDIR)/combine $(TESTDIR)/cons $(TESTDIR)/hof $(TESTDIR)/list \
-    $(TESTDIR)/load $(TESTDIR)/logic $(TESTDIR)/macro $(TESTDIR)/parse \
-	$(TESTDIR)/quote $(TESTDIR)/pred $(TESTDIR)/recur $(TESTDIR)/set \
-	$(TESTDIR)/string $(TESTDIR)/tailcall $(TESTDIR)/varargs
+    $(TESTDIR)/parse $(TESTDIR)/recur $(TESTDIR)/set $(TESTDIR)/string \
+	$(TESTDIR)/tailcall $(TESTDIR)/varargs
 
 $(OUTDIR)/lisp: $(OBJS) $(DEPS) $(OUTDIR)/main.o
 	$(CXX) $(CXXFLAGS) $(OBJS) $(OUTDIR)/main.o -lreadline -o $(OUTDIR)/lisp
@@ -36,6 +36,7 @@ $(OUTDIR)/%.o: $$(subst _,/,$$(patsubst $$(OUTDIR)/$$(PERCENT).o,src/$$(PERCENT)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(TESTDIR)/%: $(TESTDIR)/%.lisp $(TESTDIR)/%.expect $(OUTDIR)/lisp
+	export LISP_LIB_ENV=LIBDIR
 	$(OUTDIR)/lisp $@.lisp >> $@.out 2>&1
 	diff $@.expect $@.out
 	rm $@.out

@@ -40,6 +40,7 @@ Env::Env() {
   BIND_NATIVE_FN("cdr", lispCdr, 1);
 
   BIND_NATIVE_FN("display", lispDisplay, 1);
+  BIND_NATIVE_FN("quit", lispQuit, 0);
 
 #undef BIND_NATIVE_FN
 }

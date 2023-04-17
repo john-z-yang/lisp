@@ -9,6 +9,7 @@
 #include "../sexpr/SymAtom.hpp"
 #include "../sexpr/TypeError.hpp"
 #include "../sexpr/cast.cpp"
+#include "SyntaxError.hpp"
 #include "grammar.hpp"
 #include "parse.hpp"
 #include <algorithm>
@@ -21,9 +22,9 @@
 #include <vector>
 
 Compiler::Compiler(std::vector<std::string> lines)
-    : argNames(std::make_shared<NilAtom>()), body(parse(lines, sourceLoc)),
-      function(std::make_shared<FnAtom>(0)), scopeDepth(0), enclosing(nullptr) {
-}
+    : enclosing(nullptr), argNames(std::make_shared<NilAtom>()),
+      body(parse(lines, sourceLoc)), function(std::make_shared<FnAtom>(0)),
+      scopeDepth(0) {}
 
 std::shared_ptr<FnAtom> Compiler::compile() {
   if (function->arity == -1) {
@@ -38,9 +39,9 @@ std::shared_ptr<FnAtom> Compiler::compile() {
 Compiler::Compiler(std::shared_ptr<SExpr> argNames, std::shared_ptr<SExpr> body,
                    unsigned int scopeDepth, SourceLoc sourceLoc,
                    Compiler *enclosing)
-    : sourceLoc(sourceLoc), argNames(argNames), body(body),
-      function(std::make_shared<FnAtom>(0)), scopeDepth(scopeDepth),
-      enclosing(enclosing) {
+    : enclosing(enclosing), sourceLoc(sourceLoc), argNames(argNames),
+      body(body), function(std::make_shared<FnAtom>(0)),
+      scopeDepth(scopeDepth) {
   locals.push_back({std::make_unique<SymAtom>(""), 0});
   if (isa<SExprs>(*argNames)) {
     visitEach(argNames, [&](std::shared_ptr<SExpr> sExpr) {
@@ -126,7 +127,9 @@ void Compiler::compileDef(std::shared_ptr<SExpr> sExpr) {
     auto sym = cast<SymAtom>(cast<SExprs>(at(defSymPos, sExpr))->first);
     auto expr = cast<SExprs>(at(defSExprPos, sExpr))->first;
     cast<NilAtom>(at(defNilPos, sExpr));
+
     const auto lineNum = sourceLoc[sExpr];
+
     compile(expr);
     getCode().pushCode(OpCode::DEF_SYM, lineNum);
     getCode().pushCode(getCode().pushConst(sym), lineNum);

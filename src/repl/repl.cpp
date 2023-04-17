@@ -4,7 +4,9 @@
 #include "../compile/parse.hpp"
 #include "../vm/RuntimeException.hpp"
 #include "../vm/VM.hpp"
+#include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -36,13 +38,16 @@ bool getConsoleInput(std::vector<std::string> &lines, std::string prompt,
   return false;
 }
 
-std::istream &getInput(std::istream &in, std::vector<std::string> &lines) {
+std::istream &getFileInput(std::istream &in, std::vector<std::string> &lines) {
   uint32_t openParen = 0;
   uint32_t closedParen = 0;
   std::string line;
   while (getline(in, line)) {
     line = std::regex_replace(
         line, std::regex("(\\\\\"|\"(?:\\\\\"|[^\"])*\")|(;.*$)"), "$1");
+    if (line.empty()) {
+      continue;
+    }
     lines.push_back(line + " ");
     verifyLex(line, openParen, closedParen);
     if (openParen == closedParen) {
@@ -52,40 +57,7 @@ std::istream &getInput(std::istream &in, std::vector<std::string> &lines) {
   return in;
 }
 
-void printInfo() {
-  std::cout << "Lisp (C++ std: " << __cplusplus << ", " << __DATE__ << ", "
-            << __TIME__ << ")" << std::endl;
-  std::cout << "Type \"(quit)\" or trigger EOF to exit the session."
-            << std::endl;
-}
-
-int repl() {
-  printInfo();
-  VM vm;
-  while (true) {
-    std::vector<std::string> lines;
-    try {
-      if (getConsoleInput(lines, "lisp> ", "  ... ")) {
-        Compiler compiler(lines);
-        auto main = compiler.compile();
-        main->dissassemble(std::cout);
-        std::cout << ">> " << *vm.exec(main) << std::endl;
-      } else {
-        std::cout << std::endl;
-        exit(0);
-      }
-    } catch (SyntaxError &se) {
-      std::cerr << "In line " << lines.size() << " of <std::cin>" << std::endl;
-      std::cerr << se;
-    } catch (RuntimeException &ee) {
-      std::cerr << "In line " << lines.size() << " of <std::cin>" << std::endl;
-      std::cerr << ee;
-    }
-  }
-  return EXIT_FAILURE;
-}
-
-int repl(const std::string filePath) {
+int execFile(const std::string filePath, VM &vm) {
   std::fstream fs;
   fs.open(filePath, std::fstream::in);
 
@@ -95,11 +67,10 @@ int repl(const std::string filePath) {
     return EXIT_FAILURE;
   }
 
-  VM vm;
   while (true) {
     std::vector<std::string> lines;
     try {
-      if (getInput(fs, lines)) {
+      if (getFileInput(fs, lines)) {
         Compiler compiler(lines);
         auto main = compiler.compile();
         vm.exec(main);
@@ -117,4 +88,62 @@ int repl(const std::string filePath) {
     }
   }
   return EXIT_SUCCESS;
+}
+
+void loadLib(VM &vm) {
+  const std::string LIB_DIR_ENV_VAR = "LISP_LIB_ENV";
+  if (const char *env_p = std::getenv(LIB_DIR_ENV_VAR.c_str())) {
+    for (const auto &entry : std::filesystem::directory_iterator(env_p)) {
+      execFile(std::string(entry.path()), vm);
+    }
+  } else {
+    std::cerr << std::endl
+              << "WARNING: " << LIB_DIR_ENV_VAR << " is not set. Set the "
+              << LIB_DIR_ENV_VAR
+              << " environment variable to the predefined functions libaray "
+              << "(usually lisp/lib)." << std::endl
+              << std::endl;
+  }
+}
+
+void printInfo() {
+  std::cout << "Lisp (C++ std: " << __cplusplus << ", " << __DATE__ << ", "
+            << __TIME__ << ")" << std::endl;
+  std::cout << "Type \"(quit)\" or trigger EOF to exit the session."
+            << std::endl;
+}
+
+int repl() {
+  printInfo();
+
+  VM vm;
+  loadLib(vm);
+
+  while (true) {
+    std::vector<std::string> lines;
+    try {
+      if (getConsoleInput(lines, "lisp> ", "  ... ")) {
+        Compiler compiler(lines);
+        auto main = compiler.compile();
+        main->dissassemble(std::cout);
+        std::cout << ">> " << *vm.exec(main) << std::endl;
+      } else {
+        std::cout << std::endl << "Farewell." << std::endl;
+        return EXIT_SUCCESS;
+      }
+    } catch (SyntaxError &se) {
+      std::cerr << "In line " << lines.size() << " of <std::cin>" << std::endl;
+      std::cerr << se;
+    } catch (RuntimeException &ee) {
+      std::cerr << "In line " << lines.size() << " of <std::cin>" << std::endl;
+      std::cerr << ee;
+    }
+  }
+  return EXIT_FAILURE;
+}
+
+int repl(const std::string filePath) {
+  VM vm;
+  loadLib(vm);
+  return execFile(filePath, vm);
 }

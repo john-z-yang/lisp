@@ -1,6 +1,6 @@
 (define-macro when
   (lambda args
-    `(if ,(car args) (progn ,@(cdr args)) ())))
+    `(if ,(car args) (sequence ,@(cdr args)) ())))
 
 (when (= 1 1)
   (display (quote (gods in his heaven alls right with the world)))
@@ -17,15 +17,15 @@
 (display (my-or #f 2))
 
 (my-or
-  (progn
+  (sequence
   (display (quote doing_first_argument))
   #t)
 2)
 
 (define-macro swap
   (lambda (x y)
-    (progn (define tempVar (gensym))
-      `(progn (define ,tempVar ,x)
+    (sequence (define tempVar (gensym))
+      `(sequence (define ,tempVar ,x)
               (set! ,x ,y)
               (set! ,y ,tempVar)))))
 

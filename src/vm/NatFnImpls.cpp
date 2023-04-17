@@ -6,6 +6,7 @@
 #include "../sexpr/StringAtom.hpp"
 #include "../sexpr/SymAtom.hpp"
 #include "../sexpr/cast.cpp"
+#include <cstdlib>
 #include <memory>
 
 #define MATH_CMP_OP(name, op)                                                  \
@@ -88,7 +89,7 @@ PRED_OP(lispIsStr, isa<StringAtom>(**params));
 std::shared_ptr<SExpr>
 lispStrLen(std::vector<std::shared_ptr<SExpr>>::iterator params,
            const uint8_t argc) {
-  return std::make_shared<IntAtom>(cast<StringAtom>(*params)->literal.size());
+  return std::make_shared<IntAtom>(cast<StringAtom>(*params)->unescaped.size());
 }
 std::shared_ptr<SExpr>
 lispStrSub(std::vector<std::shared_ptr<SExpr>>::iterator params,
@@ -162,6 +163,12 @@ lispDisplay(std::vector<std::shared_ptr<SExpr>>::iterator params,
     std::cout << **params << std::endl;
   }
   return std::make_shared<NilAtom>();
+}
+std::shared_ptr<SExpr>
+lispQuit(std::vector<std::shared_ptr<SExpr>>::iterator params,
+         const uint8_t argc) {
+  std::cout << "Farewell." << std::endl;
+  exit(0);
 }
 
 #undef MATH_CMP_OP
