@@ -8,6 +8,11 @@
 #include <vector>
 
 class VM {
+public:
+  VM(std::shared_ptr<FnAtom> main, Env &globals);
+  std::shared_ptr<SExpr> exec();
+
+private:
   struct CallFrame {
     std::shared_ptr<ClosureAtom> closure;
     std::vector<uint8_t>::size_type ip;
@@ -21,10 +26,6 @@ class VM {
   void call(const uint8_t argc);
   std::shared_ptr<SExpr>
   peak(std::vector<std::shared_ptr<SExpr>>::size_type distance);
-
-public:
-  VM(std::shared_ptr<FnAtom> main, Env &globals);
-  std::shared_ptr<SExpr> exec();
 };
 
 #endif

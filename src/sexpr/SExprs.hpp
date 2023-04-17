@@ -6,10 +6,6 @@
 #include <string>
 
 class SExprs final : public SExpr {
-protected:
-  std::string toString() const;
-  bool equals(const SExpr &other) const;
-
 public:
   std::shared_ptr<SExpr> first;
   std::shared_ptr<SExpr> rest;
@@ -18,6 +14,10 @@ public:
 
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;
+
+protected:
+  std::string toString() const;
+  bool equals(const SExpr &other) const;
 };
 
 #endif

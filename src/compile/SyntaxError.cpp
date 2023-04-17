@@ -4,7 +4,7 @@
 
 SyntaxError::SyntaxError(const std::string &msg, const std::string line,
                          const std::string::size_type charPos)
-    : _msg(msg), line(line), charPos(charPos) {}
+    : line(line), charPos(charPos), _msg(msg) {}
 
 const char *SyntaxError::what() const noexcept { return _msg.c_str(); }
 

@@ -9,9 +9,6 @@
 #include <vector>
 
 class RuntimeException : public std::exception {
-  std::string _msg;
-  std::vector<std::shared_ptr<SExpr>> stackTrace;
-
 public:
   RuntimeException(const std::string &msg);
 
@@ -20,6 +17,10 @@ public:
   void pushStackTrace(std::shared_ptr<SExpr> stack);
 
   const std::vector<std::shared_ptr<SExpr>> &getStackTrace() const;
+
+private:
+  std::string _msg;
+  std::vector<std::shared_ptr<SExpr>> stackTrace;
 };
 
 std::ostream &operator<<(std::ostream &o, const RuntimeException &ee);

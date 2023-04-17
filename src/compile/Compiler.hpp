@@ -4,6 +4,7 @@
 #include "../code/Code.hpp"
 #include "../sexpr/FnAtom.hpp"
 #include "../sexpr/SExpr.hpp"
+#include "../sexpr/SymAtom.hpp"
 #include "SourceLoc.hpp"
 #include <memory>
 #include <unordered_map>

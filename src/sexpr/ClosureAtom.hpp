@@ -8,10 +8,6 @@
 #include <vector>
 
 class ClosureAtom final : public Atom {
-protected:
-  std::string toString() const;
-  bool equals(const SExpr &other) const;
-
 public:
   ClosureAtom(const std::shared_ptr<FnAtom> fnAtom);
   static bool classOf(const SExpr &sExpr);
@@ -19,6 +15,10 @@ public:
 
   const std::shared_ptr<FnAtom> fnAtom;
   std::vector<std::shared_ptr<SExpr>> upValues;
+
+protected:
+  std::string toString() const;
+  bool equals(const SExpr &other) const;
 };
 
 #endif

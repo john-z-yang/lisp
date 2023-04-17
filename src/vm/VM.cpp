@@ -35,14 +35,13 @@ VM::peak(std::vector<std::shared_ptr<SExpr>>::size_type distance) {
 
 std::shared_ptr<SExpr> VM::exec() {
 
-#define READ_BYTE()                                                            \
-  (curFrame.closure->fnAtom->getCode().byteCodes[curFrame.ip++])
+#define READ_BYTE() (curFrame.closure->fnAtom->code.byteCodes[curFrame.ip++])
 #define READ_SHORT()                                                           \
   (curFrame.ip += 2,                                                           \
-   (uint16_t)((                                                                \
-       curFrame.closure->fnAtom->getCode().byteCodes[curFrame.ip - 2] << 8 |   \
-       curFrame.closure->fnAtom->getCode().byteCodes[curFrame.ip - 1])))
-#define READ_CONST() (curFrame.closure->fnAtom->getCode().consts[READ_BYTE()])
+   (uint16_t)((curFrame.closure->fnAtom->code.byteCodes[curFrame.ip - 2]       \
+                   << 8 |                                                      \
+               curFrame.closure->fnAtom->code.byteCodes[curFrame.ip - 1])))
+#define READ_CONST() (curFrame.closure->fnAtom->code.consts[READ_BYTE()])
 
   while (true) {
     auto &curFrame = frames.back();

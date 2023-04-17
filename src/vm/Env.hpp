@@ -11,9 +11,6 @@ class Env {
                              SymAtom::HashFunction>
       SymVals;
 
-private:
-  SymVals symTable;
-
 public:
   Env();
 
@@ -22,6 +19,9 @@ public:
   void set(SymAtom &sym, std::shared_ptr<SExpr> val);
 
   std::shared_ptr<SExpr> find(SymAtom &sym);
+
+private:
+  SymVals symTable;
 };
 
 #endif

@@ -6,8 +6,6 @@
 #include <string>
 
 class SyntaxError : public std::exception {
-  std::string _msg;
-
 public:
   const std::string line;
   const std::string::size_type charPos;
@@ -16,6 +14,9 @@ public:
               const std::string::size_type charPos);
 
   virtual const char *what() const noexcept override;
+
+private:
+  std::string _msg;
 };
 
 std::ostream &operator<<(std::ostream &o, const SyntaxError &pe);

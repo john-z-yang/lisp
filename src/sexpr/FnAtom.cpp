@@ -13,8 +13,6 @@ std::string FnAtom::toString() const {
 
 bool FnAtom::equals(const SExpr &other) const { return false; }
 
-Code &FnAtom::getCode() { return code; }
-
 std::ostream &FnAtom::dissassemble(std::ostream &o) {
   o << "<Function at " << this << ", arity: " << unsigned(arity)
     << ", upvalues: " << numUpVals << ">" << std::endl

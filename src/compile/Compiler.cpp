@@ -225,7 +225,7 @@ std::shared_ptr<SExpr> Compiler::at(const unsigned int n,
   return it;
 }
 
-Code &Compiler::getCode() { return function->getCode(); }
+Code &Compiler::getCode() { return function->code; }
 
 int Compiler::resolveLocal(std::shared_ptr<SymAtom> sym) {
   auto it = std::find_if(locals.rbegin(), locals.rend(),

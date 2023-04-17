@@ -6,12 +6,13 @@
 #include <string>
 
 class TypeError : public std::exception {
-  std::string _msg;
-
 public:
   TypeError(const std::string &msg);
 
   virtual const char *what() const noexcept override;
+
+private:
+  std::string _msg;
 };
 
 std::ostream &operator<<(std::ostream &o, const TypeError &pe);
