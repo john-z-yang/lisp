@@ -70,13 +70,11 @@ MATH_CUM_OP(lispAdd, +=, 0);
 MATH_CUM_OP(lispMult, *=, 1);
 MATH_DIM_OP(lispSub, -=, 0 -);
 MATH_DIM_OP(lispDiv, /=, 1 /);
-
 std::shared_ptr<SExpr>
 lispAbs(std::vector<std::shared_ptr<SExpr>>::iterator params,
         const uint8_t argc) {
   return std::make_shared<IntAtom>(-cast<IntAtom>(*params)->val);
 }
-
 std::shared_ptr<SExpr>
 lispMod(std::vector<std::shared_ptr<SExpr>>::iterator params,
         const uint8_t argc) {
@@ -87,28 +85,68 @@ lispMod(std::vector<std::shared_ptr<SExpr>>::iterator params,
 }
 
 PRED_OP(lispIsStr, isa<StringAtom>(**params));
-
 std::shared_ptr<SExpr>
 lispStrLen(std::vector<std::shared_ptr<SExpr>>::iterator params,
            const uint8_t argc) {
   return std::make_shared<IntAtom>(cast<StringAtom>(*params)->literal.size());
 }
+std::shared_ptr<SExpr>
+lispStrSub(std::vector<std::shared_ptr<SExpr>>::iterator params,
+           const uint8_t argc) {
+  auto str = cast<StringAtom>(*params);
+  auto pos = cast<IntAtom>(*(params + 1))->val;
+  auto len = cast<IntAtom>(*(params + 2))->val;
+  std::stringstream ss;
+  try {
+    ss << "\"" << str->unescaped.substr(pos, len) << "\"";
+  } catch (std::out_of_range &ofr) {
+    std::stringstream ess;
+    ess << "Invalid range for " << str->literal << " (" << pos << ", " << len
+        << ")";
+    throw RuntimeException(ess.str());
+  }
+  return std::make_shared<StringAtom>(ss.str());
+}
+std::shared_ptr<SExpr>
+lispStrCon(std::vector<std::shared_ptr<SExpr>>::iterator params,
+           const uint8_t argc) {
+  std::stringstream ss;
+  ss << "\"";
+  for (auto i = 0; i < argc; i++) {
+    ss << cast<StringAtom>(*params)->unescaped;
+    ++params;
+  }
+  ss << "\"";
+  return std::make_shared<StringAtom>(ss.str());
+}
+std::shared_ptr<SExpr>
+lispToStr(std::vector<std::shared_ptr<SExpr>>::iterator params,
+          const uint8_t argc) {
+  if (isa<StringAtom>(**params)) {
+    return *params;
+  }
+  std::stringstream ss;
+  ss << "\"";
+  for (auto i = 0; i < argc; i++) {
+    ss << **params;
+    ++params;
+  }
+  ss << "\"";
+  return std::make_shared<StringAtom>(ss.str());
+}
 
 PRED_OP(lispIsNull, isa<NilAtom>(**params));
 PRED_OP(lispIsCons, isa<SExprs>(**params));
-
 std::shared_ptr<SExpr>
 lispCons(std::vector<std::shared_ptr<SExpr>>::iterator params,
          const uint8_t argc) {
   return std::make_shared<SExprs>(*params, *(params + 1));
 }
-
 std::shared_ptr<SExpr>
 lispCar(std::vector<std::shared_ptr<SExpr>>::iterator params,
         const uint8_t argc) {
   return cast<SExprs>(*params)->first;
 }
-
 std::shared_ptr<SExpr>
 lispCdr(std::vector<std::shared_ptr<SExpr>>::iterator params,
         const uint8_t argc) {
@@ -118,7 +156,11 @@ lispCdr(std::vector<std::shared_ptr<SExpr>>::iterator params,
 std::shared_ptr<SExpr>
 lispDisplay(std::vector<std::shared_ptr<SExpr>>::iterator params,
             const uint8_t argc) {
-  std::cout << **params << std::endl;
+  if (auto stringAtom = std::dynamic_pointer_cast<StringAtom>(*params)) {
+    std::cout << stringAtom->unescaped << std::endl;
+  } else {
+    std::cout << **params << std::endl;
+  }
   return std::make_shared<NilAtom>();
 }
 
