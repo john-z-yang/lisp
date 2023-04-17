@@ -8,11 +8,13 @@ SRCDIR = src
 OUTDIR = bin
 TESTDIR = tests
 
-_DEPS = code/Code.hpp compile/Compiler.hpp vm/Env.hpp \
-	compile/parse.hpp \
-	compile/SyntaxError.hpp compile/Token.hpp repl/repl.hpp sexpr/Atom.hpp sexpr/BoolAtom.hpp sexpr/ClosureAtom.hpp \
-	sexpr/FnAtom.hpp sexpr/IntAtom.hpp sexpr/NatFnAtom.hpp sexpr/NilAtom.hpp sexpr/SExpr.hpp \
-	sexpr/SExprs.hpp sexpr/StringAtom.hpp sexpr/TypeError.hpp sexpr/SymAtom.hpp vm/NatFnImpls.hpp vm/RuntimeException.hpp vm/VM.hpp
+_DEPS = code/Code.hpp compile/Compiler.hpp compile/parse.hpp \
+	compile/SyntaxError.hpp compile/Token.hpp repl/repl.hpp sexpr/Atom.hpp \
+	sexpr/BoolAtom.hpp sexpr/ClosureAtom.hpp sexpr/FnAtom.hpp \
+	sexpr/IntAtom.hpp sexpr/NatFnAtom.hpp sexpr/NilAtom.hpp sexpr/SExpr.hpp \
+	sexpr/SExprs.hpp sexpr/StringAtom.hpp sexpr/SymAtom.hpp \
+	sexpr/TypeError.hpp vm/Env.hpp vm/NatFnImpls.hpp vm/RuntimeException.hpp \
+	vm/VM.hpp
 
 DEPS = $(addprefix $(SRCDIR)/,$(_DEPS))
 OBJS = $(patsubst %.hpp,$(OUTDIR)/%.o,$(subst /,_,$(_DEPS)))
