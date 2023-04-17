@@ -114,6 +114,10 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
       o << "POP_JUMP_IF_FALSE" << unsigned(READ_SHORT()) << std::endl;
       break;
     }
+    case OpCode::MAKE_VAR_ARGS: {
+      o << "MAKE_VAR_ARGS" << std::endl;
+      break;
+    }
     default:
       break;
     }

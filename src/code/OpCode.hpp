@@ -18,6 +18,7 @@ enum OpCode : uint8_t {
   SET_STACK,
   JUMP,
   POP_JUMP_IF_FALSE,
+  MAKE_VAR_ARGS,
 };
 
 #endif

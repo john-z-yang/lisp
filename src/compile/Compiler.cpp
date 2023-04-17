@@ -26,6 +26,9 @@ Compiler::Compiler(std::vector<std::string> lines)
 }
 
 std::shared_ptr<FnAtom> Compiler::compile() {
+  if (function->arity == -1) {
+    getCode().pushCode(OpCode::MAKE_VAR_ARGS);
+  }
   compile(body);
   getCode().pushCode(OpCode::RETURN);
   function->numUpVals = upValues.size();
@@ -39,13 +42,16 @@ Compiler::Compiler(std::shared_ptr<SExpr> argNames, std::shared_ptr<SExpr> body,
       function(std::make_shared<FnAtom>(0)), scopeDepth(scopeDepth),
       enclosing(enclosing) {
   locals.push_back({std::make_unique<SymAtom>(""), 0});
-  unsigned int arity = 0;
-  visitEach(argNames, [&](std::shared_ptr<SExpr> sExpr) {
-    arity += 1;
-    auto sym = cast<SymAtom>(sExpr);
-    locals.push_back({sym, scopeDepth});
-  });
-  function = std::make_unique<FnAtom>(arity);
+  if (isa<SExprs>(*argNames)) {
+    visitEach(argNames, [&](std::shared_ptr<SExpr> sExpr) {
+      auto sym = cast<SymAtom>(sExpr);
+      locals.push_back({sym, scopeDepth});
+    });
+    function = std::make_unique<FnAtom>(locals.size() - 1);
+  } else if (isa<SymAtom>(*argNames)) {
+    locals.push_back({cast<SymAtom>(argNames), scopeDepth});
+    function = std::make_unique<FnAtom>(-1);
+  }
 }
 
 void Compiler::compile(std::shared_ptr<SExpr> sExpr) {

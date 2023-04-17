@@ -3,8 +3,11 @@
 #include "../sexpr/BoolAtom.hpp"
 #include "../sexpr/ClosureAtom.hpp"
 #include "../sexpr/NatFnAtom.hpp"
+#include "../sexpr/NilAtom.hpp"
+#include "../sexpr/SExprs.hpp"
 #include "../sexpr/cast.cpp"
 #include <cstdint>
+#include <iterator>
 #include <memory>
 
 VM::VM(std::shared_ptr<FnAtom> main, Env &globals) : globals(globals) {
@@ -12,29 +15,7 @@ VM::VM(std::shared_ptr<FnAtom> main, Env &globals) : globals(globals) {
   call(0);
 }
 
-void VM::call(const uint8_t argc) {
-  const auto callee = peak(argc);
-  if (isa<ClosureAtom>(*callee)) {
-    frames.push_back({cast<ClosureAtom>(callee), 0, stack.size() - argc - 1});
-    return;
-  }
-  if (isa<NatFnAtom>(*callee)) {
-    const auto res = cast<NatFnAtom>(callee)->invoke(stack.end() - argc, argc);
-    for (auto i = 0; i < argc + 1; i += 1) {
-      stack.pop_back();
-    }
-    stack.push_back(res);
-    return;
-  }
-}
-
-std::shared_ptr<SExpr>
-VM::peak(std::vector<std::shared_ptr<SExpr>>::size_type distance) {
-  return stack.rbegin()[distance];
-}
-
 std::shared_ptr<SExpr> VM::exec() {
-
 #define READ_BYTE() (curFrame.closure->fnAtom->code.byteCodes[curFrame.ip++])
 #define READ_SHORT()                                                           \
   (curFrame.ip += 2,                                                           \
@@ -122,6 +103,19 @@ std::shared_ptr<SExpr> VM::exec() {
       stack.pop_back();
       break;
     }
+    case OpCode::MAKE_VAR_ARGS: {
+      const auto n = stack.size() - curFrame.bp - 1;
+      if (n == 0) {
+        stack.push_back(std::make_shared<NilAtom>());
+        break;
+      }
+      const auto list = makeList(n);
+      for (auto i = 0; i < n; i++) {
+        stack.pop_back();
+      }
+      stack.push_back(list);
+      break;
+    }
     default:
       break;
     }
@@ -130,4 +124,42 @@ std::shared_ptr<SExpr> VM::exec() {
 
 #undef READ_BYTE
 #undef READ_SHORT
+#undef READ_CONST
+}
+
+void VM::call(const uint8_t argc) {
+  const auto callee = peak(argc);
+  if (isa<ClosureAtom>(*callee)) {
+    frames.push_back({cast<ClosureAtom>(callee), 0, stack.size() - argc - 1});
+    return;
+  }
+  if (isa<NatFnAtom>(*callee)) {
+    const auto res = cast<NatFnAtom>(callee)->invoke(stack.end() - argc, argc);
+    for (auto i = 0; i < argc + 1; i += 1) {
+      stack.pop_back();
+    }
+    stack.push_back(res);
+    return;
+  }
+}
+
+std::shared_ptr<SExpr>
+VM::peak(std::vector<std::shared_ptr<SExpr>>::size_type distance) {
+  return stack.rbegin()[distance];
+}
+
+std::shared_ptr<SExprs>
+VM::makeList(const std::vector<std::shared_ptr<SExpr>>::size_type n) {
+  auto list = std::make_shared<SExprs>();
+  auto cur = list;
+  for (auto i = stack.end() - n; i != stack.end(); ++i) {
+    cur->first = *i;
+    if (i != stack.end() - 1) {
+      cur->rest = std::make_shared<SExprs>();
+      cur = cast<SExprs>(cur->rest);
+    } else {
+      cur->rest = std::make_shared<NilAtom>();
+    }
+  }
+  return list;
 }

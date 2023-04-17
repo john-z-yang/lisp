@@ -11,6 +11,7 @@ public:
   std::shared_ptr<SExpr> rest;
 
   SExprs(std::shared_ptr<SExpr> first, std::shared_ptr<SExpr> rest);
+  SExprs();
 
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;

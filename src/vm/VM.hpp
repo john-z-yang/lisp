@@ -3,6 +3,7 @@
 
 #include "../sexpr/ClosureAtom.hpp"
 #include "../sexpr/SExpr.hpp"
+#include "../sexpr/SExprs.hpp"
 #include "Env.hpp"
 #include <memory>
 #include <vector>
@@ -26,6 +27,8 @@ private:
   void call(const uint8_t argc);
   std::shared_ptr<SExpr>
   peak(std::vector<std::shared_ptr<SExpr>>::size_type distance);
+  std::shared_ptr<SExprs>
+  makeList(std::vector<std::shared_ptr<SExpr>>::size_type size);
 };
 
 #endif

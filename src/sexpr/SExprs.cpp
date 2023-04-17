@@ -1,12 +1,15 @@
 #include "SExprs.hpp"
 #include "NilAtom.hpp"
 #include "cast.cpp"
+#include <cstddef>
 #include <memory>
 #include <sstream>
 #include <string>
 
 SExprs::SExprs(std::shared_ptr<SExpr> first, std::shared_ptr<SExpr> rest)
     : SExpr(SExpr::Type::SEXPRS), first(first), rest(rest) {}
+
+SExprs::SExprs() : SExpr(SExpr::Type::SEXPRS), first(nullptr), rest(nullptr) {}
 
 std::string SExprs::toString() const {
   std::string str = "";
