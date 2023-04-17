@@ -1,3 +1,6 @@
+#ifndef LISP_SRC_SEXPR_CAST_CPP_
+#define LISP_SRC_SEXPR_CAST_CPP_
+
 #include "../vm/RuntimeException.hpp"
 #include <memory>
 #include <sstream>
@@ -16,3 +19,5 @@ std::shared_ptr<To> cast(std::shared_ptr<From> f) {
      << *f << "\".";
   throw RuntimeException(ss.str());
 }
+
+#endif
