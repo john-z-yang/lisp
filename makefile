@@ -56,7 +56,7 @@ To set it to the /lib folder of this project.
 endef
 
 ifndef LISP_LIB_ENV
-	$(error $(ENV_NOT_SET_ERR_MSG))
+    $(error $(ENV_NOT_SET_ERR_MSG))
 endif
 
 .PHONY: test clean check-env
