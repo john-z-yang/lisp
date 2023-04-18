@@ -6,6 +6,7 @@
 #include "../sexpr/SExpr.hpp"
 #include "../sexpr/SymAtom.hpp"
 #include "SourceLoc.hpp"
+#include <functional>
 #include <memory>
 #include <unordered_map>
 #include <vector>
