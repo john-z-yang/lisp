@@ -3,11 +3,15 @@ CXXFLAGS_EXTRA =
 CXXFLAGS = -std=c++2a -Wall $(CXXFLAGS_EXTRA)
 
 PERCENT = %
+define newline
+
+
+endef
 
 SRCDIR = src
 OUTDIR = bin
 TESTDIR = tests
-LIBDIR = lib
+LIBDIR = $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))/lib
 
 _DEPS = code/Code.hpp compile/Compiler.hpp compile/parse.hpp \
 	compile/SyntaxError.hpp compile/Token.hpp repl/repl.hpp sexpr/Atom.hpp \
@@ -36,14 +40,28 @@ $(OUTDIR)/%.o: $$(subst _,/,$$(patsubst $$(OUTDIR)/$$(PERCENT).o,src/$$(PERCENT)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(TESTDIR)/%: $(TESTDIR)/%.lisp $(TESTDIR)/%.expect $(OUTDIR)/lisp
-	export LISP_LIB_ENV=LIBDIR
 	$(OUTDIR)/lisp $@.lisp >> $@.out 2>&1
 	diff $@.expect $@.out
 	rm $@.out
 
-.PHONY: test clean
+check-env:
+define ENV_NOT_SET_ERR_MSG
+$(newline)
+LISP_LIB_ENV is undefined.
 
-test: $(TESTS)
+run:
+    export LISP_LIB_ENV=$(LIBDIR)$(newline)
+
+To set it to the /lib folder of this project.
+endef
+
+ifndef LISP_LIB_ENV
+	$(error $(ENV_NOT_SET_ERR_MSG))
+endif
+
+.PHONY: test clean check-env
+
+test: check-env $(TESTS)
 
 clean:
 	-rm $(OUTDIR)/lisp $(OUTDIR)/*.o tests/*.out
