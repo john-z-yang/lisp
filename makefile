@@ -13,6 +13,13 @@ OUTDIR = bin
 TESTDIR = tests
 LIBDIR = $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))/lib
 
+define ENV_NOT_SET_ERR_MSG
+$(newline)$(newline)WARNING: LISP_LIB_ENV is undefined.$(newline)
+run:
+    export LISP_LIB_ENV=$(LIBDIR)$(newline)$(newline)
+To set it to the /lib folder of this project.
+endef
+
 _DEPS = code/Code.hpp compile/Compiler.hpp compile/parse.hpp \
 	compile/SyntaxError.hpp compile/Token.hpp repl/repl.hpp sexpr/Atom.hpp \
 	sexpr/BoolAtom.hpp sexpr/ClosureAtom.hpp sexpr/FnAtom.hpp \
@@ -40,28 +47,20 @@ $(OUTDIR)/%.o: $$(subst _,/,$$(patsubst $$(OUTDIR)/$$(PERCENT).o,src/$$(PERCENT)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(TESTDIR)/%: $(TESTDIR)/%.lisp $(TESTDIR)/%.expect $(OUTDIR)/lisp
-	$(OUTDIR)/lisp $@.lisp >> $@.out 2>&1
+	(export LISP_LIB_ENV=$(LIBDIR); $(OUTDIR)/lisp $@.lisp >> $@.out 2>&1)
 	diff $@.expect $@.out
 	rm $@.out
 
-check-env:
-define ENV_NOT_SET_ERR_MSG
-$(newline)
-LISP_LIB_ENV is undefined.
+.PHONY: test clean clean-test check-env
 
-run:
-    export LISP_LIB_ENV=$(LIBDIR)$(newline)
+test: clean-tests $(TESTS) check-env
 
-To set it to the /lib folder of this project.
-endef
-
-ifndef LISP_LIB_ENV
-    $(error $(ENV_NOT_SET_ERR_MSG))
-endif
-
-.PHONY: test clean check-env
-
-test: check-env $(TESTS)
-
+clean-tests:
+	-rm tests/*.out
 clean:
 	-rm $(OUTDIR)/lisp $(OUTDIR)/*.o tests/*.out
+
+check-env:
+ifndef LISP_LIB_ENV
+	$(warning $(ENV_NOT_SET_ERR_MSG))
+endif
