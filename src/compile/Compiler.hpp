@@ -29,12 +29,12 @@ private:
     bool isLocal;
   };
 
-  Compiler(std::shared_ptr<SExpr> argNames, std::shared_ptr<SExpr> body,
+  Compiler(std::shared_ptr<SExpr> arg, std::shared_ptr<SExpr> body,
            unsigned int scopeDepth, SourceLoc sourceLoc, Compiler *enclosing);
 
   Compiler *const enclosing;
   SourceLoc sourceLoc;
-  const std::shared_ptr<SExpr> argNames;
+  const std::shared_ptr<SExpr> arg;
   const std::shared_ptr<SExpr> body;
   std::shared_ptr<FnAtom> function;
   std::vector<Local> locals;
