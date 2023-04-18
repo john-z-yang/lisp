@@ -35,10 +35,7 @@ TESTS = $(TESTDIR)/combine $(TESTDIR)/cons $(TESTDIR)/hof $(TESTDIR)/list \
     $(TESTDIR)/parse $(TESTDIR)/recur $(TESTDIR)/set $(TESTDIR)/string \
 	$(TESTDIR)/tailcall $(TESTDIR)/varargs
 
-check-env: $(OUTDIR)/lisp
-ifndef LISP_LIB_ENV
-	$(warning $(ENV_NOT_SET_ERR_MSG))
-endif
+all: $(OUTDIR)/lisp check-env
 
 $(OUTDIR)/lisp: $(OBJS) $(DEPS) $(OUTDIR)/main.o
 	$(CXX) $(CXXFLAGS) $(OBJS) $(OUTDIR)/main.o -lreadline -o $(OUTDIR)/lisp
@@ -65,3 +62,8 @@ clean-tests:
 
 clean:
 	-rm $(OUTDIR)/lisp $(OUTDIR)/*.o tests/*.out
+
+check-env: $(OUTDIR)/lisp
+ifndef LISP_LIB_ENV
+	$(warning $(ENV_NOT_SET_ERR_MSG))
+endif
