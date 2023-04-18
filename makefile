@@ -3,7 +3,7 @@ CXXFLAGS_EXTRA =
 CXXFLAGS = -std=c++2a -Wall $(CXXFLAGS_EXTRA)
 
 PERCENT = %
-define newline
+define NEWLINE
 
 
 endef
@@ -14,9 +14,9 @@ TESTDIR = tests
 LIBDIR = $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))/lib
 
 define ENV_NOT_SET_ERR_MSG
-$(newline)$(newline)WARNING: LISP_LIB_ENV is undefined.$(newline)
+$(NEWLINE)$(NEWLINE)WARNING: LISP_LIB_ENV is undefined.$(NEWLINE)
 run:
-    export LISP_LIB_ENV=$(LIBDIR)$(newline)$(newline)
+    export LISP_LIB_ENV=$(LIBDIR)$(NEWLINE)$(NEWLINE)
 To set it to the /lib folder of this project.
 endef
 
