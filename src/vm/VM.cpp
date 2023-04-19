@@ -6,7 +6,6 @@
 #include "../sexpr/NilAtom.hpp"
 #include "../sexpr/SExprs.hpp"
 #include "../sexpr/cast.cpp"
-#include <_types/_uint8_t.h>
 #include <cstdint>
 #include <iterator>
 #include <memory>
