@@ -1,7 +1,8 @@
 #include "NatFnAtom.hpp"
-#include "cast.cpp"
+#include "../vm/RuntimeException.hpp"
 #include <functional>
 #include <memory>
+#include <sstream>
 #include <string>
 
 NatFnAtom::NatFnAtom(NativeFn fn, const int argc)
@@ -10,7 +11,7 @@ NatFnAtom::NatFnAtom(NativeFn fn, const int argc)
 std::shared_ptr<SExpr>
 NatFnAtom::invoke(std::vector<std::shared_ptr<SExpr>>::iterator params,
                   const unsigned int incomingArgc) {
-  if (argc != -1 && incomingArgc != argc) {
+  if (argc != -1 && incomingArgc != (unsigned int)argc) {
     std::stringstream ss;
     ss << "Invalid number of arguments. Expected \"" << argc << "\", but got \""
        << incomingArgc << "\".";
