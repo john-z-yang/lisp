@@ -42,7 +42,6 @@ Compiler::Compiler(std::shared_ptr<SExpr> arg, std::shared_ptr<SExpr> body,
                    Compiler *enclosing)
     : enclosing(enclosing), sourceLoc(sourceLoc), arg(arg), body(body),
       function(std::make_shared<FnAtom>(0)), scopeDepth(scopeDepth) {
-  locals.push_back({std::make_unique<SymAtom>(""), 0});
 
   if (const auto argNames = std::dynamic_pointer_cast<SExprs>(arg)) {
     visitEach(argNames, [&](std::shared_ptr<SExpr> sExpr) {
@@ -50,7 +49,7 @@ Compiler::Compiler(std::shared_ptr<SExpr> arg, std::shared_ptr<SExpr> body,
       locals.push_back({sym, scopeDepth});
     });
 
-    function = std::make_unique<FnAtom>(locals.size() - 1);
+    function = std::make_unique<FnAtom>(locals.size());
   } else if (const auto argName = std::dynamic_pointer_cast<SymAtom>(arg)) {
     locals.push_back({argName, scopeDepth});
 
@@ -257,7 +256,7 @@ int Compiler::resolveLocal(std::shared_ptr<SymAtom> sym) {
   if (it == locals.rend()) {
     return -1;
   }
-  return std::distance(locals.begin(), it.base()) - 1;
+  return std::distance(locals.begin(), it.base());
 }
 
 int Compiler::resolveUpvalue(Compiler &caller, std::shared_ptr<SymAtom> sym) {
