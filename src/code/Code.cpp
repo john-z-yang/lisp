@@ -19,12 +19,32 @@ uint8_t Code::pushConst(std::shared_ptr<SExpr> sExpr) {
 }
 
 void Code::patchJump(const std::vector<uint8_t>::size_type idx) {
-  uint16_t offset = byteCodes.size() - idx - 2;
+  const uint16_t offset = byteCodes.size() - idx - 2;
   byteCodes[idx] = (offset >> 8) & 0xFF;
   byteCodes[idx + 1] = offset & 0xFF;
 }
 
 std::ostream &operator<<(std::ostream &o, const Code &code) {
+#define READ_BYTE() ((uint8_t)code.byteCodes[ip++])
+#define READ_SHORT()                                                           \
+  (ip += 2, (uint16_t)((code.byteCodes[ip - 2] << 8 | code.byteCodes[ip - 1])))
+#define DIS_NO_OPRAND_OP(name)                                                 \
+  do {                                                                         \
+    o << #name;                                                                \
+  } while (false)
+#define DIS_BYTE_OPRAND_OP(name)                                               \
+  do {                                                                         \
+    o << #name << unsigned(READ_BYTE());                                       \
+  } while (false)
+#define DIS_SHORT_OPRAND_OP(name)                                              \
+  do {                                                                         \
+    o << #name << unsigned(READ_SHORT());                                      \
+  } while (false)
+#define DIS_CONST_OP(name)                                                     \
+  do {                                                                         \
+    o << #name << *code.consts[READ_BYTE()];                                   \
+  } while (false)
+
   o << "-> consts:" << std::endl;
   for (auto i = code.consts.begin(); i != code.consts.end(); ++i) {
     if (i != code.consts.begin()) {
@@ -37,92 +57,105 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
     if (i != code.byteCodes.begin()) {
       o << " ";
     }
-    o << "0x" << std::right << std::setfill('0') << std::setw(2) << std::hex
-      << (int)*i << std::setfill(' ') << std::dec;
+    o << std::setw(2) << std::setfill('0') << std::right << std::hex
+      << unsigned(*i) << std::setfill(' ') << std::dec;
   }
   o << std::endl << "-> bytecodes:" << std::endl;
 
-#define READ_BYTE() ((uint8_t)code.byteCodes[ip++])
-#define READ_SHORT()                                                           \
-  (ip += 2, (uint16_t)((code.byteCodes[ip - 2] << 8 | code.byteCodes[ip - 1])))
+  const unsigned int LINE_NUM_WIDTH = 4;
+  const unsigned int IP_WIDTH = 16;
+  const unsigned int OP_WIDTH = 24;
+
   std::vector<uint8_t>::size_type ip = 0;
-  for (;;) {
-    o << std::right << std::setw(4)
+
+  while (true) {
+    o << std::setw(LINE_NUM_WIDTH) << std::right
       << (code.lineNums[ip] > 0 ? std::to_string(code.lineNums[ip]) : "?")
-      << std::setw(16) << ip << " " << std::setw(24) << std::left;
+      << std::setw(IP_WIDTH) << std::right << ip << " " << std::setw(OP_WIDTH)
+      << std::left;
+
     uint8_t byte = READ_BYTE();
+
     switch (byte) {
-    case OpCode::RETURN: {
-      return o << "RETURN" << std::endl;
-    }
-    case OpCode::CALL: {
-      o << "CALL" << unsigned(READ_BYTE()) << std::endl;
-      break;
-    }
     case OpCode::MAKE_CLOSURE: {
-      auto fn = cast<FnAtom>(code.consts[READ_BYTE()]);
+      const auto fn = cast<FnAtom>(code.consts[READ_BYTE()]);
       o << "MAKE_CLOSURE" << *fn << std::endl;
       for (auto i = 0; i < fn->numUpVals; i++) {
+        if (i > 0) {
+          o << std::endl;
+        }
         const auto isLocal = unsigned(READ_BYTE());
         const auto idx = unsigned(READ_BYTE());
-        o << std::right << std::setw(23) << "| "
-          << (isLocal == 1 ? "local" : "upval") << " " << idx << std::endl;
+        o << std::right << std::setw(LINE_NUM_WIDTH + IP_WIDTH + OP_WIDTH + 1);
+        o << "" << (isLocal == 1 ? "LOCAL" : "UPVAL") << " " << idx;
       }
       break;
     }
+    case OpCode::CALL: {
+      DIS_BYTE_OPRAND_OP(CALL);
+      break;
+    }
+    case OpCode::RETURN: {
+      return o << "RETURN" << std::endl;
+    }
     case OpCode::POP_TOP: {
-      o << "POP_TOP" << std::endl;
+      DIS_NO_OPRAND_OP(POP_TOP);
       break;
     }
     case OpCode::LOAD_CONST: {
-      o << "LOAD_CONST" << *code.consts[READ_BYTE()] << std::endl;
+      DIS_CONST_OP(LOAD_CONST);
       break;
     }
     case OpCode::LOAD_SYM: {
-      o << "LOAD_SYM" << *code.consts[READ_BYTE()] << std::endl;
+      DIS_CONST_OP(LOAD_SYM);
       break;
     }
     case OpCode::DEF_SYM: {
-      o << "DEF_SYM" << *code.consts[READ_BYTE()] << std::endl;
+      DIS_CONST_OP(DEF_SYM);
       break;
     }
     case OpCode::SET_SYM: {
-      o << "SET_SYM" << *code.consts[READ_BYTE()] << std::endl;
+      DIS_CONST_OP(SET_SYM);
       break;
     }
     case OpCode::LOAD_UPVALUE: {
-      o << "LOAD_UPVALUE" << unsigned(READ_BYTE()) << std::endl;
+      DIS_BYTE_OPRAND_OP(LOAD_UPVALUE);
       break;
     }
     case OpCode::SET_UPVALUE: {
-      o << "SET_UPVALUE" << unsigned(READ_BYTE()) << std::endl;
+      DIS_BYTE_OPRAND_OP(SET_UPVALUE);
       break;
     }
     case OpCode::LOAD_STACK: {
-      o << "LOAD_FAST" << unsigned(READ_BYTE()) << std::endl;
+      DIS_BYTE_OPRAND_OP(LOAD_STACK);
       break;
     }
     case OpCode::SET_STACK: {
-      o << "SET_FAST" << unsigned(READ_BYTE()) << std::endl;
+      DIS_BYTE_OPRAND_OP(SET_STACK);
       break;
     }
     case OpCode::JUMP: {
-      o << "JUMP" << unsigned(READ_SHORT()) << std::endl;
+      DIS_SHORT_OPRAND_OP(JUMP);
       break;
     }
     case OpCode::POP_JUMP_IF_FALSE: {
-      o << "POP_JUMP_IF_FALSE" << unsigned(READ_SHORT()) << std::endl;
+      DIS_SHORT_OPRAND_OP(POP_JUMP_IF_FALSE);
       break;
     }
     case OpCode::MAKE_VAR_ARGS: {
-      o << "MAKE_VAR_ARGS" << std::endl;
+      DIS_NO_OPRAND_OP(MAKE_VAR_ARGS);
       break;
     }
     default:
       break;
     }
+    o << std::endl;
   }
-#undef READ_BYTE
-
   return o;
+#undef READ_BYTE
+#undef READ_SHORT
+#undef DIS_NO_OPRAND_OP
+#undef DIS_BYTE_OPRAND_OP
+#undef DIS_SHORT_OPRAND_OP
+#undef DIS_CONST_OP
 }

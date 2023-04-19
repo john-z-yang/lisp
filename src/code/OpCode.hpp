@@ -4,9 +4,9 @@
 #include <cstdint>
 
 enum OpCode : uint8_t {
-  RETURN,
-  CALL,
   MAKE_CLOSURE,
+  CALL,
+  RETURN,
   POP_TOP,
   LOAD_CONST,
   LOAD_SYM,
