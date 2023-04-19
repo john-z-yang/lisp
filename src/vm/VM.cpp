@@ -53,7 +53,7 @@ MAKE_CLOSURE : {
       closure->upValues.push_back(CUR_CLOSURE()->upValues[idx]);
     }
   }
-  stack.push_back(closure);
+  stack.push_back(std::move(closure));
 }
   DISPATCH();
 CALL : {
@@ -61,7 +61,7 @@ CALL : {
   DISPATCH();
 }
 RETURN : {
-  auto res = stack.back();
+  auto res = std::move(stack.back());
   if (frames.size() == 1) {
     frames.clear();
     stack.clear();
@@ -71,7 +71,7 @@ RETURN : {
     stack.pop_back();
   }
   frames.pop_back();
-  stack.push_back(res);
+  stack.push_back(std::move(res));
 }
   DISPATCH();
 POP_TOP : {
@@ -131,7 +131,7 @@ MAKE_VAR_ARGS : {
     for (std::vector<std::shared_ptr<SExpr>>::size_type i{0}; i < n; ++i) {
       stack.pop_back();
     }
-    stack.push_back(list);
+    stack.push_back(std::move(list));
   }
   DISPATCH();
 }
