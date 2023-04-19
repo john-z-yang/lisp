@@ -30,7 +30,7 @@ std::vector<Token> tokenize(std::string line, const unsigned int lineNum) {
 
 std::vector<Token> tokenize(std::vector<std::string> lines) {
   std::vector<Token> tokens;
-  for (unsigned int lineNum = 1; const auto &line : lines) {
+  for (unsigned int lineNum{1}; const auto &line : lines) {
     auto newTokens = tokenize(line, lineNum);
     tokens.insert(tokens.end(), newTokens.begin(), newTokens.end());
     lineNum += 1;

@@ -80,7 +80,7 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
     case OpCode::MAKE_CLOSURE: {
       const auto fn = cast<FnAtom>(code.consts[READ_BYTE()]);
       o << "MAKE_CLOSURE" << *fn << std::endl;
-      for (auto i = 0; i < fn->numUpVals; i++) {
+      for (unsigned int i{0}; i < fn->numUpVals; i++) {
         if (i > 0) {
           o << std::endl;
         }

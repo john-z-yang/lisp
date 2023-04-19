@@ -15,7 +15,7 @@
       const uint8_t argc) {                                                    \
     const auto prev = cast<IntAtom>(*params)->val;                             \
     ++params;                                                                  \
-    for (auto i = 1; i < argc; i += 1) {                                       \
+    for (uint8_t i{1}; i < argc; ++i) {                                        \
       if (!(cast<IntAtom>(*params)->val op prev)) {                            \
         return std::make_shared<BoolAtom>(false);                              \
       }                                                                        \
@@ -29,7 +29,7 @@
       std::vector<std::shared_ptr<SExpr>>::iterator params,                    \
       const uint8_t argc) {                                                    \
     int res = init;                                                            \
-    for (auto i = 0; i < argc; i += 1) {                                       \
+    for (uint8_t i{0}; i < argc; ++i) {                                        \
       res op cast<IntAtom>(*params)->val;                                      \
       ++params;                                                                \
     }                                                                          \
@@ -45,7 +45,7 @@
     }                                                                          \
     int res = cast<IntAtom>(*params)->val;                                     \
     ++params;                                                                  \
-    for (auto i = 1; i < argc; i += 1) {                                       \
+    for (uint8_t i{1}; i < argc; ++i) {                                        \
       res op cast<IntAtom>(*params)->val;                                      \
       ++params;                                                                \
     }                                                                          \
@@ -113,7 +113,7 @@ lispStrCon(std::vector<std::shared_ptr<SExpr>>::iterator params,
            const uint8_t argc) {
   std::stringstream ss;
   ss << "\"";
-  for (auto i = 0; i < argc; i++) {
+  for (uint8_t i{0}; i < argc; ++i) {
     ss << cast<StringAtom>(*params)->unescaped;
     ++params;
   }
@@ -128,7 +128,7 @@ lispToStr(std::vector<std::shared_ptr<SExpr>>::iterator params,
   }
   std::stringstream ss;
   ss << "\"";
-  for (auto i = 0; i < argc; i++) {
+  for (uint8_t i{0}; i < argc; ++i) {
     ss << **params;
     ++params;
   }

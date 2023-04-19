@@ -6,6 +6,7 @@
 #include "../sexpr/NilAtom.hpp"
 #include "../sexpr/SExprs.hpp"
 #include "../sexpr/cast.cpp"
+#include <_types/_uint8_t.h>
 #include <cstdint>
 #include <iterator>
 #include <memory>
@@ -49,7 +50,7 @@ std::shared_ptr<SExpr> VM::exec(std::shared_ptr<FnAtom> main) {
     }
     case OpCode::MAKE_CLOSURE: {
       auto closure = std::make_shared<ClosureAtom>(cast<FnAtom>(READ_CONST()));
-      for (auto i = 0; i < closure->fnAtom->numUpVals; i++) {
+      for (unsigned int i{0}; i < closure->fnAtom->numUpVals; ++i) {
         auto isLocal = READ_BYTE();
         auto idx = READ_BYTE();
         if (isLocal == 1) {
@@ -112,7 +113,7 @@ std::shared_ptr<SExpr> VM::exec(std::shared_ptr<FnAtom> main) {
         break;
       }
       const auto list = makeList(n);
-      for (auto i = 0; i < n; i++) {
+      for (std::vector<std::shared_ptr<SExpr>>::size_type i{0}; i < n; ++i) {
         stack.pop_back();
       }
       stack.push_back(list);
@@ -137,7 +138,7 @@ void VM::call(const uint8_t argc) {
   }
   if (isa<NatFnAtom>(*callee)) {
     const auto res = cast<NatFnAtom>(callee)->invoke(stack.end() - argc, argc);
-    for (auto i = 0; i < argc + 1; i += 1) {
+    for (uint8_t i{0}; i < argc + 1; ++i) {
       stack.pop_back();
     }
     stack.push_back(res);

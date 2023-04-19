@@ -243,7 +243,7 @@ const unsigned int Compiler::visitEach(std::shared_ptr<SExpr> sExprs,
 std::shared_ptr<SExpr> Compiler::at(const unsigned int n,
                                     std::shared_ptr<SExpr> sExpr) {
   std::shared_ptr<SExpr> it = cast<SExprs>(sExpr);
-  for (auto i = 0; i < n; ++i) {
+  for (unsigned int i{0}; i < n; ++i) {
     it = cast<SExprs>(it)->rest;
   }
   return it;
