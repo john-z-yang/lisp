@@ -1,5 +1,5 @@
 #include "FnAtom.hpp"
-#include "../sexpr/cast.cpp"
+#include <memory>
 #include <sstream>
 
 FnAtom::FnAtom(int8_t arity)
@@ -18,8 +18,8 @@ std::ostream &FnAtom::dissassemble(std::ostream &o) {
     << ", upvalues: " << numUpVals << ">" << std::endl
     << code << std::endl;
   for (auto i = code.consts.begin(); i != code.consts.end(); ++i) {
-    if (isa<FnAtom>(**i)) {
-      cast<FnAtom>(*i)->dissassemble(o);
+    if (const auto fnAtom = std::dynamic_pointer_cast<FnAtom>(*i)) {
+      fnAtom->dissassemble(o);
     }
   }
   return o;

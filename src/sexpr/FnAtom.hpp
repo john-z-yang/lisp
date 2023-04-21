@@ -12,10 +12,10 @@ public:
   const int8_t arity;
   unsigned int numUpVals;
 
+  std::ostream &dissassemble(std::ostream &o);
+
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;
-
-  std::ostream &dissassemble(std::ostream &o);
 
 protected:
   std::string toString() const;

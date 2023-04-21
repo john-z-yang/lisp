@@ -1,5 +1,6 @@
 #include "NatFnImpls.hpp"
 #include "../sexpr/BoolAtom.hpp"
+#include "../sexpr/ClosureAtom.hpp"
 #include "../sexpr/IntAtom.hpp"
 #include "../sexpr/NilAtom.hpp"
 #include "../sexpr/SExprs.hpp"
@@ -155,6 +156,12 @@ lispCdr(std::vector<std::shared_ptr<SExpr>>::iterator params,
   return cast<SExprs>(*params)->rest;
 }
 
+std::shared_ptr<SExpr>
+lispDis(std::vector<std::shared_ptr<SExpr>>::iterator params,
+        const uint8_t argc) {
+  cast<ClosureAtom>(*params)->dissassemble(std::cout);
+  return std::make_shared<NilAtom>();
+}
 std::shared_ptr<SExpr>
 lispDisplay(std::vector<std::shared_ptr<SExpr>>::iterator params,
             const uint8_t argc) {

@@ -79,14 +79,12 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
     switch (byte) {
     case OpCode::MAKE_CLOSURE: {
       const auto fn = cast<FnAtom>(code.consts[READ_BYTE()]);
-      o << "MAKE_CLOSURE" << *fn << std::endl;
+      o << "MAKE_CLOSURE" << *fn;
       for (unsigned int i{0}; i < fn->numUpVals; i++) {
-        if (i > 0) {
-          o << std::endl;
-        }
         const auto isLocal = unsigned(READ_BYTE());
         const auto idx = unsigned(READ_BYTE());
-        o << std::right << std::setw(LINE_NUM_WIDTH + IP_WIDTH + OP_WIDTH + 1);
+        o << std::endl
+          << std::right << std::setw(LINE_NUM_WIDTH + IP_WIDTH + OP_WIDTH + 1);
         o << "" << (isLocal == 1 ? "LOCAL" : "UPVAL") << " " << idx;
       }
       break;

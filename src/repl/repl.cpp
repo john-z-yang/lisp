@@ -125,8 +125,8 @@ int repl() {
       if (getConsoleInput(lines, "lisp> ", "  ... ")) {
         Compiler compiler(lines);
         auto main = compiler.compile();
-        main->dissassemble(std::cout);
-        std::cout << ">> " << *vm.exec(main) << std::endl;
+        const auto res = vm.exec(main);
+        std::cout << *res << std::endl;
       } else {
         std::cout << std::endl << "Farewell." << std::endl;
         return EXIT_SUCCESS;

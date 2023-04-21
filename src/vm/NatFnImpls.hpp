@@ -35,6 +35,7 @@ NativeFn lispCons;
 NativeFn lispCar;
 NativeFn lispCdr;
 
+NativeFn lispDis;
 NativeFn lispIsClosure;
 NativeFn lispDisplay;
 NativeFn lispQuit;
