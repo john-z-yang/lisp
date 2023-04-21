@@ -4,6 +4,8 @@
 #include "../sexpr/SExpr.hpp"
 #include <unordered_map>
 
-typedef std::unordered_map<std::shared_ptr<SExpr>, unsigned int> SourceLoc;
+typedef std::unordered_map<std::shared_ptr<SExpr>,
+                           std::tuple<const unsigned int, const unsigned int>>
+    SourceLoc;
 
 #endif

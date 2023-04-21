@@ -7,7 +7,8 @@
 #include <string>
 #include <vector>
 
-void verifyLex(std::string &line, uint32_t &openParen, uint32_t &closedParen);
+void verifyLex(std::string &line, const unsigned int lineNum,
+               uint32_t &openParen, uint32_t &closedParen);
 
 std::shared_ptr<SExpr> parse(std::vector<std::string> lines,
                              SourceLoc &sourceLoc);

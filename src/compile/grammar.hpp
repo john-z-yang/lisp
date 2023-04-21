@@ -31,18 +31,13 @@ const auto setSymPos = 1;
 const auto setSExprPos = 2;
 const auto setNilPos = 3;
 
-const auto letStarGrammer = "(let* ((symbol expression) ...) expression)";
-const auto letStarinitPos = 1;
-const auto letStarExprPos = 2;
-const auto letStarNilPos = 3;
-
 const auto initGrammer = "(symbol expression)";
 const auto initSymbolPos = 0;
 const auto initExprPos = 1;
 const auto initNilPos = 2;
 
 const auto lambdaGrammar =
-    "(lambda (symbol_1 ... symbol_n) expression) or (lambda symbol expression)";
+    "(lambda (symbol*) expression) or (lambda symbol expression)";
 const auto lambdaArgPos = 1;
 const auto lambdaBodyPos = 2;
 const auto lambdaNilPos = 3;

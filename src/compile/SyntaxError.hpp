@@ -6,19 +6,21 @@
 #include <string>
 
 class SyntaxError : public std::exception {
-public:
-  const std::string line;
-  const std::string::size_type charPos;
+  friend std::ostream &operator<<(std::ostream &o, const SyntaxError &se);
 
-  SyntaxError(const std::string &msg, const std::string line,
-              const std::string::size_type charPos);
+public:
+  SyntaxError(const std::string msg, const std::string line,
+              const unsigned int row, const unsigned int col);
 
   virtual const char *what() const noexcept override;
 
 private:
-  std::string _msg;
+  const std::string _msg;
+  const std::string line;
+  const unsigned int row;
+  const unsigned int col;
 };
 
-std::ostream &operator<<(std::ostream &o, const SyntaxError &pe);
+std::ostream &operator<<(std::ostream &o, const SyntaxError &se);
 
 #endif

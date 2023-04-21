@@ -1,7 +1,7 @@
 #ifndef LISP_SRC_SEXPR_CAST_CPP_
 #define LISP_SRC_SEXPR_CAST_CPP_
 
-#include "../vm/RuntimeException.hpp"
+#include "TypeError.hpp"
 #include <memory>
 #include <sstream>
 
@@ -17,7 +17,7 @@ std::shared_ptr<To> cast(std::shared_ptr<From> f) {
   std::stringstream ss;
   ss << "Mismatched types. Expected \"" << To::typeName << "\", but got \""
      << *f << "\".";
-  throw RuntimeException(ss.str());
+  throw TypeError(ss.str(), f);
 }
 
 #endif

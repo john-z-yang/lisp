@@ -6,6 +6,7 @@
 #include "../sexpr/StringAtom.hpp"
 #include "../sexpr/SymAtom.hpp"
 #include "../sexpr/cast.cpp"
+#include "RuntimeException.hpp"
 #include <cstdlib>
 #include <memory>
 

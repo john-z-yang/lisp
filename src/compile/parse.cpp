@@ -9,6 +9,7 @@
 #include "SyntaxError.hpp"
 #include "Token.hpp"
 #include <algorithm>
+#include <iostream>
 #include <iterator>
 #include <memory>
 #include <regex>
@@ -16,24 +17,25 @@
 #include <string>
 #include <vector>
 
-std::vector<Token> tokenize(std::string line, const unsigned int lineNum) {
+std::vector<Token> tokenize(std::string line, const unsigned int row) {
   std::vector<Token> tokens;
   std::regex rgx(
       "\\\"(?:[^\"\\\\]*(?:\\\\.)?)*\\\"|;|\\(|\\)|,@|,|`|'|[^\\s(),@,`']+");
-  std::transform(std::sregex_token_iterator(line.begin(), line.end(), rgx, 0),
-                 std::sregex_token_iterator(), back_inserter(tokens),
-                 [=](auto str) -> Token {
-                   return {lineNum, str};
-                 });
+  auto begin = std::sregex_iterator(line.begin(), line.end(), rgx);
+  auto end = std::sregex_iterator();
+  for (std::sregex_iterator i = begin; i != end; ++i) {
+    std::smatch match = *i;
+    tokens.push_back({row, (unsigned int)match.position(), match.str()});
+  }
   return tokens;
 }
 
 std::vector<Token> tokenize(std::vector<std::string> lines) {
   std::vector<Token> tokens;
-  for (unsigned int lineNum{1}; const auto &line : lines) {
-    auto newTokens = tokenize(line, lineNum);
+  for (unsigned int row{1}; const auto &line : lines) {
+    auto newTokens = tokenize(line, row);
     tokens.insert(tokens.end(), newTokens.begin(), newTokens.end());
-    lineNum += 1;
+    ++row;
   }
   return tokens;
 }
@@ -78,20 +80,20 @@ std::shared_ptr<SExpr> parseSexprs(std::vector<Token>::const_iterator &it,
   if (token.str == ")") {
     it += 1;
     auto nil = std::make_shared<NilAtom>();
-    sourceLoc.insert({nil, token.lineNum});
+    sourceLoc.insert({nil, {token.row, token.col}});
     return nil;
   } else if (token.str == "(") {
     it += 1;
     auto first = parseSexprs(it, sourceLoc);
     auto rest = parseSexprs(it, sourceLoc);
     auto sExprs = std::make_shared<SExprs>(first, rest);
-    sourceLoc.insert({sExprs, token.lineNum});
+    sourceLoc.insert({sExprs, {token.row, token.col}});
     return sExprs;
   }
   auto first = parse(it, sourceLoc);
   auto rest = parseSexprs(it, sourceLoc);
   auto sExprs = std::make_shared<SExprs>(first, rest);
-  sourceLoc.insert({sExprs, token.lineNum});
+  sourceLoc.insert({sExprs, {token.row, token.col}});
   return sExprs;
 }
 
@@ -101,20 +103,20 @@ std::shared_ptr<SExpr> parse(std::vector<Token>::const_iterator &it,
   it += 1;
   if (token.str == "(") {
     auto sExprs = parseSexprs(it, sourceLoc);
-    sourceLoc.insert({sExprs, token.lineNum});
+    sourceLoc.insert({sExprs, {token.row, token.col}});
     return sExprs;
   }
   if (token.str == "'" || token.str == "`" || token.str == "," ||
       token.str == ",@") {
     auto rest = std::make_shared<SExprs>(parse(it, sourceLoc),
                                          std::make_shared<NilAtom>());
-    sourceLoc.insert({rest, token.lineNum});
+    sourceLoc.insert({rest, {token.row, token.col}});
     auto sExprs = std::make_shared<SExprs>(parseAtom(token), rest);
-    sourceLoc.insert({sExprs, token.lineNum});
+    sourceLoc.insert({sExprs, {token.row, token.col}});
     return sExprs;
   }
   auto atom = parseAtom(token);
-  sourceLoc.insert({atom, token.lineNum});
+  sourceLoc.insert({atom, {token.row, token.col}});
   return atom;
 }
 
@@ -125,41 +127,19 @@ std::shared_ptr<SExpr> parse(std::vector<std::string> lines,
   return parse(it, sourceLoc);
 }
 
-size_t implodeTokens(const std::vector<Token> &tokens,
-                     const std::vector<Token>::const_iterator &token,
-                     std::string &line) {
-  auto pos = 0;
-  for (auto it = tokens.begin(); it != tokens.end(); ++it) {
-    line += it->str;
-    if (distance(it, token) > 0) {
-      pos += it->str.length();
-    }
-    if (it + 1 != tokens.end() && it->str != "(" && it->str != ")" &&
-        (it + 1)->str != "(" && (it + 1)->str != ")") {
-      line += " ";
-      if (distance(it, token) > 0) {
-        pos += 1;
-      }
-    }
-  }
-  return pos;
-}
-
-void handleUnexpectedToken(const std::vector<Token> &tokens,
-                           const std::vector<Token>::const_iterator &token) {
+void handleUnexpectedToken(const Token &token, const std::string &line) {
   std::stringstream ss;
-  ss << "Unexpected \"" << *token << "\".";
-  std::string line;
-  auto pos = implodeTokens(tokens, token, line);
-  throw SyntaxError(ss.str(), line, pos);
+  ss << "Unexpected \"" << token << "\".";
+  throw SyntaxError(ss.str(), line, token.row, token.col);
 }
 
-void verifyLex(std::string &line, uint32_t &openParen, uint32_t &closedParen) {
-  auto tokens = tokenize(line, -1);
+void verifyLex(std::string &line, const unsigned int lineNum,
+               uint32_t &openParen, uint32_t &closedParen) {
+  auto tokens = tokenize(line, lineNum);
   for (auto it = tokens.begin(); it != tokens.end(); ++it) {
     if ((openParen == closedParen && openParen > 0) ||
         (openParen == closedParen && it->str == ")")) {
-      handleUnexpectedToken(tokens, it);
+      handleUnexpectedToken(*it, line);
     }
     if (it->str == "(") {
       openParen += 1;
@@ -168,6 +148,6 @@ void verifyLex(std::string &line, uint32_t &openParen, uint32_t &closedParen) {
     }
   }
   if (openParen == 0 && tokens.size() > 1) {
-    handleUnexpectedToken(tokens, tokens.begin() + 1);
+    handleUnexpectedToken(*(tokens.begin() + 1), line);
   }
 }

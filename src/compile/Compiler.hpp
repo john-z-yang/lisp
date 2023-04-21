@@ -13,7 +13,7 @@
 
 class Compiler {
 public:
-  Compiler(std::vector<std::string> lines);
+  Compiler(std::vector<std::string> source);
 
   std::shared_ptr<FnAtom> compile();
 
@@ -30,11 +30,14 @@ private:
     bool isLocal;
   };
 
-  Compiler(std::shared_ptr<SExpr> arg, std::shared_ptr<SExpr> body,
-           unsigned int scopeDepth, SourceLoc sourceLoc, Compiler *enclosing);
+  Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
+           std::shared_ptr<SExpr> arg, std::shared_ptr<SExpr> body,
+           unsigned int scopeDepth, Compiler *enclosing);
+
+  std::vector<std::string> source;
+  SourceLoc sourceLoc;
 
   Compiler *const enclosing;
-  SourceLoc sourceLoc;
   const std::shared_ptr<SExpr> arg;
   const std::shared_ptr<SExpr> body;
   std::shared_ptr<FnAtom> function;

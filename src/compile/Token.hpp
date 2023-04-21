@@ -5,7 +5,8 @@
 #include <string>
 
 struct Token {
-  unsigned int lineNum;
+  unsigned int row;
+  unsigned int col;
   std::string str;
 };
 

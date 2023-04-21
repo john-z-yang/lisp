@@ -29,7 +29,7 @@ bool getConsoleInput(std::vector<std::string> &lines, std::string prompt,
       continue;
     }
     add_history(line.c_str());
-    verifyLex(line, openParen, closedParen);
+    verifyLex(line, lines.size() + 1, openParen, closedParen);
     lines.push_back(line + " ");
     if (openParen == closedParen) {
       return true;
@@ -48,8 +48,8 @@ std::istream &getFileInput(std::istream &in, std::vector<std::string> &lines) {
     if (line.empty()) {
       continue;
     }
+    verifyLex(line, lines.size() + 1, openParen, closedParen);
     lines.push_back(line + " ");
-    verifyLex(line, openParen, closedParen);
     if (openParen == closedParen) {
       return in;
     }
@@ -132,8 +132,7 @@ int repl() {
         return EXIT_SUCCESS;
       }
     } catch (SyntaxError &se) {
-      std::cerr << "In line " << lines.size() << " of <std::cin>" << std::endl;
-      std::cerr << se;
+      std::cerr << "In <std::cin>" << std::endl << se << std::endl;
     } catch (RuntimeException &ee) {
       std::cerr << "In line " << lines.size() << " of <std::cin>" << std::endl;
       std::cerr << ee;

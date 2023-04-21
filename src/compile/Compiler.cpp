@@ -9,6 +9,7 @@
 #include "../sexpr/SymAtom.hpp"
 #include "../sexpr/TypeError.hpp"
 #include "../sexpr/cast.cpp"
+#include "SyntaxError.hpp"
 #include "grammar.hpp"
 #include "parse.hpp"
 #include <algorithm>
@@ -20,9 +21,9 @@
 #include <unordered_map>
 #include <vector>
 
-Compiler::Compiler(std::vector<std::string> lines)
-    : enclosing(nullptr), arg(std::make_shared<NilAtom>()),
-      body(parse(lines, sourceLoc)), function(std::make_shared<FnAtom>(0)),
+Compiler::Compiler(std::vector<std::string> source)
+    : source(source), enclosing(nullptr), arg(std::make_shared<NilAtom>()),
+      body(parse(source, sourceLoc)), function(std::make_shared<FnAtom>(0)),
       scopeDepth(0) {}
 
 std::shared_ptr<FnAtom> Compiler::compile() {
@@ -37,12 +38,12 @@ std::shared_ptr<FnAtom> Compiler::compile() {
   return function;
 }
 
-Compiler::Compiler(std::shared_ptr<SExpr> arg, std::shared_ptr<SExpr> body,
-                   unsigned int scopeDepth, SourceLoc sourceLoc,
-                   Compiler *enclosing)
-    : enclosing(enclosing), sourceLoc(sourceLoc), arg(arg), body(body),
-      function(std::make_shared<FnAtom>(0)), scopeDepth(scopeDepth) {
-
+Compiler::Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
+                   std::shared_ptr<SExpr> arg, std::shared_ptr<SExpr> body,
+                   unsigned int scopeDepth, Compiler *enclosing)
+    : source(source), sourceLoc(sourceLoc), enclosing(enclosing), arg(arg),
+      body(body), function(std::make_shared<FnAtom>(0)),
+      scopeDepth(scopeDepth) {
   if (const auto argNames = std::dynamic_pointer_cast<SExprs>(arg)) {
     visitEach(argNames, [&](std::shared_ptr<SExpr> sExpr) {
       auto sym = cast<SymAtom>(sExpr);
@@ -54,13 +55,15 @@ Compiler::Compiler(std::shared_ptr<SExpr> arg, std::shared_ptr<SExpr> body,
     locals.push_back({argName, scopeDepth});
 
     function = std::make_unique<FnAtom>(-1);
+  } else if (!isa<NilAtom>(*arg)) {
+    handleSyntaxError(lambdaGrammar, arg);
   }
 }
 
 void Compiler::compile(std::shared_ptr<SExpr> sExpr) {
   if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) || isa<BoolAtom>(*sExpr) ||
       isa<StringAtom>(*sExpr)) {
-    const auto lineNum = sourceLoc[sExpr];
+    const auto lineNum = std::get<0>(sourceLoc[sExpr]);
     getCode().pushCode(OpCode::LOAD_CONST, lineNum);
     getCode().pushCode(getCode().pushConst(sExpr), lineNum);
     return;
@@ -93,13 +96,13 @@ void Compiler::compile(std::shared_ptr<SExpr> sExpr) {
     this->compile(sExpr);
   });
 
-  const auto lineNum = sourceLoc[sExprs->first];
+  const auto lineNum = std::get<0>(sourceLoc[sExprs->first]);
   getCode().pushCode(OpCode::CALL, lineNum);
   getCode().pushCode(argc, lineNum);
 }
 
 void Compiler::compileSym(std::shared_ptr<SymAtom> sym) {
-  const auto lineNum = sourceLoc[sym];
+  const auto lineNum = std::get<0>(sourceLoc[sym]);
 
   if (const auto idx = resolveLocal(sym); idx != -1) {
     getCode().pushCode(OpCode::LOAD_STACK, lineNum);
@@ -119,7 +122,7 @@ void Compiler::compileQuote(std::shared_ptr<SExpr> sExpr) {
   const auto expr = cast<SExprs>(at(quoteArgPos, sExpr))->first;
   cast<NilAtom>(at(quoteNilPos, sExpr));
 
-  const auto lineNum = sourceLoc[sExpr];
+  const auto lineNum = std::get<0>(sourceLoc[sExpr]);
   getCode().pushCode(OpCode::LOAD_CONST, lineNum);
   getCode().pushCode(getCode().pushConst(expr), lineNum);
 }
@@ -132,11 +135,11 @@ void Compiler::compileDef(std::shared_ptr<SExpr> sExpr) {
 
     compile(expr);
 
-    const auto lineNum = sourceLoc[sExpr];
+    const auto lineNum = std::get<0>(sourceLoc[sExpr]);
     getCode().pushCode(OpCode::DEF_SYM, lineNum);
     getCode().pushCode(getCode().pushConst(sym), lineNum);
   } catch (TypeError &te) {
-    handleSyntaxError(defGrammar, sExpr);
+    handleSyntaxError(defGrammar, te.sexpr);
   }
 }
 
@@ -148,7 +151,7 @@ void Compiler::compileSet(std::shared_ptr<SExpr> sExpr) {
 
     compile(expr);
 
-    const auto lineNum = sourceLoc[sExpr];
+    const auto lineNum = std::get<0>(sourceLoc[sExpr]);
 
     if (const auto idx = resolveLocal(sym); idx != -1) {
       getCode().pushCode(OpCode::SET_STACK, lineNum);
@@ -163,7 +166,7 @@ void Compiler::compileSet(std::shared_ptr<SExpr> sExpr) {
     getCode().pushCode(OpCode::SET_SYM, lineNum);
     getCode().pushCode(getCode().pushConst(sym), lineNum);
   } catch (TypeError &te) {
-    handleSyntaxError(setGrammar, sExpr);
+    handleSyntaxError(setGrammar, te.sexpr);
   }
 }
 
@@ -176,7 +179,7 @@ void Compiler::compileIf(std::shared_ptr<SExpr> sExpr) {
 
     compile(test);
 
-    const auto testLoc = sourceLoc[test];
+    const auto testLoc = std::get<0>(sourceLoc[test]);
     const auto jifIdx =
         getCode().pushCode(OpCode::POP_JUMP_IF_FALSE, testLoc) + 1;
     getCode().pushCode(UINT8_MAX, testLoc);
@@ -184,7 +187,7 @@ void Compiler::compileIf(std::shared_ptr<SExpr> sExpr) {
 
     compile(conseq);
 
-    const auto conseqLoc = sourceLoc[conseq];
+    const auto conseqLoc = std::get<0>(sourceLoc[conseq]);
     const auto jIdx = getCode().pushCode(OpCode::JUMP, conseqLoc) + 1;
     getCode().pushCode(UINT8_MAX, conseqLoc);
     getCode().pushCode(UINT8_MAX, conseqLoc);
@@ -194,7 +197,7 @@ void Compiler::compileIf(std::shared_ptr<SExpr> sExpr) {
 
     getCode().patchJump(jIdx);
   } catch (TypeError &te) {
-    handleSyntaxError(ifGrammar, sExpr);
+    handleSyntaxError(ifGrammar, te.sexpr);
   }
 }
 
@@ -204,10 +207,10 @@ void Compiler::compileLambda(std::shared_ptr<SExpr> sExpr) {
     const auto body = cast<SExprs>(at(lambdaBodyPos, sExpr))->first;
     cast<NilAtom>(at(lambdaNilPos, sExpr));
 
-    Compiler compiler(argNames, body, scopeDepth + 1, sourceLoc, this);
+    Compiler compiler(source, sourceLoc, argNames, body, scopeDepth + 1, this);
     const auto function = compiler.compile();
 
-    const auto lineNum = sourceLoc[sExpr];
+    const auto lineNum = std::get<0>(sourceLoc[sExpr]);
     getCode().pushCode(OpCode::MAKE_CLOSURE, lineNum);
     getCode().pushCode(getCode().pushConst(function), lineNum);
     for (const auto &upValue : compiler.upValues) {
@@ -215,7 +218,7 @@ void Compiler::compileLambda(std::shared_ptr<SExpr> sExpr) {
       getCode().pushCode(upValue.idx);
     }
   } catch (TypeError &te) {
-    handleSyntaxError(lambdaGrammar, sExpr);
+    handleSyntaxError(lambdaGrammar, te.sexpr);
   }
 }
 
@@ -223,7 +226,8 @@ void Compiler::handleSyntaxError(std::string expected,
                                  std::shared_ptr<SExpr> actual) {
   std::stringstream ss;
   ss << "Expected \"" << expected << "\", but got \"" << *actual << "\".";
-  std::cout << ss.str();
+  const auto [row, col] = sourceLoc[actual];
+  throw SyntaxError(ss.str(), source[row - 1], row, col);
 }
 
 const unsigned int Compiler::visitEach(std::shared_ptr<SExpr> sExprs,
