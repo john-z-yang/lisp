@@ -9,11 +9,13 @@
 
 class TypeError : public std::exception {
 public:
-  TypeError(const std::string &msg, const std::shared_ptr<SExpr> sexpr);
+  TypeError(const std::string &msg, const std::string expected,
+            const std::shared_ptr<SExpr> actual);
 
   virtual const char *what() const noexcept override;
 
-  const std::shared_ptr<SExpr> sexpr;
+  const std::string expected;
+  const std::shared_ptr<SExpr> actual;
 
 private:
   std::string _msg;

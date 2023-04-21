@@ -53,7 +53,8 @@ private:
   void compileIf(std::shared_ptr<SExpr> sExpr);
   void compileLambda(std::shared_ptr<SExpr> sExpr);
 
-  void handleSyntaxError(std::string expected, std::shared_ptr<SExpr> actual);
+  void handleSyntaxError(const std::string grammar, const std::string expected,
+                         const std::shared_ptr<SExpr> actual);
 
   const unsigned int visitEach(std::shared_ptr<SExpr> sExpr, Visitor visitor);
   std::shared_ptr<SExpr> at(const unsigned int n, std::shared_ptr<SExpr> sExpr);

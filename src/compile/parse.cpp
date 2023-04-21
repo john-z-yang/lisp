@@ -80,20 +80,20 @@ std::shared_ptr<SExpr> parseSexprs(std::vector<Token>::const_iterator &it,
   if (token.str == ")") {
     it += 1;
     auto nil = std::make_shared<NilAtom>();
-    sourceLoc.insert({nil, {token.row, token.col}});
+    sourceLoc.insert({nil, {token.row, token.col - 1}});
     return nil;
   } else if (token.str == "(") {
     it += 1;
     auto first = parseSexprs(it, sourceLoc);
     auto rest = parseSexprs(it, sourceLoc);
     auto sExprs = std::make_shared<SExprs>(first, rest);
-    sourceLoc.insert({sExprs, {token.row, token.col}});
+    sourceLoc.insert({sExprs, {token.row, token.col - 1}});
     return sExprs;
   }
   auto first = parse(it, sourceLoc);
   auto rest = parseSexprs(it, sourceLoc);
   auto sExprs = std::make_shared<SExprs>(first, rest);
-  sourceLoc.insert({sExprs, {token.row, token.col}});
+  sourceLoc.insert({sExprs, {token.row, token.col - 1}});
   return sExprs;
 }
 

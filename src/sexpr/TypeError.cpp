@@ -2,8 +2,9 @@
 #include "SExpr.hpp"
 #include <memory>
 
-TypeError::TypeError(const std::string &msg, const std::shared_ptr<SExpr> sexpr)
-    : sexpr(sexpr), _msg(msg) {}
+TypeError::TypeError(const std::string &msg, const std::string expected,
+                     const std::shared_ptr<SExpr> actual)
+    : expected(expected), actual(actual), _msg(msg) {}
 
 const char *TypeError::what() const noexcept { return _msg.c_str(); }
 

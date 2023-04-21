@@ -56,10 +56,9 @@ Compiler::Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
 
     function = std::make_unique<FnAtom>(-1);
   } else if (!isa<NilAtom>(*arg)) {
-    handleSyntaxError(lambdaGrammar, arg);
+    handleSyntaxError(lambdaGrammar, NilAtom::typeName, arg);
   }
 }
-
 void Compiler::compile(std::shared_ptr<SExpr> sExpr) {
   if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) || isa<BoolAtom>(*sExpr) ||
       isa<StringAtom>(*sExpr)) {
@@ -139,7 +138,7 @@ void Compiler::compileDef(std::shared_ptr<SExpr> sExpr) {
     getCode().pushCode(OpCode::DEF_SYM, lineNum);
     getCode().pushCode(getCode().pushConst(sym), lineNum);
   } catch (TypeError &te) {
-    handleSyntaxError(defGrammar, te.sexpr);
+    handleSyntaxError(defGrammar, te.expected, te.actual);
   }
 }
 
@@ -166,7 +165,7 @@ void Compiler::compileSet(std::shared_ptr<SExpr> sExpr) {
     getCode().pushCode(OpCode::SET_SYM, lineNum);
     getCode().pushCode(getCode().pushConst(sym), lineNum);
   } catch (TypeError &te) {
-    handleSyntaxError(setGrammar, te.sexpr);
+    handleSyntaxError(setGrammar, te.expected, te.actual);
   }
 }
 
@@ -197,7 +196,7 @@ void Compiler::compileIf(std::shared_ptr<SExpr> sExpr) {
 
     getCode().patchJump(jIdx);
   } catch (TypeError &te) {
-    handleSyntaxError(ifGrammar, te.sexpr);
+    handleSyntaxError(ifGrammar, te.expected, te.actual);
   }
 }
 
@@ -218,14 +217,16 @@ void Compiler::compileLambda(std::shared_ptr<SExpr> sExpr) {
       getCode().pushCode(upValue.idx);
     }
   } catch (TypeError &te) {
-    handleSyntaxError(lambdaGrammar, te.sexpr);
+    handleSyntaxError(lambdaGrammar, te.expected, te.actual);
   }
 }
 
-void Compiler::handleSyntaxError(std::string expected,
-                                 std::shared_ptr<SExpr> actual) {
+void Compiler::handleSyntaxError(const std::string grammar,
+                                 const std::string expected,
+                                 const std::shared_ptr<SExpr> actual) {
   std::stringstream ss;
-  ss << "Expected \"" << expected << "\", but got \"" << *actual << "\".";
+  ss << "Invalid syntax for " << grammar << "." << std::endl
+     << "Expected \"" << expected << "\", but got \"" << *actual << "\".";
   const auto [row, col] = sourceLoc[actual];
   throw SyntaxError(ss.str(), source[row - 1], row, col);
 }
