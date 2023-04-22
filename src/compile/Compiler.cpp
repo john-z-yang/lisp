@@ -24,7 +24,7 @@
 Compiler::Compiler(std::vector<std::string> source)
     : source(source), enclosing(nullptr), arg(std::make_shared<NilAtom>()),
       body(parse(source, sourceLoc)), function(std::make_shared<FnAtom>(0)),
-      scopeDepth(0) {}
+      stackOffset(0) {}
 
 std::shared_ptr<FnAtom> Compiler::compile() {
   if (function->arity == -1) {
@@ -40,26 +40,30 @@ std::shared_ptr<FnAtom> Compiler::compile() {
 
 Compiler::Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
                    std::shared_ptr<SExpr> arg, std::shared_ptr<SExpr> body,
-                   unsigned int scopeDepth, Compiler *enclosing)
+                   Compiler *enclosing)
     : source(source), sourceLoc(sourceLoc), enclosing(enclosing), arg(arg),
-      body(body), function(std::make_shared<FnAtom>(0)),
-      scopeDepth(scopeDepth) {
-  locals.push_back({std::make_unique<SymAtom>(""), 0});
+      body(body), function(std::make_shared<FnAtom>(0)), stackOffset(0) {
+  locals.push_back({std::make_unique<SymAtom>(""), stackOffset});
+  stackOffset += 1;
+
   if (const auto argNames = std::dynamic_pointer_cast<SExprs>(arg)) {
     visitEach(argNames, [&](std::shared_ptr<SExpr> sExpr) {
       auto sym = cast<SymAtom>(sExpr);
-      locals.push_back({sym, scopeDepth});
+      locals.push_back({sym, stackOffset});
+      stackOffset += 1;
     });
 
     function = std::make_unique<FnAtom>(locals.size() - 1);
   } else if (const auto argName = std::dynamic_pointer_cast<SymAtom>(arg)) {
-    locals.push_back({argName, scopeDepth});
+    locals.push_back({argName, stackOffset});
+    stackOffset += 1;
 
     function = std::make_unique<FnAtom>(-1);
   } else if (!isa<NilAtom>(*arg)) {
     handleSyntaxError(lambdaGrammar, NilAtom::typeName, arg);
   }
 }
+
 void Compiler::compile(std::shared_ptr<SExpr> sExpr) {
   if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) || isa<BoolAtom>(*sExpr) ||
       isa<StringAtom>(*sExpr)) {
@@ -91,14 +95,7 @@ void Compiler::compile(std::shared_ptr<SExpr> sExpr) {
       return;
     }
   }
-  compile(sExprs->first);
-  const auto argc = visitEach(sExprs->rest, [&](std::shared_ptr<SExpr> sExpr) {
-    this->compile(sExpr);
-  });
-
-  const auto lineNum = std::get<0>(sourceLoc[sExprs->first]);
-  getCode().pushCode(OpCode::CALL, lineNum);
-  getCode().pushCode(argc, lineNum);
+  compileCall(sExprs);
 }
 
 void Compiler::compileSym(std::shared_ptr<SymAtom> sym) {
@@ -128,6 +125,13 @@ void Compiler::compileQuote(std::shared_ptr<SExpr> sExpr) {
 }
 
 void Compiler::compileDef(std::shared_ptr<SExpr> sExpr) {
+  if ((locals.empty() && stackOffset > 0) ||
+      (!locals.empty() && stackOffset > locals.back().stackOffset + 1)) {
+    const auto [row, col] = sourceLoc[sExpr];
+    throw SyntaxError(
+        "Invalid syntax for define: cannot use define as an argument",
+        source[row - 1], row, col);
+  }
   try {
     const auto sym = cast<SymAtom>(cast<SExprs>(at(defSymPos, sExpr))->first);
     const auto expr = cast<SExprs>(at(defSExprPos, sExpr))->first;
@@ -136,8 +140,12 @@ void Compiler::compileDef(std::shared_ptr<SExpr> sExpr) {
     compile(expr);
 
     const auto lineNum = std::get<0>(sourceLoc[sExpr]);
-    getCode().pushCode(OpCode::DEF_SYM, lineNum);
-    getCode().pushCode(getCode().pushConst(sym), lineNum);
+    if (enclosing == nullptr) {
+      getCode().pushCode(OpCode::DEF_SYM, lineNum);
+      getCode().pushCode(getCode().pushConst(sym), lineNum);
+    } else {
+      locals.push_back({sym, stackOffset});
+    }
   } catch (TypeError &te) {
     handleSyntaxError(defGrammar, te.expected, te.actual);
   }
@@ -207,7 +215,7 @@ void Compiler::compileLambda(std::shared_ptr<SExpr> sExpr) {
     const auto body = cast<SExprs>(at(lambdaBodyPos, sExpr))->first;
     cast<NilAtom>(at(lambdaNilPos, sExpr));
 
-    Compiler compiler(source, sourceLoc, argNames, body, scopeDepth + 1, this);
+    Compiler compiler(source, sourceLoc, argNames, body, this);
     const auto function = compiler.compile();
 
     const auto lineNum = std::get<0>(sourceLoc[sExpr]);
@@ -220,6 +228,19 @@ void Compiler::compileLambda(std::shared_ptr<SExpr> sExpr) {
   } catch (TypeError &te) {
     handleSyntaxError(lambdaGrammar, te.expected, te.actual);
   }
+}
+
+void Compiler::compileCall(std::shared_ptr<SExprs> sExprs) {
+  compile(sExprs->first);
+  stackOffset += 1;
+  const auto argc = visitEach(sExprs->rest, [&](std::shared_ptr<SExpr> sExpr) {
+    this->compile(sExpr);
+    stackOffset += 1;
+  });
+
+  const auto lineNum = std::get<0>(sourceLoc[sExprs->first]);
+  getCode().pushCode(OpCode::CALL, lineNum);
+  getCode().pushCode(argc, lineNum);
 }
 
 void Compiler::handleSyntaxError(const std::string grammar,
@@ -262,7 +283,7 @@ int Compiler::resolveLocal(std::shared_ptr<SymAtom> sym) {
   if (it == locals.rend()) {
     return -1;
   }
-  return std::distance(locals.begin(), it.base()) - 1;
+  return it->stackOffset;
 }
 
 int Compiler::resolveUpvalue(Compiler &caller, std::shared_ptr<SymAtom> sym) {
@@ -288,16 +309,4 @@ int Compiler::addUpvalue(int idx, bool isLocal) {
   }
   upValues.push_back({idx, isLocal});
   return upValues.size() - 1;
-}
-
-void Compiler::beginScope() { scopeDepth += 1; }
-
-void Compiler::endScope() { setScope(scopeDepth - 1); }
-
-void Compiler::setScope(unsigned int scope) {
-  scopeDepth = scope;
-  while (locals.size() && locals.back().depth > scopeDepth) {
-    locals.pop_back();
-    getCode().pushCode(OpCode::POP_TOP);
-  }
 }
