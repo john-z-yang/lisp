@@ -15,8 +15,8 @@ std::shared_ptr<To> cast(std::shared_ptr<From> f) {
     return ptr;
   }
   std::stringstream ss;
-  ss << "Mismatched types. Expected \"" << To::typeName << "\", but got \""
-     << *f << "\".";
+  ss << "Mismatched types. Expected " << To::typeName << ", but got " << *f
+     << ".";
   throw TypeError(ss.str(), To::typeName, f);
 }
 

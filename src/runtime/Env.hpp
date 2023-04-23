@@ -21,6 +21,8 @@ public:
 
   void set(SymAtom &sym, std::shared_ptr<SExpr> val);
 
+  const SymVals &getSymTable() const;
+
   std::shared_ptr<SExpr> find(SymAtom &sym);
 };
 

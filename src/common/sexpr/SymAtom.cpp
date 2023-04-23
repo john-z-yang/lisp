@@ -18,7 +18,7 @@ bool SymAtom::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::SYM;
 }
 
-const std::string SymAtom::typeName = "Symbol";
+const std::string SymAtom::typeName = "<Symbol>";
 
 size_t SymAtom::HashFunction::operator()(const SymAtom &sym) const {
   return std::hash<std::string>()(sym.val);

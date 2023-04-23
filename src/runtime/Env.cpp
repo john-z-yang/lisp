@@ -70,3 +70,5 @@ std::shared_ptr<SExpr> Env::find(SymAtom &sym) {
   }
   return it->second;
 }
+
+const Env::SymVals &Env::getSymTable() const { return symTable; }

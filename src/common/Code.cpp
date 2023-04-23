@@ -45,14 +45,17 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
     o << #name << *code.consts[READ_BYTE()];                                   \
   } while (false)
 
-  o << "-> consts:" << std::endl;
+  const unsigned int PADDING_WIDTH = 4;
+  o << "Constants:" << std::endl << std::setw(PADDING_WIDTH) << "";
   for (auto i = code.consts.begin(); i != code.consts.end(); ++i) {
     if (i != code.consts.begin()) {
       o << ", ";
     }
     o << **i;
   }
-  o << std::endl << "-> bytecodes (raw):" << std::endl;
+  o << std::endl
+    << "Bytecodes (raw):" << std::endl
+    << std::setw(PADDING_WIDTH) << "";
   for (auto i = code.byteCodes.begin(); i != code.byteCodes.end(); ++i) {
     if (i != code.byteCodes.begin()) {
       o << " ";
@@ -60,7 +63,7 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
     o << std::setw(2) << std::setfill('0') << std::right << std::hex
       << unsigned(*i) << std::setfill(' ') << std::dec;
   }
-  o << std::endl << "-> bytecodes:" << std::endl;
+  o << std::endl << "Bytecodes:" << std::endl;
 
   const unsigned int LINE_NUM_WIDTH = 4;
   const unsigned int IP_WIDTH = 16;
@@ -69,7 +72,8 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
   std::vector<uint8_t>::size_type ip = 0;
 
   while (true) {
-    o << std::setw(LINE_NUM_WIDTH) << std::right
+    o << std::setw(PADDING_WIDTH) << "" << std::setw(LINE_NUM_WIDTH)
+      << std::left
       << (code.lineNums[ip] > 0 ? std::to_string(code.lineNums[ip]) : "?")
       << std::setw(IP_WIDTH) << std::right << ip << " " << std::setw(OP_WIDTH)
       << std::left;
@@ -84,7 +88,8 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
         const auto isLocal = unsigned(READ_BYTE());
         const auto idx = unsigned(READ_BYTE());
         o << std::endl
-          << std::right << std::setw(LINE_NUM_WIDTH + IP_WIDTH + OP_WIDTH + 1);
+          << std::setw(PADDING_WIDTH) << "" << std::right
+          << std::setw(LINE_NUM_WIDTH + IP_WIDTH + OP_WIDTH + 1);
         o << "" << (isLocal == 1 ? "LOCAL" : "UPVAL") << " " << idx;
       }
       break;

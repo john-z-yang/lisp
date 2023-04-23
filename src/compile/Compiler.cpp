@@ -248,7 +248,7 @@ void Compiler::handleSyntaxError(const std::string grammar,
                                  const std::shared_ptr<SExpr> actual) {
   std::stringstream ss;
   ss << "Invalid syntax for " << grammar << "." << std::endl
-     << "Expected \"" << expected << "\", but got \"" << *actual << "\".";
+     << "Expected " << expected << ", but got " << *actual << ".";
   const auto [row, col] = sourceLoc[actual];
   throw SyntaxError(ss.str(), source[row - 1], row, col);
 }

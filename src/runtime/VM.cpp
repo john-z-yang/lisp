@@ -10,7 +10,10 @@
 #include <iomanip>
 #include <iterator>
 #include <memory>
+#include <sstream>
 #include <stdexcept>
+#include <string>
+#include <unordered_map>
 
 std::shared_ptr<SExpr> VM::interp(std::shared_ptr<FnAtom> main) {
 #define CUR_FRAME() (frames.back())
@@ -194,7 +197,11 @@ std::shared_ptr<SExpr> VM::exec(std::shared_ptr<FnAtom> main) {
   try {
     return interp(main);
   } catch (std::exception &e) {
-    throw RuntimeException(e.what(), globals, stack, frames);
+    stack.clear();
+    frames.clear();
+    std::stringstream ss;
+    ss << "Runtime error: " << e.what();
+    throw RuntimeException(ss.str(), globals, stack, frames);
   }
   return nullptr;
 }
@@ -207,20 +214,40 @@ VM::RuntimeException::RuntimeException(
 const char *VM::RuntimeException::what() const noexcept { return _msg.c_str(); }
 
 std::ostream &operator<<(std::ostream &o, const VM::RuntimeException &re) {
-  const unsigned int IDX_WIDTH = 4;
-  o << re.what() << std::endl << "-> call stack:";
+  std::unordered_map<std::shared_ptr<SExpr>, SymAtom> sExprSyms;
+  for (const auto &p : re.globals.getSymTable()) {
+    sExprSyms.insert({p.second, p.first});
+  }
+
+  const unsigned int PADDING_WIDTH = 4;
+  const unsigned int IDX_WIDTH = 8;
+
+  o << "In code object with ip: " << re.frames.back().ip << std::endl;
+
+  o << std::setw(PADDING_WIDTH) << std::right
+    << re.frames.back().closure->fnAtom->code << "Call stack:";
   for (unsigned int idx = 0; const auto &stackFrame : re.frames) {
     o << std::endl
-      << std::setw(IDX_WIDTH) << std::right << idx
-      << ": <closure: " << stackFrame.closure << ", ip: " << stackFrame.ip
+      << std::setw(PADDING_WIDTH) << "" << std::setw(IDX_WIDTH) << std::left
+      << idx << "<Closure: " << stackFrame.closure << ", ip: " << stackFrame.ip
       << ", bp: " << stackFrame.bp << ">";
     idx += 1;
+    auto it = sExprSyms.find(stackFrame.closure);
+    if (it != sExprSyms.end()) {
+      o << " (" << it->second << ")";
+    }
   }
-  o << std::endl << "-> data stack:";
+
+  o << std::endl << "Data stack:";
   for (unsigned int idx = 0; const auto &sexpr : re.stack) {
     o << std::endl
-      << std::setw(IDX_WIDTH) << std::right << idx << ": " << *sexpr;
+      << std::setw(PADDING_WIDTH) << "" << std::setw(IDX_WIDTH) << std::left
+      << idx << *sexpr;
     idx += 1;
+    auto it = sExprSyms.find(sexpr);
+    if (it != sExprSyms.end()) {
+      o << " (" << it->second << ")";
+    }
   }
-  return o;
+  return o << std::endl << re.what();
 }

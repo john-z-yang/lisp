@@ -16,7 +16,7 @@ bool ClosureAtom::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::CLOSURE;
 }
 
-const std::string ClosureAtom::typeName = "<closure>";
+const std::string ClosureAtom::typeName = "<Closure>";
 
 std::string ClosureAtom::toString() const {
   std::stringstream ss;

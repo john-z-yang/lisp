@@ -26,4 +26,4 @@ bool StringAtom::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::STR;
 }
 
-const std::string StringAtom::typeName = "String";
+const std::string StringAtom::typeName = "<String>";

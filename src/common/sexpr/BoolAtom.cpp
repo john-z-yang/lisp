@@ -28,4 +28,4 @@ bool BoolAtom::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::BOOL;
 }
 
-const std::string BoolAtom::typeName = "Boolean";
+const std::string BoolAtom::typeName = "<Boolean>";

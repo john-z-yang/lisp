@@ -37,4 +37,4 @@ bool SExprs::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::SEXPRS;
 }
 
-const std::string SExprs::typeName = "One or more symbolic expressions";
+const std::string SExprs::typeName = "<S-expressions>";

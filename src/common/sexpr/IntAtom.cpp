@@ -17,4 +17,4 @@ bool IntAtom::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::NUM;
 }
 
-const std::string IntAtom::typeName = "Integer";
+const std::string IntAtom::typeName = "<Integer>";

@@ -29,4 +29,4 @@ bool FnAtom::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::FUNCTION;
 }
 
-const std::string FnAtom::typeName = "<function>";
+const std::string FnAtom::typeName = "<Function>";
