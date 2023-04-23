@@ -197,11 +197,12 @@ std::shared_ptr<SExpr> VM::exec(std::shared_ptr<FnAtom> main) {
   try {
     return interp(main);
   } catch (std::exception &e) {
-    stack.clear();
-    frames.clear();
     std::stringstream ss;
     ss << "Runtime error: " << e.what();
-    throw RuntimeException(ss.str(), globals, stack, frames);
+    const auto re = RuntimeException(ss.str(), globals, stack, frames);
+    stack.clear();
+    frames.clear();
+    throw re;
   }
   return nullptr;
 }
