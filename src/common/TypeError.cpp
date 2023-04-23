@@ -4,7 +4,7 @@
 
 TypeError::TypeError(const std::string &msg, const std::string expected,
                      const std::shared_ptr<SExpr> actual)
-    : expected(expected), actual(actual), _msg(msg) {}
+    : _msg(msg), expected(expected), actual(actual) {}
 
 const char *TypeError::what() const noexcept { return _msg.c_str(); }
 

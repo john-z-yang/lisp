@@ -6,6 +6,10 @@
 #include <string>
 
 class SymAtom final : public Atom {
+protected:
+  std::string toString() const;
+  bool equals(const SExpr &other) const;
+
 public:
   const std::string val;
 
@@ -18,10 +22,6 @@ public:
   public:
     size_t operator()(const SymAtom &sym) const;
   };
-
-protected:
-  std::string toString() const;
-  bool equals(const SExpr &other) const;
 };
 
 #endif

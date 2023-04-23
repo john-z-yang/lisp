@@ -210,7 +210,7 @@ std::shared_ptr<SExpr> VM::exec(std::shared_ptr<FnAtom> main) {
 VM::RuntimeException::RuntimeException(
     const std::string &msg, Env globals,
     std::vector<std::shared_ptr<SExpr>> stack, std::vector<CallFrame> frames)
-    : globals(globals), stack(stack), frames(frames), _msg(msg) {}
+    : _msg(msg), globals(globals), stack(stack), frames(frames) {}
 
 const char *VM::RuntimeException::what() const noexcept { return _msg.c_str(); }
 

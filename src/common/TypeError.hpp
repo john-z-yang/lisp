@@ -8,6 +8,9 @@
 #include <string>
 
 class TypeError : public std::exception {
+private:
+  std::string _msg;
+
 public:
   TypeError(const std::string &msg, const std::string expected,
             const std::shared_ptr<SExpr> actual);
@@ -16,9 +19,6 @@ public:
 
   const std::string expected;
   const std::shared_ptr<SExpr> actual;
-
-private:
-  std::string _msg;
 };
 
 std::ostream &operator<<(std::ostream &o, const TypeError &pe);

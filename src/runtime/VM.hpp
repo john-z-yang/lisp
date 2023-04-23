@@ -30,19 +30,21 @@ private:
 
 public:
   class RuntimeException : public std::exception {
+    friend std::ostream &operator<<(std::ostream &o,
+                                    const VM::RuntimeException &re);
+
+  private:
+    std::string _msg;
+    const Env globals;
+    const std::vector<std::shared_ptr<SExpr>> stack;
+    const std::vector<CallFrame> frames;
+
   public:
     RuntimeException(const std::string &msg, Env globals,
                      std::vector<std::shared_ptr<SExpr>> stack,
                      std::vector<CallFrame> frames);
 
     virtual const char *what() const noexcept override;
-
-    const Env globals;
-    const std::vector<std::shared_ptr<SExpr>> stack;
-    const std::vector<CallFrame> frames;
-
-  private:
-    std::string _msg;
   };
 
   VM();

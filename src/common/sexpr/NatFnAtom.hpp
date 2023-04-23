@@ -8,6 +8,10 @@
 #include <vector>
 
 class NatFnAtom final : public Atom {
+protected:
+  std::string toString() const;
+  bool equals(const SExpr &other) const;
+
 public:
   NativeFn *fn;
   const int argc;
@@ -18,10 +22,6 @@ public:
                                 const unsigned int argc);
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;
-
-protected:
-  std::string toString() const;
-  bool equals(const SExpr &other) const;
 };
 
 #endif

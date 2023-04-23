@@ -13,11 +13,6 @@
 #include <vector>
 
 class Compiler {
-public:
-  Compiler(std::vector<std::string> source);
-
-  std::shared_ptr<FnAtom> compile();
-
 private:
   typedef std::function<void(std::shared_ptr<SExpr>)> Visitor;
 
@@ -31,10 +26,6 @@ private:
     bool isLocal;
   };
 
-  Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
-           std::shared_ptr<SExpr> arg, std::shared_ptr<SExpr> body,
-           Compiler *enclosing);
-
   std::vector<std::string> source;
   SourceLoc sourceLoc;
 
@@ -45,6 +36,10 @@ private:
   std::vector<Local> locals;
   std::vector<UpValue> upValues;
   uint8_t stackOffset;
+
+  Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
+           std::shared_ptr<SExpr> arg, std::shared_ptr<SExpr> body,
+           Compiler *enclosing);
 
   void compile(std::shared_ptr<SExpr> sExpr);
   void compileSym(std::shared_ptr<SymAtom> sym);
@@ -65,6 +60,11 @@ private:
   int resolveLocal(std::shared_ptr<SymAtom> sym);
   int resolveUpvalue(Compiler &caller, std::shared_ptr<SymAtom> sym);
   int addUpvalue(int idx, bool isLocal);
+
+public:
+  Compiler(std::vector<std::string> source);
+
+  std::shared_ptr<FnAtom> compile();
 };
 
 #endif

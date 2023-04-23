@@ -21,23 +21,6 @@
 #include <unordered_map>
 #include <vector>
 
-Compiler::Compiler(std::vector<std::string> source)
-    : source(source), enclosing(nullptr), arg(std::make_shared<NilAtom>()),
-      body(parse(source, sourceLoc)), function(std::make_shared<FnAtom>(0)),
-      stackOffset(0) {}
-
-std::shared_ptr<FnAtom> Compiler::compile() {
-  if (function->arity == -1) {
-    getCode().pushCode(OpCode::MAKE_VAR_ARGS);
-  }
-
-  compile(body);
-  getCode().pushCode(OpCode::RETURN);
-
-  function->numUpVals = upValues.size();
-  return function;
-}
-
 Compiler::Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
                    std::shared_ptr<SExpr> arg, std::shared_ptr<SExpr> body,
                    Compiler *enclosing)
@@ -309,4 +292,21 @@ int Compiler::addUpvalue(int idx, bool isLocal) {
   }
   upValues.push_back({idx, isLocal});
   return upValues.size() - 1;
+}
+
+Compiler::Compiler(std::vector<std::string> source)
+    : source(source), enclosing(nullptr), arg(std::make_shared<NilAtom>()),
+      body(parse(source, sourceLoc)), function(std::make_shared<FnAtom>(0)),
+      stackOffset(0) {}
+
+std::shared_ptr<FnAtom> Compiler::compile() {
+  if (function->arity == -1) {
+    getCode().pushCode(OpCode::MAKE_VAR_ARGS);
+  }
+
+  compile(body);
+  getCode().pushCode(OpCode::RETURN);
+
+  function->numUpVals = upValues.size();
+  return function;
 }

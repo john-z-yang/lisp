@@ -6,6 +6,13 @@
 #include <string>
 
 class StringAtom final : public Atom {
+private:
+  static std::string unescape(const std::string literal);
+
+protected:
+  std::string toString() const;
+  bool equals(const SExpr &other) const;
+
 public:
   const std::string literal;
   const std::string unescaped;
@@ -14,13 +21,6 @@ public:
 
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;
-
-protected:
-  std::string toString() const;
-  bool equals(const SExpr &other) const;
-
-private:
-  static std::string unescape(const std::string literal);
 };
 
 #endif

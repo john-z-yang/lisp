@@ -6,6 +6,10 @@
 #include <string>
 
 class IntAtom final : public Atom {
+protected:
+  std::string toString() const;
+  bool equals(const SExpr &other) const;
+
 public:
   const int val;
 
@@ -13,10 +17,6 @@ public:
 
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;
-
-protected:
-  std::string toString() const;
-  bool equals(const SExpr &other) const;
 };
 
 #endif
