@@ -1,11 +1,11 @@
 #ifndef LISP_SRC_COMPILE_COMPILER_HPP_
 #define LISP_SRC_COMPILE_COMPILER_HPP_
 
-#include "../code/Code.hpp"
-#include "../sexpr/FnAtom.hpp"
-#include "../sexpr/SExpr.hpp"
-#include "../sexpr/SExprs.hpp"
-#include "../sexpr/SymAtom.hpp"
+#include "../common/Code.hpp"
+#include "../common/sexpr/FnAtom.hpp"
+#include "../common/sexpr/SExpr.hpp"
+#include "../common/sexpr/SExprs.hpp"
+#include "../common/sexpr/SymAtom.hpp"
 #include "SourceLoc.hpp"
 #include <functional>
 #include <memory>

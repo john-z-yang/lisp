@@ -1,7 +1,7 @@
 #ifndef LISP_SRC_COMPILE_PARSE_HPP_
 #define LISP_SRC_COMPILE_PARSE_HPP_
 
-#include "../sexpr/SExpr.hpp"
+#include "../common/sexpr/SExpr.hpp"
 #include "SourceLoc.hpp"
 #include <memory>
 #include <string>

@@ -2,8 +2,7 @@
 #include "../compile/Compiler.hpp"
 #include "../compile/SyntaxError.hpp"
 #include "../compile/parse.hpp"
-#include "../vm/RuntimeException.hpp"
-#include "../vm/VM.hpp"
+#include "../runtime/VM.hpp"
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
@@ -79,12 +78,12 @@ int execFile(const std::string filePath, VM &vm) {
       }
     } catch (SyntaxError &se) {
       std::cerr << "In line " << lines.size() << " of \"" << filePath << "\""
-                << std::endl;
-      std::cerr << se;
-    } catch (RuntimeException &re) {
+                << std::endl
+                << se;
+    } catch (VM::RuntimeException &re) {
       std::cerr << "In line " << lines.size() << " of \"" << filePath << "\""
-                << std::endl;
-      std::cerr << re;
+                << std::endl
+                << re;
     }
   }
   return EXIT_SUCCESS;
@@ -133,9 +132,8 @@ int repl() {
       }
     } catch (SyntaxError &se) {
       std::cerr << "In <std::cin>" << std::endl << se << std::endl;
-    } catch (RuntimeException &ee) {
-      std::cerr << "In line " << lines.size() << " of <std::cin>" << std::endl;
-      std::cerr << ee;
+    } catch (VM::RuntimeException &re) {
+      std::cerr << "In <std::cin>" << std::endl << re << std::endl;
     }
   }
   return EXIT_FAILURE;
