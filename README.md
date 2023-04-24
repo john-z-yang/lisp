@@ -1,6 +1,6 @@
 # Lisp Interpreter &middot; [![build](https://github.com/john-z-yang/lisp/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/john-z-yang/lisp/actions/workflows/ci.yml)
 
-Interpreter for a subset of Scheme written in C++. Implemented through [bytecode](https://en.wikipedia.org/wiki/Bytecode) compiler and [stack-based virtual machine](https://en.wikipedia.org/wiki/Stack_machine).
+Interpreter for a subset of Scheme written in C++. Implemented through [bytecode](https://en.wikipedia.org/wiki/Bytecode) compiler and [stack-based virtual machine](https://en.wikipedia.org/wiki/Stack_machine) (see [Technical Details section](#Technical-Details)).
 
 <p align="center">
     <img src="https://raw.githubusercontent.com/john-z-yang/lisp/master/docs/assets/fib_seq_gen.gif" style="max-width:768px;  width:100%;">
@@ -164,6 +164,56 @@ _Happy hacking!_
 | (**dis** _closure_) | Prints the disassembled bytecode for _closure_, returns `'()` |
 | (**display** _arg_) | Prints arg to std::cout, returns `'()`.                       |
 
+## Technical Details
+
+### Overview
+
+```mermaid
+flowchart LR
+  subgraph Compiler
+    direction TB
+    B[Tokenization] -- Token --> C[Parsing]
+    C -- S-expression --> D[Bytecode generation]
+  end
+  A[REPL] -- std::string --> Compiler
+  Compiler -- FnAtom --> E[Virtual Machine]
+```
+
+### File structure
+
+```text
+.
+├── bin                # Compiled files
+├── docss              # Supporting documentation
+├── lib                # Pre-defined functions
+├── src/
+│   ├── common         # Source for shared data structures (Opcodes, S-expressions, etc.)
+│   ├── compile        # Source for compiler (grammer, parser, etc.)
+│   ├── repl           # Source for REPL
+│   └── runtime        # Source for rumtime (vm, runtime errors, etc.)
+└── tests
+```
+
+### Opcodes
+
+| Opcode                           | Description                                                                                                                                                                                           |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MAKE_CLOSURE (i) (IS_LOCAL j)*` | Push a ClosureAtom onto the stack, created from the FnAtom at `const[i]`. For each upvalue in the ClosureAtom, capture it from `stack[j]` if `IS_LOCAL` is `1`, capture from `upvalues[j]` otherwise. |
+| `CALL (argc)`                    | Call the function at **TOS** - `argc` with `argc` parameters.                                                                                                                                         |
+| `RETURN`                         | Return **TOS**.                                                                                                                                                                                       |
+| `POP_TOP`                        | Remove **TOS**.                                                                                                                                                                                       |
+| `LOAD_CONST (idx)`               | Push `const[idx]` onto the stack.                                                                                                                                                                     |
+| `LOAD_SYM (idx)`                 | Push `globals[const[idx]]` onto the stack.                                                                                                                                                            |
+| `DEF_SYM (idx)`                  | Define `globals[const[idx]]` as **TOS**.                                                                                                                                                              |
+| `SET_SYM (idx)`                  | Set `globals[const[idx]]` as **TOS**.                                                                                                                                                                 |
+| `LOAD_UPVALUE (idx)`             | Push `upvalues[idx]` onto the stack.                                                                                                                                                                  |
+| `SET_UPVALUE (idx)`              | Set `upvalues[idx]` as **TOS**.                                                                                                                                                                       |
+| `LOAD_STACK (idx)`               | Push `upvalues[idx]` onto the stack.                                                                                                                                                                  |
+| `SET_STACK (idx)`                | Set `upvalues[idx]` to **TOS**.                                                                                                                                                                       |
+| `JUMP (offset)`                  | Set `ip` of current frame to `offset`.                                                                                                                                                                |
+| `POP_JUMP_IF_FALSE (offset)`     | Set `ip` of current frame to `offset` if **TOS** is not _truthy_.                                                                                                                                     |
+| `MAKE_VAR_ARGS (argc)`           | Pop `argc` elements from **TOS**, push those elements as cons list onto the stack.                                                                                                                    |
+
 ## Running the tests
 
 ```bash
@@ -220,19 +270,6 @@ $(TESTDIR)/%: $(TESTDIR)/%.lisp $(TESTDIR)/%.expect $(OUTDIR)/lisp
 	(export LISP_LIB_ENV=$(LIBDIR); $(OUTDIR)/lisp $@.lisp >> $@.out 2>&1)
 	diff $@.expect $@.out
 	rm $@.out
-```
-
-## Technical Details
-
-```mermaid
-flowchart LR
-  subgraph Compiler
-    direction TB
-    B[Tokenization] -- Token --> C[Parsing]
-    C -- S-expression --> D[Bytecode generation]
-  end
-  A[REPL] -- std::string --> Compiler
-  Compiler -- FnAtom --> E[Virtual Machine]
 ```
 
 ## Author
