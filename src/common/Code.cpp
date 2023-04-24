@@ -47,22 +47,25 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
 
   const unsigned int PADDING_WIDTH = 4;
   o << "Constants:" << std::endl << std::setw(PADDING_WIDTH) << "";
-  for (auto i = code.consts.begin(); i != code.consts.end(); ++i) {
-    if (i != code.consts.begin()) {
+  for (unsigned int i = 0; const auto &co : code.consts) {
+    if (i != 0) {
       o << ", ";
     }
-    o << **i;
+    o << *co;
+    i += 1;
   }
-  o << std::endl
-    << "Bytecodes (raw):" << std::endl
-    << std::setw(PADDING_WIDTH) << "";
-  for (auto i = code.byteCodes.begin(); i != code.byteCodes.end(); ++i) {
-    if (i != code.byteCodes.begin()) {
-      o << " ";
+
+  o << std::endl << "Bytecodes (raw):";
+  const unsigned int BYTECODES_PER_LINE = 16;
+  for (unsigned int i = 0; const auto &byte : code.byteCodes) {
+    if (i % BYTECODES_PER_LINE == 0) {
+      o << std::endl << std::setw(PADDING_WIDTH) << "";
     }
     o << std::setw(2) << std::setfill('0') << std::right << std::hex
-      << unsigned(*i) << std::setfill(' ') << std::dec;
+      << unsigned(byte) << std::setfill(' ') << std::dec << " ";
+    i += 1;
   }
+
   o << std::endl << "Bytecodes:" << std::endl;
 
   const unsigned int LINE_NUM_WIDTH = 4;

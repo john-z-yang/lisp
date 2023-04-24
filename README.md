@@ -227,12 +227,14 @@ lisp> (define fac
 <Closure at 0x600000980888>
 
 lisp> (dis fac)
-<Closure at 0x600000980888>, instance of:
-    <Function at 0x600000e800c0, arity: 1, upvalues: 0>
+<Closure at 0x60000186c748>, instance of:
+    <Function at 0x600001f6c000, arity: 1, upvalues: 0>
 Constants:
     =, 0, 1, *, fac, -, 1
 Bytecodes (raw):
-    05 00 0a 01 04 01 01 02 0d 00 05 04 02 0c 00 12 05 03 0a 01 05 04 05 05 0a 01 04 06 01 02 01 01 01 02 02
+    05 00 0a 01 04 01 01 02 0d 00 05 04 02 0c 00 12
+    05 03 0a 01 05 04 05 05 0a 01 04 06 01 02 01 01
+    01 02 02
 Bytecodes:
     3                  0 LOAD_SYM                =
     3                  2 LOAD_STACK              1

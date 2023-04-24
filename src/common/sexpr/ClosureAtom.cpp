@@ -1,13 +1,16 @@
 #include "ClosureAtom.hpp"
 #include "FnAtom.hpp"
 #include "SExpr.hpp"
+#include <iomanip>
 #include <sstream>
 
 ClosureAtom::ClosureAtom(const std::shared_ptr<FnAtom> fnAtom)
     : Atom(SExpr::Type::CLOSURE), fnAtom(fnAtom) {}
 
 std::ostream &ClosureAtom::dissassemble(std::ostream &o) {
-  o << "<Closure at " << this << ">, instance of:" << std::endl;
+  const unsigned int PADDING_WIDTH = 4;
+  o << "<Closure at " << this << ">, instance of:" << std::endl
+    << std::setw(PADDING_WIDTH) << "";
   fnAtom->dissassemble(o);
   return o << std::endl;
 }
