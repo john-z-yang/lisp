@@ -214,6 +214,43 @@ flowchart LR
 | `POP_JUMP_IF_FALSE (offset)`     | Set `ip` of current frame to `offset` if **TOS** is not _truthy_.                                                                                                                                     |
 | `MAKE_VAR_ARGS (argc)`           | Pop `argc` elements from **TOS**, push those elements as cons list onto the stack.                                                                                                                    |
 
+#### Example
+
+```lisp
+lisp> (define fac
+  ...   (lambda (n)
+  ...     (if (= n 0)
+  ...       1
+  ...     (* n (fac (- n 1))))))
+<Closure at 0x600000980888>
+
+lisp> (dis fac)
+<Closure at 0x600000980888>, instance of:
+    <Function at 0x600000e800c0, arity: 1, upvalues: 0>
+Constants:
+    =, 0, 1, *, fac, -, 1
+Bytecodes (raw):
+    05 00 0a 01 04 01 01 02 0d 00 05 04 02 0c 00 12 05 03 0a 01 05 04 05 05 0a 01 04 06 01 02 01 01 01 02 02
+Bytecodes:
+    3                  0 LOAD_SYM                =
+    3                  2 LOAD_STACK              1
+    3                  4 LOAD_CONST              0
+    3                  6 CALL                    2
+    3                  8 POP_JUMP_IF_FALSE       5
+    4                 11 LOAD_CONST              1
+    4                 13 JUMP                    18
+    5                 16 LOAD_SYM                *
+    5                 18 LOAD_STACK              1
+    5                 20 LOAD_SYM                fac
+    5                 22 LOAD_SYM                -
+    5                 24 LOAD_STACK              1
+    5                 26 LOAD_CONST              1
+    5                 28 CALL                    2
+    5                 30 CALL                    1
+    5                 32 CALL                    2
+    ?                 34 RETURN
+```
+
 ## Running the tests
 
 ```bash
