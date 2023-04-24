@@ -1,6 +1,6 @@
 # Lisp Interpreter &middot; [![build](https://github.com/john-z-yang/lisp/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/john-z-yang/lisp/actions/workflows/ci.yml)
 
-Interpreter for a subset of Scheme written in C++. Implemented through [bytecode](https://en.wikipedia.org/wiki/Bytecode) compiler and [stack-based virtual machine](https://en.wikipedia.org/wiki/Stack_machine) (see [Technical Details section](#Technical-Details)).
+Interpreter for a subset of Scheme written in C++. Implemented through a compiler and a virtual machine. (See [Technical Details section](#Technical-Details) for more details.)
 
 <p align="center">
     <img src="https://raw.githubusercontent.com/john-z-yang/lisp/master/docs/assets/fib_seq_gen.gif" style="max-width:768px;  width:100%;">
@@ -167,6 +167,8 @@ _Happy hacking!_
 ## Technical Details
 
 ### Overview
+
+The interpreter is implemented through a [bytecode](https://en.wikipedia.org/wiki/Bytecode) compiler and [stack-based virtual machine](https://en.wikipedia.org/wiki/Stack_machine).
 
 ```mermaid
 flowchart LR
