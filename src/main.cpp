@@ -1,17 +1,14 @@
-#include "env/Env.hpp"
 #include "repl/repl.hpp"
+#include <iostream>
 #include <memory>
 #include <string>
 
 int main(int argc, char const *argv[]) {
-  auto env = std::make_shared<Env>();
-  initEnv(env);
   auto exitCode = EXIT_FAILURE;
   if (argc == 1) {
-    exitCode = repl(env);
+    exitCode = repl();
   } else if (argc == 2) {
-    exitCode = repl(argv[1], env);
+    exitCode = repl(argv[1]);
   }
-  env->clear();
   return exitCode;
 }

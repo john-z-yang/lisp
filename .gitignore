@@ -39,3 +39,6 @@ bin/*
 !bin/.keep
 .vscode/*
 tests/*.out
+
+# Everything in .cache
+.cache/*

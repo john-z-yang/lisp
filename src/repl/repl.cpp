@@ -1,10 +1,11 @@
 #include "repl.hpp"
-#include "../env/functions.hpp"
-#include "../eval/EvalException.hpp"
-#include "../eval/eval.hpp"
-#include "../parse/ParseException.hpp"
-#include "../parse/parse.hpp"
+#include "../compile/Compiler.hpp"
+#include "../compile/SyntaxError.hpp"
+#include "../compile/parse.hpp"
+#include "../runtime/VM.hpp"
+#include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -13,23 +14,22 @@
 #include <regex>
 #include <string>
 
-bool getInput(std::string &str, size_t &linesRead, std::string prompt,
-              std::string wrap) {
+bool getConsoleInput(std::vector<std::string> &lines, std::string prompt,
+                     std::string wrap) {
   uint32_t openParen = 0;
   uint32_t closedParen = 0;
   std::string line;
-  while (auto buf = readline(linesRead == 0 ? prompt.c_str() : wrap.c_str())) {
+  while (auto buf = readline(lines.empty() ? prompt.c_str() : wrap.c_str())) {
     line = std::string(buf);
     free(buf);
     line = std::regex_replace(
         line, std::regex("(\\\\\"|\"(?:\\\\\"|[^\"])*\")|(;.*$)"), "$1");
-    if (str.empty() && line.empty()) {
+    if (lines.empty() && line.empty()) {
       continue;
     }
-    linesRead += 1;
     add_history(line.c_str());
-    verifyLex(line, openParen, closedParen);
-    str += line + " ";
+    verifyLex(line, lines.size() + 1, openParen, closedParen);
+    lines.push_back(line + " ");
     if (openParen == closedParen) {
       return true;
     }
@@ -37,19 +37,18 @@ bool getInput(std::string &str, size_t &linesRead, std::string prompt,
   return false;
 }
 
-std::istream &getInput(std::istream &in, std::string &str, size_t &linesRead) {
+std::istream &getFileInput(std::istream &in, std::vector<std::string> &lines) {
   uint32_t openParen = 0;
   uint32_t closedParen = 0;
   std::string line;
   while (getline(in, line)) {
-    linesRead += 1;
     line = std::regex_replace(
         line, std::regex("(\\\\\"|\"(?:\\\\\"|[^\"])*\")|(;.*$)"), "$1");
-    if (str.empty() && line.empty()) {
+    if (line.empty()) {
       continue;
     }
-    verifyLex(line, openParen, closedParen);
-    str += line + " ";
+    verifyLex(line, lines.size() + 1, openParen, closedParen);
+    lines.push_back(line + " ");
     if (openParen == closedParen) {
       return in;
     }
@@ -57,40 +56,7 @@ std::istream &getInput(std::istream &in, std::string &str, size_t &linesRead) {
   return in;
 }
 
-void printInfo() {
-  std::cout << "Lisp (C++ std: " << __cplusplus << ", " << __DATE__ << ", "
-            << __TIME__ << ")" << std::endl;
-  std::cout << "Type \"(quit)\" or trigger EOF to exit the session."
-            << std::endl;
-}
-
-int repl(std::shared_ptr<Env> env) {
-  printInfo();
-  while (true) {
-    std::string input;
-    size_t linesRead = 0;
-    try {
-      if (getInput(input, linesRead, "lisp> ", "  ... ")) {
-        eval(parse(input), env, [](std::shared_ptr<SExpr> res) {
-          std::cout << *res << std::endl;
-          return nullptr;
-        });
-      } else {
-        std::cout << std::endl;
-        lispQuit(env);
-      }
-    } catch (ParseException &pe) {
-      std::cerr << "In line " << linesRead << " of <std::cin>" << std::endl;
-      std::cerr << pe;
-    } catch (EvalException &ee) {
-      std::cerr << "In line " << linesRead << " of <std::cin>" << std::endl;
-      std::cerr << ee;
-    }
-  }
-  return EXIT_FAILURE;
-}
-
-int repl(const std::string filePath, std::shared_ptr<Env> env) {
+int execFile(const std::string filePath, VM &vm) {
   std::fstream fs;
   fs.open(filePath, std::fstream::in);
 
@@ -100,25 +66,81 @@ int repl(const std::string filePath, std::shared_ptr<Env> env) {
     return EXIT_FAILURE;
   }
 
-  size_t linesRead = 0;
   while (true) {
-    std::string input;
+    std::vector<std::string> lines;
     try {
-      if (getInput(fs, input, linesRead)) {
-        eval(parse(input), env,
-             [](std::shared_ptr<SExpr> res) { return nullptr; });
+      if (getFileInput(fs, lines)) {
+        Compiler compiler(lines);
+        auto main = compiler.compile();
+        vm.exec(main);
       } else {
         break;
       }
-    } catch (ParseException &pe) {
-      std::cerr << "In line " << linesRead << " of \"" << filePath << "\""
-                << std::endl;
-      std::cerr << pe;
-    } catch (EvalException &ee) {
-      std::cerr << "In line " << linesRead << " of \"" << filePath << "\""
-                << std::endl;
-      std::cerr << ee;
+    } catch (SyntaxError &se) {
+      std::cerr << "In line " << lines.size() << " of \"" << filePath << "\""
+                << std::endl
+                << se;
+    } catch (VM::RuntimeException &re) {
+      std::cerr << "In line " << lines.size() << " of \"" << filePath << "\""
+                << std::endl
+                << re;
     }
   }
   return EXIT_SUCCESS;
+}
+
+void loadLib(VM &vm) {
+  const std::string LIB_DIR_ENV_VAR = "LISP_LIB_ENV";
+  if (const char *env_p = std::getenv(LIB_DIR_ENV_VAR.c_str())) {
+    for (const auto &entry : std::filesystem::directory_iterator(env_p)) {
+      execFile(std::string(entry.path()), vm);
+    }
+  } else {
+    std::cerr << std::endl
+              << "WARNING: " << LIB_DIR_ENV_VAR << " is not set. Set the "
+              << LIB_DIR_ENV_VAR
+              << " environment variable to the predefined functions libaray "
+              << "(usually lisp/lib)." << std::endl
+              << std::endl;
+  }
+}
+
+void printInfo() {
+  std::cout << "Lisp (C++ std: " << __cplusplus << ", " << __DATE__ << ", "
+            << __TIME__ << ")" << std::endl;
+  std::cout << "Type \"(quit)\" or trigger EOF to exit the session."
+            << std::endl;
+}
+
+int repl() {
+  printInfo();
+
+  VM vm;
+  loadLib(vm);
+
+  while (true) {
+    std::vector<std::string> lines;
+    try {
+      if (getConsoleInput(lines, "lisp> ", "  ... ")) {
+        Compiler compiler(lines);
+        auto main = compiler.compile();
+        const auto res = vm.exec(main);
+        std::cout << *res << std::endl;
+      } else {
+        std::cout << std::endl << "Farewell." << std::endl;
+        return EXIT_SUCCESS;
+      }
+    } catch (SyntaxError &se) {
+      std::cerr << "In <std::cin>" << std::endl << se << std::endl;
+    } catch (VM::RuntimeException &re) {
+      std::cerr << "In <std::cin>" << std::endl << re << std::endl;
+    }
+  }
+  return EXIT_FAILURE;
+}
+
+int repl(const std::string filePath) {
+  VM vm;
+  loadLib(vm);
+  return execFile(filePath, vm);
 }
