@@ -37,3 +37,7 @@
                (cons (fn e) v))
              (quote ())
              list))))
+
+(define append
+  (lambda (a b)
+    (foldl cons b (reverse a))))
