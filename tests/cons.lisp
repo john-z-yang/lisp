@@ -6,11 +6,3 @@
 (define range (lambda (a b) (if (= a b) (quote ()) (cons a (range (+ a 1) b)))))
 (define fib (lambda (n) (if (= n 1) 1 (if (= n 2) 1 (+ (fib (- n 1)) (fib (- n 2)))))))
 (display (map fib (range 1 13)))
-(define print-list
-  (lambda (list)
-    (if (null? list) (quote ())
-      (sequence
-        (display (car list))
-        (print-list (cdr list))))))
-(print-list (list 1 2 3 4 5))
-(print-list (list))
