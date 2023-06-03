@@ -37,6 +37,3 @@
                (cons (fn e) v))
              (quote ())
              list))))
-
-(define sequence
-  (lambda lis (last lis)))
