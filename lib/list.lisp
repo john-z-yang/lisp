@@ -41,3 +41,9 @@
 (define append
   (lambda (a b)
     (foldl cons b (reverse a))))
+
+(define length
+  (lambda (lis)
+    (foldl (lambda (_ cur) (+ 1 cur))
+           0
+           lis)))
