@@ -214,7 +214,7 @@ flowchart LR
 | `SET_STACK (idx)`                | Set `upvalues[idx]` to **TOS**.                                                                                                                                                                       |
 | `JUMP (offset)`                  | Set `ip` of current frame to `offset`.                                                                                                                                                                |
 | `POP_JUMP_IF_FALSE (offset)`     | Set `ip` of current frame to `offset` if **TOS** is not _truthy_.                                                                                                                                     |
-| `MAKE_VAR_ARGS (argc)`           | Pop `argc` elements from **TOS**, push those elements as cons list onto the stack.                                                                                                                    |
+| `MAKE_LIST (argc)`               | Pop `argc` elements from **TOS**, push those elements as cons list onto the stack.                                                                                                                    |
 
 #### Example
 

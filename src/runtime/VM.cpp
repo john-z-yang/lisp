@@ -38,7 +38,7 @@ std::shared_ptr<SExpr> VM::interp(std::shared_ptr<FnAtom> main) {
                                   &&LOAD_UPVALUE, &&SET_UPVALUE,
                                   &&LOAD_STACK,   &&SET_STACK,
                                   &&JUMP,         &&POP_JUMP_IF_FALSE,
-                                  &&MAKE_VAR_ARGS};
+                                  &&MAKE_LIST};
 
   stack.push_back(std::make_shared<ClosureAtom>(main));
   call(0);
@@ -126,7 +126,7 @@ POP_JUMP_IF_FALSE : {
   stack.pop_back();
   DISPATCH();
 }
-MAKE_VAR_ARGS : {
+MAKE_LIST : {
   const auto n = stack.size() - BASE_PTR() - 1;
   if (n == 0) {
     stack.push_back(std::make_shared<NilAtom>());

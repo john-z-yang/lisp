@@ -301,7 +301,7 @@ Compiler::Compiler(std::vector<std::string> source)
 
 std::shared_ptr<FnAtom> Compiler::compile() {
   if (function->arity == -1) {
-    getCode().pushCode(OpCode::MAKE_VAR_ARGS);
+    getCode().pushCode(OpCode::MAKE_LIST);
   }
 
   compile(body);

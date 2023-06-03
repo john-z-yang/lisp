@@ -148,8 +148,8 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
       DIS_SHORT_OPRAND_OP(POP_JUMP_IF_FALSE);
       break;
     }
-    case OpCode::MAKE_VAR_ARGS: {
-      DIS_NO_OPRAND_OP(MAKE_VAR_ARGS);
+    case OpCode::MAKE_LIST: {
+      DIS_NO_OPRAND_OP(MAKE_LIST);
       break;
     }
     default:
