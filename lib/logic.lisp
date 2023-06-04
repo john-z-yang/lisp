@@ -16,3 +16,12 @@
             (car args)
             (car args)
             (cons 'or (cdr args))))))
+
+(defmacro cond sexprs
+  (if (null? sexprs) '()
+    (list 'if
+          (car (car sexprs))
+          (if (null? (cdr (car sexprs)))
+            (error "Missing expression after test")
+            (cdr (car sexprs)))
+          (cons 'cond (cdr sexprs)))))
