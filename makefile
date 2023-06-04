@@ -32,7 +32,7 @@ DEPS = $(addprefix $(SRCDIR)/,$(_DEPS))
 OBJS = $(patsubst %.hpp,$(OUTDIR)/%.o,$(subst /,_,$(_DEPS)))
 
 TESTS = $(TESTDIR)/combine $(TESTDIR)/cons $(TESTDIR)/hof $(TESTDIR)/list \
-    $(TESTDIR)/parse $(TESTDIR)/recur $(TESTDIR)/set $(TESTDIR)/string \
+    $(TESTDIR)/logic $(TESTDIR)/parse $(TESTDIR)/recur $(TESTDIR)/set $(TESTDIR)/string \
 	$(TESTDIR)/tailcall $(TESTDIR)/varargs
 
 all: $(OUTDIR)/lisp check-env
