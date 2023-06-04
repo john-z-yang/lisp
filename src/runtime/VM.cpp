@@ -252,3 +252,7 @@ std::ostream &operator<<(std::ostream &o, const VM::RuntimeException &re) {
   }
   return o << std::endl << re.what();
 }
+
+void VM::defMacro(SymAtom &sym) { globals.defMacro(sym); }
+
+bool VM::isMacro(SymAtom &sym) { return globals.isMacro(sym); }

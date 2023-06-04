@@ -70,7 +70,7 @@ int execFile(const std::string filePath, VM &vm) {
     std::vector<std::string> lines;
     try {
       if (getFileInput(fs, lines)) {
-        Compiler compiler(lines);
+        Compiler compiler(lines, vm);
         auto main = compiler.compile();
         vm.exec(main);
       } else {
@@ -122,7 +122,7 @@ int repl() {
     std::vector<std::string> lines;
     try {
       if (getConsoleInput(lines, "lisp> ", "  ... ")) {
-        Compiler compiler(lines);
+        Compiler compiler(lines, vm);
         auto main = compiler.compile();
         const auto res = vm.exec(main);
         std::cout << *res << std::endl;

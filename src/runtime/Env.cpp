@@ -72,3 +72,7 @@ std::shared_ptr<SExpr> Env::find(SymAtom &sym) {
 }
 
 const Env::SymVals &Env::getSymTable() const { return symTable; }
+
+void Env::defMacro(SymAtom &sym) { macros.insert(sym); }
+
+bool Env::isMacro(SymAtom &sym) { return macros.find(sym) != macros.end(); }

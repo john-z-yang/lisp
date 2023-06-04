@@ -6,6 +6,7 @@
 #include "../common/sexpr/SExpr.hpp"
 #include "../common/sexpr/SExprs.hpp"
 #include "../common/sexpr/SymAtom.hpp"
+#include "../runtime/VM.hpp"
 #include "SourceLoc.hpp"
 #include <functional>
 #include <memory>
@@ -37,18 +38,23 @@ private:
   std::vector<UpValue> upValues;
   uint8_t stackOffset;
 
+  VM &vm;
+
   Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
            std::shared_ptr<SExpr> arg, std::shared_ptr<SExpr> body,
-           Compiler *enclosing);
+           Compiler *enclosing, VM &vm);
 
   void compile(std::shared_ptr<SExpr> sExpr);
   void compileSym(std::shared_ptr<SymAtom> sym);
   void compileQuote(std::shared_ptr<SExpr> sExpr);
   void compileDef(std::shared_ptr<SExpr> sExpr);
+  void compileDefMacro(std::shared_ptr<SExpr> sExpr);
   void compileSet(std::shared_ptr<SExpr> sExpr);
   void compileIf(std::shared_ptr<SExpr> sExpr);
   void compileLambda(std::shared_ptr<SExpr> sExpr);
   void compileCall(std::shared_ptr<SExprs> sExprs);
+
+  std::shared_ptr<SExpr> expandMacro(std::shared_ptr<SExpr>);
 
   void handleSyntaxError(const std::string grammar, const std::string expected,
                          const std::shared_ptr<SExpr> actual);
@@ -62,7 +68,7 @@ private:
   int addUpvalue(int idx, bool isLocal);
 
 public:
-  Compiler(std::vector<std::string> source);
+  Compiler(std::vector<std::string> source, VM &vm);
 
   std::shared_ptr<FnAtom> compile();
 };

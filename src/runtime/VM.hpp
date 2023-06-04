@@ -49,6 +49,9 @@ public:
 
   VM();
   std::shared_ptr<SExpr> exec(std::shared_ptr<FnAtom> main);
+
+  void defMacro(SymAtom &sym);
+  bool isMacro(SymAtom &sym);
 };
 
 std::ostream &operator<<(std::ostream &o, const VM::RuntimeException &re);
