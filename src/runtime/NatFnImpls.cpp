@@ -19,7 +19,7 @@
     const auto prev = cast<IntAtom>(*params)->val;                             \
     ++params;                                                                  \
     for (uint8_t i{1}; i < argc; ++i) {                                        \
-      if (!(cast<IntAtom>(*params)->val op prev)) {                            \
+      if (!(prev op cast<IntAtom>(*params)->val)) {                            \
         return std::make_shared<BoolAtom>(false);                              \
       }                                                                        \
       ++params;                                                                \
