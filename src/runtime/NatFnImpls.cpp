@@ -65,7 +65,7 @@
 PRED_OP(lispIsSym, isa<SymAtom>(**params));
 
 PRED_OP(lispIsNum, isa<IntAtom>(**params));
-MATH_CMP_OP(lispEq, ==);
+MATH_CMP_OP(lispNumEq, ==);
 MATH_CMP_OP(lispGt, >);
 MATH_CMP_OP(lispGteq, >=);
 MATH_CMP_OP(lispLt, <);
@@ -178,6 +178,17 @@ lispQuit(std::vector<std::shared_ptr<SExpr>>::iterator params,
          const uint8_t argc) {
   std::cout << "Farewell." << std::endl;
   exit(0);
+}
+
+std::shared_ptr<SExpr>
+lispEq(std::vector<std::shared_ptr<SExpr>>::iterator params,
+       const uint8_t argc) {
+  return std::make_shared<BoolAtom>((*params) == (*(params + 1)));
+}
+std::shared_ptr<SExpr>
+lispEqv(std::vector<std::shared_ptr<SExpr>>::iterator params,
+        const uint8_t argc) {
+  return std::make_shared<BoolAtom>(**params == **(params + 1));
 }
 
 #undef MATH_CMP_OP

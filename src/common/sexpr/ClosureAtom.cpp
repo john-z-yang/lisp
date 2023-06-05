@@ -1,4 +1,5 @@
 #include "ClosureAtom.hpp"
+#include "../cast.cpp"
 #include "FnAtom.hpp"
 #include "SExpr.hpp"
 #include <iomanip>
@@ -27,4 +28,17 @@ std::string ClosureAtom::toString() const {
   return ss.str();
 }
 
-bool ClosureAtom::equals(const SExpr &other) const { return this == &other; }
+bool ClosureAtom::equals(const SExpr &other) const {
+  if (isa<ClosureAtom>(other)) {
+    const auto closure = dynamic_cast<const ClosureAtom &>(other);
+    if (fnAtom != closure.fnAtom) {
+      return false;
+    }
+    return std::equal(
+        upValues.begin(), upValues.end(), closure.upValues.begin(),
+        closure.upValues.end(),
+        [](const std::shared_ptr<SExpr> self,
+           const std::shared_ptr<SExpr> other) { return *self == *other; });
+  }
+  return false;
+}
