@@ -3,6 +3,7 @@
 #include "../common/sexpr/BoolAtom.hpp"
 #include "../common/sexpr/ClosureAtom.hpp"
 #include "../common/sexpr/IntAtom.hpp"
+#include "../common/sexpr/NatFnAtom.hpp"
 #include "../common/sexpr/NilAtom.hpp"
 #include "../common/sexpr/SExprs.hpp"
 #include "../common/sexpr/StringAtom.hpp"
@@ -207,6 +208,13 @@ std::shared_ptr<SExpr>
 lispEqv(std::vector<std::shared_ptr<SExpr>>::iterator params,
         const uint8_t argc) {
   return std::make_shared<BoolAtom>(**params == **(params + 1));
+}
+
+std::shared_ptr<SExpr>
+lispIsProc(std::vector<std::shared_ptr<SExpr>>::iterator params,
+           const uint8_t argc) {
+  return std::make_shared<BoolAtom>(isa<ClosureAtom>(**params) ||
+                                    isa<NatFnAtom>(**params));
 }
 
 #undef MATH_CMP_OP
