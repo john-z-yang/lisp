@@ -15,7 +15,7 @@ Env::Env() {
   BIND_NATIVE_FN("sym?", lispIsSym, 1);
 
   BIND_NATIVE_FN("num?", lispIsNum, 1);
-  BIND_NATIVE_FN("=", lispEq, -1);
+  BIND_NATIVE_FN("=", lispNumEq, -1);
   BIND_NATIVE_FN(">", lispGt, -1);
   BIND_NATIVE_FN(">=", lispGteq, -1);
   BIND_NATIVE_FN("<", lispLt, -1);
@@ -42,6 +42,9 @@ Env::Env() {
   BIND_NATIVE_FN("dis", lispDis, 1);
   BIND_NATIVE_FN("display", lispDisplay, 1);
   BIND_NATIVE_FN("quit", lispQuit, 0);
+
+  BIND_NATIVE_FN("eq?", lispEq, 2);
+  BIND_NATIVE_FN("eqv?", lispEqv, 2);
 
 #undef BIND_NATIVE_FN
 }

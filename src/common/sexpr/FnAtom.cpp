@@ -11,7 +11,7 @@ std::string FnAtom::toString() const {
   return ss.str();
 }
 
-bool FnAtom::equals(const SExpr &other) const { return false; }
+bool FnAtom::equals(const SExpr &other) const { return this == &other; }
 
 std::ostream &FnAtom::dissassemble(std::ostream &o) {
   o << "<Function at " << this << ", arity: " << unsigned(arity)

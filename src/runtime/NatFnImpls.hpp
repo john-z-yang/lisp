@@ -11,7 +11,7 @@ typedef std::shared_ptr<SExpr>(NativeFn)(
 NativeFn lispIsSym;
 
 NativeFn lispIsNum;
-NativeFn lispEq;
+NativeFn lispNumEq;
 NativeFn lispGt;
 NativeFn lispGteq;
 NativeFn lispLt;
@@ -39,5 +39,8 @@ NativeFn lispDis;
 NativeFn lispIsClosure;
 NativeFn lispDisplay;
 NativeFn lispQuit;
+
+NativeFn lispEq;
+NativeFn lispEqv;
 
 #endif
