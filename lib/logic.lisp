@@ -12,10 +12,15 @@
 (defmacro or args
   (if (null? args) #f
     (if (null? (cdr args)) (car args)
-      (list 'if
-            (car args)
-            (car args)
-            (cons 'or (cdr args))))))
+      ((lambda (tmp)
+        (list (list 'lambda
+                    (list tmp)
+                    (list 'if
+                          tmp
+                          tmp
+                          (cons 'or (cdr args))))
+              (car args)))
+      (gensym)))))
 
 (defmacro cond sexprs
   (if (null? sexprs) '()
