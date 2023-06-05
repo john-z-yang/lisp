@@ -8,6 +8,15 @@
 ClosureAtom::ClosureAtom(const std::shared_ptr<FnAtom> fnAtom)
     : Atom(SExpr::Type::CLOSURE), fnAtom(fnAtom) {}
 
+void ClosureAtom::assertArity(const uint8_t argc) const {
+  if (fnAtom->arity != -1 && argc != (uint8_t)fnAtom->arity) {
+    std::stringstream ss;
+    ss << "Invalid number of arguments. Expected " << unsigned(fnAtom->arity)
+       << " arguments, but got " << unsigned(argc) << ".";
+    throw std::invalid_argument(ss.str());
+  }
+}
+
 std::ostream &ClosureAtom::dissassemble(std::ostream &o) {
   const unsigned int PADDING_WIDTH = 4;
   o << "<Closure at " << this << ">, instance of:" << std::endl

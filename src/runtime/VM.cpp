@@ -157,17 +157,17 @@ MAKE_LIST : {
 void VM::call(const uint8_t argc) {
   const auto callee = peak(argc);
   if (isa<ClosureAtom>(*callee)) {
-    frames.push_back({cast<ClosureAtom>(callee), 0, stack.size() - argc - 1});
+    const auto closure = cast<ClosureAtom>(callee);
+    closure->assertArity(argc);
+    frames.push_back({closure, 0, stack.size() - argc - 1});
     return;
   }
-  if (isa<NatFnAtom>(*callee)) {
-    const auto res = cast<NatFnAtom>(callee)->invoke(stack.end() - argc, argc);
-    for (uint8_t i{0}; i < argc + 1; ++i) {
-      stack.pop_back();
-    }
-    stack.push_back(res);
-    return;
+  const auto res = cast<NatFnAtom>(callee)->invoke(stack.end() - argc, argc);
+  for (uint8_t i{0}; i < argc + 1; ++i) {
+    stack.pop_back();
   }
+  stack.push_back(res);
+  return;
 }
 
 std::shared_ptr<SExpr>

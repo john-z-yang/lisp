@@ -15,6 +15,8 @@ protected:
 public:
   ClosureAtom(const std::shared_ptr<FnAtom> fnAtom);
 
+  void assertArity(const uint8_t arity) const;
+
   const std::shared_ptr<FnAtom> fnAtom;
   std::vector<std::shared_ptr<SExpr>> upValues;
 
