@@ -173,11 +173,19 @@ lispDisplay(std::vector<std::shared_ptr<SExpr>>::iterator params,
   }
   return std::make_shared<NilAtom>();
 }
+
 std::shared_ptr<SExpr>
 lispQuit(std::vector<std::shared_ptr<SExpr>>::iterator params,
          const uint8_t argc) {
   std::cout << "Farewell." << std::endl;
   exit(0);
+}
+std::shared_ptr<SExpr>
+lispError(std::vector<std::shared_ptr<SExpr>>::iterator params,
+          const uint8_t argc) {
+  std::stringstream ss;
+  ss << **params;
+  throw std::runtime_error(ss.str());
 }
 
 std::shared_ptr<SExpr>

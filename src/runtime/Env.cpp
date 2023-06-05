@@ -41,7 +41,9 @@ Env::Env() {
 
   BIND_NATIVE_FN("dis", lispDis, 1);
   BIND_NATIVE_FN("display", lispDisplay, 1);
+
   BIND_NATIVE_FN("quit", lispQuit, 0);
+  BIND_NATIVE_FN("error", lispError, 1);
 
   BIND_NATIVE_FN("eq?", lispEq, 2);
   BIND_NATIVE_FN("eqv?", lispEqv, 2);
