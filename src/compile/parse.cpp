@@ -17,6 +17,12 @@
 #include <string>
 #include <vector>
 
+void handleUnexpectedToken(const Token &token, const std::string &line) {
+  std::stringstream ss;
+  ss << "Unexpected \"" << token << "\".";
+  throw SyntaxError(ss.str(), line, token.row, token.col);
+}
+
 std::vector<Token> tokenize(std::string line, const unsigned int row) {
   std::vector<Token> tokens;
   std::regex rgx(
@@ -124,13 +130,11 @@ std::shared_ptr<SExpr> parse(std::vector<std::string> lines,
                              SourceLoc &sourceLoc) {
   auto tokens = tokenize(lines);
   std::vector<Token>::const_iterator it = tokens.begin();
-  return parse(it, sourceLoc);
-}
-
-void handleUnexpectedToken(const Token &token, const std::string &line) {
-  std::stringstream ss;
-  ss << "Unexpected \"" << token << "\".";
-  throw SyntaxError(ss.str(), line, token.row, token.col);
+  const auto res = parse(it, sourceLoc);
+  if (it != tokens.end()) {
+    handleUnexpectedToken(*it, lines[it->row - 1]);
+  }
+  return res;
 }
 
 void verifyLex(std::string &line, const unsigned int lineNum,
@@ -146,8 +150,5 @@ void verifyLex(std::string &line, const unsigned int lineNum,
     } else if (it->str == ")") {
       closedParen += 1;
     }
-  }
-  if (openParen == 0 && tokens.size() > 1) {
-    handleUnexpectedToken(*(tokens.begin() + 1), line);
   }
 }
