@@ -77,7 +77,7 @@ MATH_DIM_OP(lispDiv, /=, 1 /);
 std::shared_ptr<SExpr>
 lispAbs(std::vector<std::shared_ptr<SExpr>>::iterator params,
         const uint8_t argc) {
-  return std::make_shared<IntAtom>(-cast<IntAtom>(*params)->val);
+  return std::make_shared<IntAtom>(abs(cast<IntAtom>(*params)->val));
 }
 std::shared_ptr<SExpr>
 lispMod(std::vector<std::shared_ptr<SExpr>>::iterator params,
