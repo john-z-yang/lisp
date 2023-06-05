@@ -45,4 +45,6 @@ NativeFn lispError;
 NativeFn lispEq;
 NativeFn lispEqv;
 
+NativeFn lispIsProc;
+
 #endif

@@ -48,6 +48,8 @@ Env::Env() {
   BIND_NATIVE_FN("eq?", lispEq, 2);
   BIND_NATIVE_FN("eqv?", lispEqv, 2);
 
+  BIND_NATIVE_FN("proc?", lispIsProc, 1);
+
 #undef BIND_NATIVE_FN
 }
 
