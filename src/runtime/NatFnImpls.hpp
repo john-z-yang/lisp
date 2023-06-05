@@ -9,6 +9,7 @@ typedef std::shared_ptr<SExpr>(NativeFn)(
     std::vector<std::shared_ptr<SExpr>>::iterator params, const uint8_t argc);
 
 NativeFn lispIsSym;
+NativeFn lispGenSym;
 
 NativeFn lispIsNum;
 NativeFn lispNumEq;

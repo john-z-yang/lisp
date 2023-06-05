@@ -13,6 +13,7 @@ Env::Env() {
   } while (false)
 
   BIND_NATIVE_FN("sym?", lispIsSym, 1);
+  BIND_NATIVE_FN("gensym", lispGenSym, 0);
 
   BIND_NATIVE_FN("num?", lispIsNum, 1);
   BIND_NATIVE_FN("=", lispNumEq, -1);
