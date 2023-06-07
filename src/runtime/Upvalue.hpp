@@ -3,6 +3,7 @@
 
 #include "../common/sexpr/SExpr.hpp"
 #include <memory>
+#include <vector>
 
 class Upvalue {
   friend bool operator==(const Upvalue &lhs, const Upvalue &rhs);
