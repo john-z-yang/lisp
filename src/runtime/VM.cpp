@@ -77,9 +77,11 @@ POP_TOP : {
   DISPATCH();
 }
 CLOSE_UPVALUE : {
-  auto openUpvalue = openUpvalues[stack.size() - 1];
-  openUpvalue->close();
-  openUpvalues.erase(stack.size() - 1);
+  auto it = openUpvalues.find(stack.size() - 1);
+  if (it != openUpvalues.end()) {
+    it->second->close();
+    openUpvalues.erase(it);
+  }
   stack.pop_back();
 }
   DISPATCH();

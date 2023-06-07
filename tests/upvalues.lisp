@@ -18,3 +18,11 @@
 (display (my-counter-1 1))
 (display (my-counter-1 0))
 (display (my-counter-2 0))
+
+(define f
+  (lambda (n)
+    (if (null? n) #f
+      (lambda () n))))
+
+(f '())
+(f 1)
