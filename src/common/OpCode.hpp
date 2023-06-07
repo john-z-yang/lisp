@@ -8,6 +8,7 @@ enum OpCode : uint8_t {
   CALL,
   RETURN,
   POP_TOP,
+  CLOSE_UPVALUE,
   LOAD_CONST,
   LOAD_SYM,
   DEF_SYM,

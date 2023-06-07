@@ -26,7 +26,7 @@ _DEPS =  common/sexpr/Atom.hpp \
 	common/sexpr/SExprs.hpp common/sexpr/StringAtom.hpp common/sexpr/SymAtom.hpp \
 	common/Code.hpp common/TypeError.hpp compile/Compiler.hpp compile/parse.hpp \
 	compile/SyntaxError.hpp compile/Token.hpp repl/repl.hpp \
-	runtime/Env.hpp runtime/NatFnImpls.hpp runtime/VM.hpp
+	runtime/Env.hpp runtime/NatFnImpls.hpp runtime/Upvalue.hpp runtime/VM.hpp
 
 DEPS = $(addprefix $(SRCDIR)/,$(_DEPS))
 OBJS = $(patsubst %.hpp,$(OUTDIR)/%.o,$(subst /,_,$(_DEPS)))
@@ -34,7 +34,8 @@ OBJS = $(patsubst %.hpp,$(OUTDIR)/%.o,$(subst /,_,$(_DEPS)))
 TESTS = $(TESTDIR)/combine $(TESTDIR)/compare $(TESTDIR)/cons \
     $(TESTDIR)/equality $(TESTDIR)/hof $(TESTDIR)/list $(TESTDIR)/logic \
 	$(TESTDIR)/math $(TESTDIR)/parse $(TESTDIR)/pred $(TESTDIR)/recur \
-	$(TESTDIR)/set $(TESTDIR)/string $(TESTDIR)/tailcall $(TESTDIR)/varargs
+	$(TESTDIR)/set $(TESTDIR)/string $(TESTDIR)/tailcall $(TESTDIR)/upvalues \
+	$(TESTDIR)/varargs
 
 all: $(OUTDIR)/lisp check-env
 

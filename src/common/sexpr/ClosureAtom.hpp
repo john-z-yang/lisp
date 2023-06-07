@@ -1,6 +1,7 @@
 #ifndef LISP_SRC_COMMON_SEXPR_CLOSUREATOM_HPP_
 #define LISP_SRC_COMMON_SEXPR_CLOSUREATOM_HPP_
 
+#include "../../runtime/Upvalue.hpp"
 #include "Atom.hpp"
 #include "FnAtom.hpp"
 #include "SExpr.hpp"
@@ -18,7 +19,7 @@ public:
   void assertArity(const uint8_t arity) const;
 
   const std::shared_ptr<FnAtom> fnAtom;
-  std::vector<std::shared_ptr<SExpr>> upValues;
+  std::vector<std::shared_ptr<Upvalue>> upvalues;
 
   std::ostream &dissassemble(std::ostream &o);
 

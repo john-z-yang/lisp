@@ -5,7 +5,9 @@
 #include "../common/sexpr/SExpr.hpp"
 #include "../common/sexpr/SExprs.hpp"
 #include "Env.hpp"
+#include "Upvalue.hpp"
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 class VM {
@@ -19,10 +21,16 @@ private:
   Env globals;
   std::vector<std::shared_ptr<SExpr>> stack;
   std::vector<CallFrame> frames;
+  std::unordered_map<std::vector<std::shared_ptr<SExpr>>::size_type,
+                     std::shared_ptr<Upvalue>>
+      openUpvalues;
 
   std::shared_ptr<SExpr> interp(std::shared_ptr<FnAtom> main);
 
   void call(const uint8_t argc);
+
+  std::shared_ptr<Upvalue>
+  captureUpvalue(std::vector<std::shared_ptr<SExpr>>::size_type pos);
   std::shared_ptr<SExpr>
   peak(std::vector<std::shared_ptr<SExpr>>::size_type distance);
   std::shared_ptr<SExprs>
