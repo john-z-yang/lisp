@@ -19,6 +19,7 @@ private:
   struct Local {
     const std::shared_ptr<SymAtom> symbol;
     const uint8_t stackOffset;
+    bool isCaptured;
   };
 
   struct UpValue {

@@ -5,6 +5,7 @@
 #include "../common/sexpr/NatFnAtom.hpp"
 #include "../common/sexpr/NilAtom.hpp"
 #include "../common/sexpr/SExprs.hpp"
+#include "Upvalue.hpp"
 #include <cstdint>
 #include <exception>
 #include <iomanip>
@@ -31,14 +32,11 @@ std::shared_ptr<SExpr> VM::interp(std::shared_ptr<FnAtom> main) {
 
 #define DISPATCH() goto *dispatchTable[READ_BYTE()]
 
-  static void *dispatchTable[] = {&&MAKE_CLOSURE, &&CALL,
-                                  &&RETURN,       &&POP_TOP,
-                                  &&LOAD_CONST,   &&LOAD_SYM,
-                                  &&DEF_SYM,      &&SET_SYM,
-                                  &&LOAD_UPVALUE, &&SET_UPVALUE,
-                                  &&LOAD_STACK,   &&SET_STACK,
-                                  &&JUMP,         &&POP_JUMP_IF_FALSE,
-                                  &&MAKE_LIST};
+  static void *dispatchTable[] = {
+      &&MAKE_CLOSURE, &&CALL,       &&RETURN,    &&POP_TOP, &&CLOSE_UPVALUE,
+      &&LOAD_CONST,   &&LOAD_SYM,   &&DEF_SYM,   &&SET_SYM, &&LOAD_UPVALUE,
+      &&SET_UPVALUE,  &&LOAD_STACK, &&SET_STACK, &&JUMP,    &&POP_JUMP_IF_FALSE,
+      &&MAKE_LIST};
 
   stack.push_back(std::make_shared<ClosureAtom>(main));
   call(0);
@@ -52,9 +50,9 @@ MAKE_CLOSURE : {
     auto isLocal = READ_BYTE();
     auto idx = READ_BYTE();
     if (isLocal == 1) {
-      closure->upValues.push_back(stack[BASE_PTR() + idx]);
+      closure->upvalues.push_back(captureUpvalue(&stack[BASE_PTR() + idx]));
     } else {
-      closure->upValues.push_back(CUR_CLOSURE()->upValues[idx]);
+      closure->upvalues.push_back(CUR_CLOSURE()->upvalues[idx]);
     }
   }
   stack.push_back(std::move(closure));
@@ -65,23 +63,27 @@ CALL : {
   DISPATCH();
 }
 RETURN : {
-  auto res = std::move(stack.back());
   if (frames.size() == 1) {
+    const auto res = stack.back();
     frames.clear();
     stack.clear();
     return res;
   }
-  while (stack.size() > frames.back().bp) {
-    stack.pop_back();
-  }
   frames.pop_back();
-  stack.push_back(std::move(res));
-}
   DISPATCH();
+}
 POP_TOP : {
   stack.pop_back();
   DISPATCH();
 }
+CLOSE_UPVALUE : {
+  auto openUpvalue = openUpvalues[&stack.back()];
+  openUpvalue->closed = std::move(stack.back());
+  openUpvalue->ptr = &openUpvalue->closed;
+  openUpvalues.erase(&stack.back());
+  stack.pop_back();
+}
+  DISPATCH();
 LOAD_CONST : {
   stack.push_back(READ_CONST());
   DISPATCH();
@@ -99,11 +101,11 @@ SET_SYM : {
   DISPATCH();
 }
 LOAD_UPVALUE : {
-  stack.push_back(CUR_CLOSURE()->upValues[READ_BYTE()]);
+  stack.push_back(*CUR_CLOSURE()->upvalues[READ_BYTE()]->ptr);
   DISPATCH();
 }
 SET_UPVALUE : {
-  CUR_CLOSURE()->upValues[READ_BYTE()] = stack.back();
+  *CUR_CLOSURE()->upvalues[READ_BYTE()]->ptr = stack.back();
   DISPATCH();
 }
 LOAD_STACK : {
@@ -170,6 +172,15 @@ void VM::call(const uint8_t argc) {
   return;
 }
 
+std::shared_ptr<Upvalue> VM::captureUpvalue(std::shared_ptr<SExpr> *ptr) {
+  auto it = openUpvalues.find(ptr);
+  if (it != openUpvalues.end()) {
+    return it->second;
+  }
+  openUpvalues.insert({ptr, std::make_shared<Upvalue>(Upvalue{ptr, nullptr})});
+  return openUpvalues[ptr];
+}
+
 std::shared_ptr<SExpr>
 VM::peak(std::vector<std::shared_ptr<SExpr>>::size_type distance) {
   return stack.rbegin()[distance];
@@ -191,7 +202,7 @@ VM::makeList(const std::vector<std::shared_ptr<SExpr>>::size_type n) {
   return list;
 }
 
-VM::VM() {}
+VM::VM() { stack.reserve(1024); }
 
 std::shared_ptr<SExpr> VM::exec(std::shared_ptr<FnAtom> main) {
   try {

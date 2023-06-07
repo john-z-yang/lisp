@@ -34,7 +34,8 @@ OBJS = $(patsubst %.hpp,$(OUTDIR)/%.o,$(subst /,_,$(_DEPS)))
 TESTS = $(TESTDIR)/combine $(TESTDIR)/compare $(TESTDIR)/cons \
     $(TESTDIR)/equality $(TESTDIR)/hof $(TESTDIR)/list $(TESTDIR)/math \
 	$(TESTDIR)/parse $(TESTDIR)/pred $(TESTDIR)/recur $(TESTDIR)/set \
-	$(TESTDIR)/string $(TESTDIR)/tailcall $(TESTDIR)/varargs
+	$(TESTDIR)/string $(TESTDIR)/tailcall $(TESTDIR)/upvalues \
+	$(TESTDIR)/varargs
 
 all: $(OUTDIR)/lisp check-env
 

@@ -12,10 +12,12 @@
 #include "SyntaxError.hpp"
 #include "grammar.hpp"
 #include "parse.hpp"
+#include <__ranges/reverse_view.h>
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
 #include <memory>
+#include <ranges>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -26,19 +28,18 @@ Compiler::Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
                    Compiler *enclosing)
     : source(source), sourceLoc(sourceLoc), enclosing(enclosing), arg(arg),
       body(body), function(std::make_shared<FnAtom>(0)), stackOffset(0) {
-  locals.push_back({std::make_unique<SymAtom>(""), stackOffset});
   stackOffset += 1;
 
   if (const auto argNames = std::dynamic_pointer_cast<SExprs>(arg)) {
     visitEach(argNames, [&](std::shared_ptr<SExpr> sExpr) {
       auto sym = cast<SymAtom>(sExpr);
-      locals.push_back({sym, stackOffset});
+      locals.push_back({sym, stackOffset, false});
       stackOffset += 1;
     });
 
-    function = std::make_unique<FnAtom>(locals.size() - 1);
+    function = std::make_unique<FnAtom>(stackOffset - 1);
   } else if (const auto argName = std::dynamic_pointer_cast<SymAtom>(arg)) {
-    locals.push_back({argName, stackOffset});
+    locals.push_back({argName, stackOffset, false});
     stackOffset += 1;
 
     function = std::make_unique<FnAtom>(-1);
@@ -272,6 +273,7 @@ int Compiler::resolveLocal(std::shared_ptr<SymAtom> sym) {
 int Compiler::resolveUpvalue(Compiler &caller, std::shared_ptr<SymAtom> sym) {
   if (enclosing) {
     if (auto idx = enclosing->resolveLocal(sym); idx != -1) {
+      enclosing->locals[idx - 1].isCaptured = true;
       return caller.addUpvalue(idx, true);
     }
     if (auto idx = enclosing->resolveUpvalue(*enclosing, sym); idx != -1) {
@@ -305,6 +307,17 @@ std::shared_ptr<FnAtom> Compiler::compile() {
   }
 
   compile(body);
+  getCode().pushCode(OpCode::SET_STACK);
+  getCode().pushCode(0);
+  getCode().pushCode(OpCode::POP_TOP);
+
+  for (const auto &local : locals | std::views::reverse) {
+    if (local.isCaptured) {
+      getCode().pushCode(OpCode::CLOSE_UPVALUE);
+    } else {
+      getCode().pushCode(OpCode::POP_TOP);
+    }
+  }
   getCode().pushCode(OpCode::RETURN);
 
   function->numUpVals = upValues.size();
