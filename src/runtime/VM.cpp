@@ -50,7 +50,7 @@ MAKE_CLOSURE : {
     auto isLocal = READ_BYTE();
     auto idx = READ_BYTE();
     if (isLocal == 1) {
-      closure->upvalues.push_back(captureUpvalue(&stack[BASE_PTR() + idx]));
+      closure->upvalues.push_back(captureUpvalue(BASE_PTR() + idx));
     } else {
       closure->upvalues.push_back(CUR_CLOSURE()->upvalues[idx]);
     }
@@ -77,10 +77,9 @@ POP_TOP : {
   DISPATCH();
 }
 CLOSE_UPVALUE : {
-  auto openUpvalue = openUpvalues[&stack.back()];
-  openUpvalue->closed = std::move(stack.back());
-  openUpvalue->ptr = &openUpvalue->closed;
-  openUpvalues.erase(&stack.back());
+  auto openUpvalue = openUpvalues[stack.size() - 1];
+  openUpvalue->close();
+  openUpvalues.erase(stack.size() - 1);
   stack.pop_back();
 }
   DISPATCH();
@@ -101,11 +100,11 @@ SET_SYM : {
   DISPATCH();
 }
 LOAD_UPVALUE : {
-  stack.push_back(*CUR_CLOSURE()->upvalues[READ_BYTE()]->ptr);
+  stack.push_back(CUR_CLOSURE()->upvalues[READ_BYTE()]->get());
   DISPATCH();
 }
 SET_UPVALUE : {
-  *CUR_CLOSURE()->upvalues[READ_BYTE()]->ptr = stack.back();
+  CUR_CLOSURE()->upvalues[READ_BYTE()]->set(stack.back());
   DISPATCH();
 }
 LOAD_STACK : {
@@ -172,13 +171,14 @@ void VM::call(const uint8_t argc) {
   return;
 }
 
-std::shared_ptr<Upvalue> VM::captureUpvalue(std::shared_ptr<SExpr> *ptr) {
-  auto it = openUpvalues.find(ptr);
+std::shared_ptr<Upvalue>
+VM::captureUpvalue(std::vector<std::shared_ptr<SExpr>>::size_type pos) {
+  auto it = openUpvalues.find(pos);
   if (it != openUpvalues.end()) {
     return it->second;
   }
-  openUpvalues.insert({ptr, std::make_shared<Upvalue>(Upvalue{ptr, nullptr})});
-  return openUpvalues[ptr];
+  openUpvalues.insert({pos, std::make_shared<Upvalue>(pos, stack)});
+  return openUpvalues[pos];
 }
 
 std::shared_ptr<SExpr>
@@ -202,7 +202,7 @@ VM::makeList(const std::vector<std::shared_ptr<SExpr>>::size_type n) {
   return list;
 }
 
-VM::VM() { stack.reserve(1024); }
+VM::VM() {}
 
 std::shared_ptr<SExpr> VM::exec(std::shared_ptr<FnAtom> main) {
   try {

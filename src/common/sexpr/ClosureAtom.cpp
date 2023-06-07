@@ -47,7 +47,7 @@ bool ClosureAtom::equals(const SExpr &other) const {
         upvalues.begin(), upvalues.end(), closure.upvalues.begin(),
         closure.upvalues.end(),
         [](std::shared_ptr<Upvalue> self, std::shared_ptr<Upvalue> other) {
-          return **self->ptr == **other->ptr;
+          return *self == *other;
         });
   }
   return false;

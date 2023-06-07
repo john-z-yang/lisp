@@ -26,7 +26,7 @@ _DEPS =  common/sexpr/Atom.hpp \
 	common/sexpr/SExprs.hpp common/sexpr/StringAtom.hpp common/sexpr/SymAtom.hpp \
 	common/Code.hpp common/TypeError.hpp compile/Compiler.hpp compile/parse.hpp \
 	compile/SyntaxError.hpp compile/Token.hpp repl/repl.hpp \
-	runtime/Env.hpp runtime/NatFnImpls.hpp runtime/VM.hpp
+	runtime/Env.hpp runtime/NatFnImpls.hpp runtime/Upvalue.hpp runtime/VM.hpp
 
 DEPS = $(addprefix $(SRCDIR)/,$(_DEPS))
 OBJS = $(patsubst %.hpp,$(OUTDIR)/%.o,$(subst /,_,$(_DEPS)))
