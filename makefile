@@ -21,12 +21,13 @@ To set it to the /lib folder of this project.
 endef
 
 _DEPS =  common/sexpr/Atom.hpp \
-	common/sexpr/BoolAtom.hpp common/sexpr/ClosureAtom.hpp common/sexpr/FnAtom.hpp \
-	common/sexpr/IntAtom.hpp common/sexpr/NatFnAtom.hpp common/sexpr/NilAtom.hpp common/sexpr/SExpr.hpp \
-	common/sexpr/SExprs.hpp common/sexpr/StringAtom.hpp common/sexpr/SymAtom.hpp \
-	common/Code.hpp common/TypeError.hpp compile/Compiler.hpp compile/parse.hpp \
-	compile/SyntaxError.hpp compile/Token.hpp repl/repl.hpp \
-	runtime/Env.hpp runtime/NatFnImpls.hpp runtime/Upvalue.hpp runtime/VM.hpp
+	common/sexpr/BoolAtom.hpp common/sexpr/ClosureAtom.hpp \
+	common/sexpr/FnAtom.hpp common/sexpr/IntAtom.hpp common/sexpr/NatFnAtom.hpp \
+	common/sexpr/NilAtom.hpp common/sexpr/SExpr.hpp common/sexpr/SExprs.hpp \
+	common/sexpr/StringAtom.hpp common/sexpr/SymAtom.hpp common/Code.hpp \
+	common/TypeError.hpp compile/Compiler.hpp compile/SyntaxError.hpp \
+	repl/repl.hpp runtime/Env.hpp runtime/NatFnImpls.hpp runtime/Upvalue.hpp \
+	runtime/VM.hpp
 
 DEPS = $(addprefix $(SRCDIR)/,$(_DEPS))
 OBJS = $(patsubst %.hpp,$(OUTDIR)/%.o,$(subst /,_,$(_DEPS)))

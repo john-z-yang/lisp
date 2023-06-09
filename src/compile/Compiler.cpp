@@ -12,12 +12,12 @@
 #include "../runtime/VM.hpp"
 #include "SyntaxError.hpp"
 #include "grammar.hpp"
-#include "parse.hpp"
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
 #include <memory>
 #include <ranges>
+#include <regex>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -26,11 +26,9 @@
 Compiler::Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
                    std::shared_ptr<SExpr> arg, std::shared_ptr<SExpr> body,
                    Compiler *enclosing, VM &vm)
-    : source(source), sourceLoc(sourceLoc), enclosing(enclosing), arg(arg),
-      body(body), function(std::make_shared<FnAtom>(0)), stackOffset(0),
-      vm(vm) {
-  stackOffset += 1;
-
+    : source(source), sourceLoc(sourceLoc), vm(vm), enclosing(enclosing),
+      arg(arg), body(body), function(std::make_shared<FnAtom>(0)),
+      stackOffset(1) {
   if (const auto argNames = std::dynamic_pointer_cast<SExprs>(arg)) {
     visitEach(argNames, [&](std::shared_ptr<SExpr> sExpr) {
       auto sym = cast<SymAtom>(sExpr);
@@ -47,6 +45,120 @@ Compiler::Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
   } else if (!isa<NilAtom>(*arg)) {
     handleSyntaxError(lambdaGrammar, NilAtom::typeName, arg);
   }
+}
+
+std::vector<Compiler::Token>
+Compiler::tokenize(std::vector<std::string> lines) {
+  std::vector<Token> tokens;
+  for (unsigned int row{1}; const auto &line : lines) {
+    auto newTokens = tokenize(line, row);
+    tokens.insert(tokens.end(), newTokens.begin(), newTokens.end());
+    ++row;
+  }
+  return tokens;
+}
+
+std::vector<Compiler::Token> Compiler::tokenize(std::string line,
+                                                const unsigned int row) {
+  std::vector<Token> tokens;
+  std::regex rgx(
+      "\\\"(?:[^\"\\\\]*(?:\\\\.)?)*\\\"|;|\\(|\\)|,@|,|`|'|[^\\s(),@,`']+");
+  auto begin = std::sregex_iterator(line.begin(), line.end(), rgx);
+  auto end = std::sregex_iterator();
+  for (std::sregex_iterator i = begin; i != end; ++i) {
+    std::smatch match = *i;
+    tokens.push_back({row, (unsigned int)match.position(), match.str()});
+  }
+  return tokens;
+}
+
+std::shared_ptr<SExpr> Compiler::parse(std::vector<std::string> lines,
+                                       SourceLoc &sourceLoc) {
+  auto tokens = tokenize(lines);
+  std::vector<Token>::const_iterator it = tokens.begin();
+  const auto res = parse(it, sourceLoc);
+  if (it != tokens.end()) {
+    handleUnexpectedToken(*it, lines[it->row - 1]);
+  }
+  return res;
+}
+
+std::shared_ptr<SExpr> Compiler::parse(std::vector<Token>::const_iterator &it,
+                                       SourceLoc &sourceLoc) {
+  auto token = *it;
+  it += 1;
+  if (token.str == "(") {
+    auto sExprs = parseSexprs(it, sourceLoc);
+    sourceLoc.insert({sExprs, {token.row, token.col}});
+    return sExprs;
+  }
+  if (token.str == "'" || token.str == "`" || token.str == "," ||
+      token.str == ",@") {
+    auto rest = std::make_shared<SExprs>(parse(it, sourceLoc),
+                                         std::make_shared<NilAtom>());
+    sourceLoc.insert({rest, {token.row, token.col}});
+    auto sExprs = std::make_shared<SExprs>(parseAtom(token), rest);
+    sourceLoc.insert({sExprs, {token.row, token.col}});
+    return sExprs;
+  }
+  auto atom = parseAtom(token);
+  sourceLoc.insert({atom, {token.row, token.col}});
+  return atom;
+}
+
+std::shared_ptr<SExpr> Compiler::parseAtom(Token token) {
+  if ((token.str.length() >= 1 &&
+       all_of(token.str.begin(), token.str.end(), ::isdigit)) ||
+      (token.str[0] == '-' && token.str.length() > 1 &&
+       all_of(token.str.begin() + 1, token.str.end(), ::isdigit))) {
+    return std::make_shared<IntAtom>(stoi(token.str));
+  }
+  if (token.str.front() == '\"' && token.str.back() == '\"') {
+    return std::make_shared<StringAtom>(token.str);
+  }
+  if (token.str == "#t") {
+    return std::make_shared<BoolAtom>(true);
+  }
+  if (token.str == "#f") {
+    return std::make_shared<BoolAtom>(false);
+  }
+  if (token.str == "'") {
+    return std::make_shared<SymAtom>("quote");
+  }
+  if (token.str == "`") {
+    return std::make_shared<SymAtom>("quasiquote");
+  }
+  if (token.str == ",") {
+    return std::make_shared<SymAtom>("unquote");
+  }
+  if (token.str == ",@") {
+    return std::make_shared<SymAtom>("unquote-splicing");
+  }
+  return std::make_shared<SymAtom>(token.str);
+}
+
+std::shared_ptr<SExpr>
+Compiler::parseSexprs(std::vector<Token>::const_iterator &it,
+                      SourceLoc &sourceLoc) {
+  auto token = *it;
+  if (token.str == ")") {
+    it += 1;
+    auto nil = std::make_shared<NilAtom>();
+    sourceLoc.insert({nil, {token.row, token.col - 1}});
+    return nil;
+  } else if (token.str == "(") {
+    it += 1;
+    auto first = parseSexprs(it, sourceLoc);
+    auto rest = parseSexprs(it, sourceLoc);
+    auto sExprs = std::make_shared<SExprs>(first, rest);
+    sourceLoc.insert({sExprs, {token.row, token.col - 1}});
+    return sExprs;
+  }
+  auto first = parse(it, sourceLoc);
+  auto rest = parseSexprs(it, sourceLoc);
+  auto sExprs = std::make_shared<SExprs>(first, rest);
+  sourceLoc.insert({sExprs, {token.row, token.col - 1}});
+  return sExprs;
 }
 
 void Compiler::compile(std::shared_ptr<SExpr> sExpr) {
@@ -284,16 +396,6 @@ std::shared_ptr<SExpr> Compiler::expandMacro(std::shared_ptr<SExpr> sExpr) {
   return vm.exec(macroExpr);
 }
 
-void Compiler::handleSyntaxError(const std::string grammar,
-                                 const std::string expected,
-                                 const std::shared_ptr<SExpr> actual) {
-  std::stringstream ss;
-  ss << "Invalid syntax for " << grammar << "." << std::endl
-     << "Expected " << expected << ", but got " << *actual << ".";
-  const auto [row, col] = sourceLoc[actual];
-  throw SyntaxError(ss.str(), source[row - 1], row, col);
-}
-
 const unsigned int Compiler::visitEach(std::shared_ptr<SExpr> sExprs,
                                        Visitor visitor) {
   auto numVisited = 0U;
@@ -353,10 +455,27 @@ int Compiler::addUpvalue(int idx, bool isLocal) {
   return upValues.size() - 1;
 }
 
+void Compiler::handleUnexpectedToken(const Token &token,
+                                     const std::string &line) {
+  std::stringstream ss;
+  ss << "Unexpected \"" << token.str << "\".";
+  throw SyntaxError(ss.str(), line, token.row, token.col);
+}
+
+void Compiler::handleSyntaxError(const std::string grammar,
+                                 const std::string expected,
+                                 const std::shared_ptr<SExpr> actual) {
+  std::stringstream ss;
+  ss << "Invalid syntax for " << grammar << "." << std::endl
+     << "Expected " << expected << ", but got " << *actual << ".";
+  const auto [row, col] = sourceLoc[actual];
+  throw SyntaxError(ss.str(), source[row - 1], row, col);
+}
+
 Compiler::Compiler(std::vector<std::string> source, VM &vm)
-    : source(source), enclosing(nullptr), arg(std::make_shared<NilAtom>()),
-      body(parse(source, sourceLoc)), function(std::make_shared<FnAtom>(0)),
-      stackOffset(0), vm(vm) {}
+    : source(source), vm(vm), enclosing(nullptr),
+      arg(std::make_shared<NilAtom>()), body(parse(source, sourceLoc)),
+      function(std::make_shared<FnAtom>(0)), stackOffset(0) {}
 
 std::shared_ptr<FnAtom> Compiler::compile() {
   if (function->arity == -1) {
@@ -379,4 +498,20 @@ std::shared_ptr<FnAtom> Compiler::compile() {
 
   function->numUpVals = upValues.size();
   return function;
+}
+
+void Compiler::verifyLex(std::string &line, const unsigned int lineNum,
+                         uint32_t &openParen, uint32_t &closedParen) {
+  auto tokens = tokenize(line, lineNum);
+  for (auto it = tokens.begin(); it != tokens.end(); ++it) {
+    if ((openParen == closedParen && openParen > 0) ||
+        (openParen == closedParen && it->str == ")")) {
+      handleUnexpectedToken(*it, line);
+    }
+    if (it->str == "(") {
+      openParen += 1;
+    } else if (it->str == ")") {
+      closedParen += 1;
+    }
+  }
 }

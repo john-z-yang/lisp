@@ -1,7 +1,6 @@
 #include "repl.hpp"
 #include "../compile/Compiler.hpp"
 #include "../compile/SyntaxError.hpp"
-#include "../compile/parse.hpp"
 #include "../runtime/VM.hpp"
 #include <cstdlib>
 #include <cstring>
@@ -29,7 +28,7 @@ bool getConsoleInput(std::vector<std::string> &lines, std::string prompt,
       continue;
     }
     add_history(line.c_str());
-    verifyLex(line, lines.size() + 1, openParen, closedParen);
+    Compiler::verifyLex(line, lines.size() + 1, openParen, closedParen);
     lines.push_back(line + " ");
     if (openParen == closedParen) {
       return true;
@@ -48,7 +47,7 @@ std::istream &getFileInput(std::istream &in, std::vector<std::string> &lines) {
     if (line.empty()) {
       continue;
     }
-    verifyLex(line, lines.size() + 1, openParen, closedParen);
+    Compiler::verifyLex(line, lines.size() + 1, openParen, closedParen);
     lines.push_back(line + " ");
     if (openParen == closedParen) {
       return in;
