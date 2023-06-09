@@ -1,6 +1,6 @@
 # Lisp Interpreter &middot; [![build](https://github.com/john-z-yang/lisp/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/john-z-yang/lisp/actions/workflows/ci.yml)
 
-Interpreter for a subset of Scheme written in C++. Implemented through a compiler and a virtual machine. (See [Technical Details section](#Technical-Details) for more details.)
+Interpreter for a subset of Scheme written in C++. Implemented through a compiler and a virtual machine. (See [Technical Details section](#technical-details) for more details.)
 
 <p align="center">
     <img src="https://raw.githubusercontent.com/john-z-yang/lisp/master/docs/assets/fib_seq_gen.gif" style="max-width:768px;  width:100%;">
@@ -176,14 +176,23 @@ _Happy hacking!_
 The interpreter is implemented through a [bytecode](https://en.wikipedia.org/wiki/Bytecode) compiler and [stack-based virtual machine](https://en.wikipedia.org/wiki/Stack_machine).
 
 ```mermaid
-flowchart LR
-  subgraph Compiler
+flowchart TB
+  repl[REPL]
+  vm[Virtual Machine]
+  subgraph compiler[Compiler&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp]
     direction TB
-    B[Tokenization] -- Token --> C[Parsing]
-    C -- S-expression --> D[Bytecode generation]
+    tok[Tokenization]
+    par[Parsing]
+    byte[Bytecode generation]
+
+    tok -- Token --> par
+    par -- S-expression --> byte
   end
-  A[REPL] -- std::string --> Compiler
-  Compiler -- FnAtom --> E[Virtual Machine]
+
+  repl -- std::string --> tok
+  byte -- Bytecode --> vm
+  byte <-- macro expansion --> vm
+
 ```
 
 ### File structure
@@ -203,24 +212,24 @@ flowchart LR
 
 ### Opcodes
 
-| Opcode                           | Description                                                                                                                                                                                           |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MAKE_CLOSURE (i) (IS_LOCAL j)*` | Push a ClosureAtom onto the stack, created from the FnAtom at `const[i]`. For each upvalue in the ClosureAtom, capture it from `stack[j]` if `IS_LOCAL` is `1`, capture from `upvalues[j]` otherwise. |
-| `CALL (argc)`                    | Call the function at **TOS** - `argc` with `argc` parameters.                                                                                                                                         |
-| `RETURN`                         | Return **TOS**.                                                                                                                                                                                       |
-| `POP_TOP`                        | Pop **TOS**.                                                                                                                                                                                          |
-| `CLOSE_UPVALUE`                  | Pop **TOS**, and close the free variables it's associated with.                                                                                                                                       |
-| `LOAD_CONST (idx)`               | Push `const[idx]` onto the stack.                                                                                                                                                                     |
-| `LOAD_SYM (idx)`                 | Push `globals[const[idx]]` onto the stack.                                                                                                                                                            |
-| `DEF_SYM (idx)`                  | Define `globals[const[idx]]` as **TOS**.                                                                                                                                                              |
-| `SET_SYM (idx)`                  | Set `globals[const[idx]]` as **TOS**.                                                                                                                                                                 |
-| `LOAD_UPVALUE (idx)`             | Push `upvalues[idx]` onto the stack.                                                                                                                                                                  |
-| `SET_UPVALUE (idx)`              | Set `upvalues[idx]` as **TOS**.                                                                                                                                                                       |
-| `LOAD_STACK (idx)`               | Push `upvalues[idx]` onto the stack.                                                                                                                                                                  |
-| `SET_STACK (idx)`                | Set `upvalues[idx]` to **TOS**.                                                                                                                                                                       |
-| `JUMP (offset)`                  | Set `ip` of current frame to `offset`.                                                                                                                                                                |
-| `POP_JUMP_IF_FALSE (offset)`     | Set `ip` of current frame to `offset` if **TOS** is not _truthy_.                                                                                                                                     |
-| `MAKE_LIST (argc)`               | Pop `argc` elements from **TOS**, push those elements as cons list onto the stack.                                                                                                                    |
+| Opcode                             | Description                                                                                                                                                                                           |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **MAKE_CLOSURE** _i (IS_LOCAL j)*_ | Push a ClosureAtom onto the stack, created from the FnAtom at `const[i]`. For each upvalue in the ClosureAtom, capture it from `stack[j]` if `IS_LOCAL` is `1`, capture from `upvalues[j]` otherwise. |
+| **CALL** _argc_                    | Call the function at **TOS** - `argc` with `argc` parameters.                                                                                                                                         |
+| **RETURN**                         | Return **TOS**.                                                                                                                                                                                       |
+| **POP_TOP**                        | Pop **TOS**.                                                                                                                                                                                          |
+| **CLOSE_UPVALUE**                  | Pop **TOS**, and close the free variables it's associated with.                                                                                                                                       |
+| **LOAD_CONST** _idx_               | Push `const[idx]` onto the stack.                                                                                                                                                                     |
+| **LOAD_SYM** _idx_                 | Push `globals[const[idx]]` onto the stack.                                                                                                                                                            |
+| **DEF_SYM** _idx_                  | Define `globals[const[idx]]` as **TOS**.                                                                                                                                                              |
+| **SET_SYM** _idx_                  | Set `globals[const[idx]]` as **TOS**.                                                                                                                                                                 |
+| **LOAD_UPVALUE** _idx_             | Push `upvalues[idx]` onto the stack.                                                                                                                                                                  |
+| **SET_UPVALUE** _idx_              | Set `upvalues[idx]` as **TOS**.                                                                                                                                                                       |
+| **LOAD_STACK** _idx_               | Push `upvalues[idx]` onto the stack.                                                                                                                                                                  |
+| **SET_STACK** _idx_                | Set `upvalues[idx]` to **TOS**.                                                                                                                                                                       |
+| **JUMP** _offset_                  | Set `ip` of current frame to `offset`.                                                                                                                                                                |
+| **POP_JUMP_IF_FALSE** _offset_     | Set `ip` of current frame to `offset` if **TOS** is not _truthy_.                                                                                                                                     |
+| **MAKE_LIST** _argc_               | Pop `argc` elements from **TOS**, push those elements as cons list onto the stack.                                                                                                                    |
 
 #### Example
 
@@ -314,9 +323,9 @@ Tests will be executed from `make test`.
 test: $(TESTS)
 
 $(TESTDIR)/%: $(TESTDIR)/%.lisp $(TESTDIR)/%.expect $(OUTDIR)/lisp
-	(export LISP_LIB_ENV=$(LIBDIR); $(OUTDIR)/lisp $@.lisp >> $@.out 2>&1)
-	diff $@.expect $@.out
-	rm $@.out
+    (export LISP_LIB_ENV=$(LIBDIR); $(OUTDIR)/lisp $@.lisp >> $@.out 2>&1)
+    diff $@.expect $@.out
+    rm $@.out
 ```
 
 ## Author
