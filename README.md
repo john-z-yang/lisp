@@ -64,20 +64,6 @@ _Happy hacking!_
 
 ## Special Forms
 
-### Symbols
-
-| Syntax                  | Description                                                                                     |
-| ----------------------- | ----------------------------------------------------------------------------------------------- |
-| **sym**                 | Returns the value that _sym_ is bound to in the closest lexical scope.                          |
-| (**define** _sym expr_) | Evaluates _expr_, bind the result to _sym_ in current lexical scope.                            |
-| (**set!** _sym expr_)   | Evaluates _expr_, find the closest lexical scope where _sym_ is bound, re-bind result to _sym_. |
-
-### Macros
-
-| Syntax             | Description                           |
-| ------------------ | ------------------------------------- |
-| (**quote** _expr_) | Returns _expr_ without evaluating it. |
-
 ### Procedures
 
 | Syntax                                                      | Description                                                                                                                                                 |
@@ -86,17 +72,34 @@ _Happy hacking!_
 | (**lambda** _sym expr_)                                     | Produces a _procedure_ that accepts arbitary number of arguments. When invoked, bind parameters to _sym_ as a list, evalulate _expr_ and return the result. |
 | (**procedure** _expr\*_)                                    | Evaluates each _expr_, invoke _procedure_ with the results as arguments.                                                                                    |
 
+### Macros
+
+| Syntax                                                               | Description                                                                                                                   |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| (**defmacro** _form_ (_sym<sub>1</sub> ... sym<sub>n</sub>_) _expr_) | Register a _procedure_ equivalent to (**lambda** (_sym<sub>1</sub> ... sym<sub>n</sub>_) _expr_) as a _macro_.                |
+| (**defmacro** _form expr_)                                           | Register a _procedure_ equivalent to (**lambda** _sym expr_) as a _macro_.                                                    |
+| (_macro expr*_)                                                      | Invoke the procedure _macro_ is bound to with the unevaluated _expr_ as arugment **during compile time**. Compile the output. |
+| (**quote** _expr_)                                                   | Returns _expr_ without evaluating it.                                                                                         |
+| **'**_expr_                                                          | Equivalent to (**quote** _expr_)                                                                                              |
+
+### Symbols
+
+| Syntax                                                                                         | Description                                                                                                               |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **sym**                                                                                        | Returns the value that _sym_ is bound to in the closest lexical scope.                                                    |
+| (**define** _sym expr_)                                                                        | Evaluates _expr_, bind the result to _sym_ in current lexical scope.                                                      |
+| (**set!** _sym expr_)                                                                          | Evaluates _expr_, find the closest lexical scope where _sym_ is bound, re-bind result to _sym_.                           |
+| (**let** _((sym<sub>1</sub> expr<sub>1</sub>) ... (sym<sub>n</sub> expr<sub>n</sub>)) expr_)   | Equivalent to ((**lambda** (_sym<sub>1</sub> ... sym<sub>n</sub>_) expr) expr<sub>1</sub> ... expr<sub>n</sub>)           |
+| (**let\*** _((sym<sub>1</sub> expr<sub>1</sub>) ... (sym<sub>n</sub> expr<sub>n</sub>)) expr_) | Equivalent to (**let** ((_sym<sub>1</sub> expr<sub>1</sub>)) ... (**let** ((_sym<sub>n</sub> expr<sub>n</sub>)) expr)...) |
+
 ### Logic
 
-| Syntax                     | Description                                                                                 |
-| -------------------------- | ------------------------------------------------------------------------------------------- |
-| (**if** _test conseq alt_) | Evaluates _test_, if the result is _truthy_, evalulate _conseq_, evalulate _alt_ otherwise. |
-
-### Syntactic Sugar
-
-| Syntax      | equivalent         |
-| ----------- | ------------------ |
-| **'**_expr_ | (**quote** _expr_) |
+| Syntax                                 | Description                                                                                                                                                   |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| (**if** _test conseq alt_)             | Evaluates _test_, if the result is _truthy_, evalulate _conseq_, evalulate _alt_ otherwise.                                                                   |
+| (**cond** _(test expr)* (else expr)?_) | Evaluates each pair of _(test expr)_ in sequence, if the result of _test_ is _truthy_, evalulate its _expr_ (_else_ always evaluates to #t).                  |
+| (**and** _expr*_)                      | Evaluate _expression_ from left to right. When one of them evaluates to `#f`, return `#f`. If all of them are _truthy_, return the result of the last _expr_. |
+| (**or** _expr*_)                       | Evaluate _expression_ from left to right. When one of them evaluates to a _truthy_ value, return the result. If all of them are `#f`, return `#f`.            |
 
 ## Built-In Functions
 

@@ -22,3 +22,26 @@
 (or #t (not (display 1)) (not (display 2)) (not (display 3)))
 (or (not (display 1)) (not (display 2)) (not (display 3)) #t)
 (display (or #f 1 #f 2))
+
+(display (cond))
+(display (cond
+  (else 'hello)))
+(display
+  ((lambda l
+    (cond
+      ((or #f #f #f (= (+ 1 2 3)
+                       (+ 1 (- -1) 0)))
+        (display (quote (You should not be seeing this))))
+      ((and #t #t (null? (list 1 2 (list 4 5 6))) #t #t)
+        (display (quote (You should not be seeing this))))
+      (#f
+        (lambda (x y z) (lambda (a b c) (lambda l (+ y a c)))))
+      ((= 0 1)
+        (lambda (x y z) (lambda (a b c) (lambda l (+ y a c)))))
+      (else
+        ((lambda (a b c)
+          ((lambda ()
+            ((lambda (x y z)
+              (if (+ a b x y) (list x a y b z c) #f))
+            4 5 6))))
+        1 2 3))))))
