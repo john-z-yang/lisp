@@ -9,6 +9,7 @@
 #include "../common/sexpr/SExprs.hpp"
 #include "../common/sexpr/StringAtom.hpp"
 #include "../common/sexpr/SymAtom.hpp"
+#include "../runtime/VM.hpp"
 #include "SyntaxError.hpp"
 #include "grammar.hpp"
 #include "parse.hpp"
@@ -24,9 +25,10 @@
 
 Compiler::Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
                    std::shared_ptr<SExpr> arg, std::shared_ptr<SExpr> body,
-                   Compiler *enclosing)
+                   Compiler *enclosing, VM &vm)
     : source(source), sourceLoc(sourceLoc), enclosing(enclosing), arg(arg),
-      body(body), function(std::make_shared<FnAtom>(0)), stackOffset(0) {
+      body(body), function(std::make_shared<FnAtom>(0)), stackOffset(0),
+      vm(vm) {
   stackOffset += 1;
 
   if (const auto argNames = std::dynamic_pointer_cast<SExprs>(arg)) {
@@ -67,6 +69,9 @@ void Compiler::compile(std::shared_ptr<SExpr> sExpr) {
     if (sym->val == "define") {
       compileDef(sExpr);
       return;
+    } else if (sym->val == "defmacro") {
+      compileDefMacro(sExpr);
+      return;
     } else if (sym->val == "set!") {
       compileSet(sExpr);
       return;
@@ -75,6 +80,9 @@ void Compiler::compile(std::shared_ptr<SExpr> sExpr) {
       return;
     } else if (sym->val == "lambda") {
       compileLambda(sExpr);
+      return;
+    } else if (vm.isMacro(*sym)) {
+      compile(expandMacro(sExpr));
       return;
     }
   }
@@ -131,6 +139,36 @@ void Compiler::compileDef(std::shared_ptr<SExpr> sExpr) {
     }
   } catch (TypeError &te) {
     handleSyntaxError(defGrammar, te.expected, te.actual);
+  }
+}
+
+void Compiler::compileDefMacro(std::shared_ptr<SExpr> sExpr) {
+  if (enclosing) {
+    const auto [row, col] = sourceLoc[sExpr];
+    throw SyntaxError(
+        "Invalid syntax for define-macro: must define macros in top level",
+        source[row - 1], row, col);
+  }
+  try {
+    const auto sym =
+        cast<SymAtom>(cast<SExprs>(at(defMacroSymPos, sExpr))->first);
+    const auto argNames = cast<SExprs>(at(defMacroArgPos, sExpr))->first;
+    const auto body = cast<SExprs>(at(defMacroBodyPos, sExpr))->first;
+    cast<NilAtom>(at(defMacroNilPos, sExpr));
+
+    Compiler compiler(source, sourceLoc, argNames, body, this, vm);
+    const auto function = compiler.compile();
+
+    const auto lineNum = std::get<0>(sourceLoc[sExpr]);
+    getCode().pushCode(OpCode::MAKE_CLOSURE, lineNum);
+    getCode().pushCode(getCode().pushConst(function), lineNum);
+
+    getCode().pushCode(OpCode::DEF_SYM, lineNum);
+    getCode().pushCode(getCode().pushConst(sym), lineNum);
+
+    vm.defMacro(*sym);
+  } catch (TypeError &te) {
+    handleSyntaxError(defMacroGrammar, te.expected, te.actual);
   }
 }
 
@@ -198,7 +236,7 @@ void Compiler::compileLambda(std::shared_ptr<SExpr> sExpr) {
     const auto body = cast<SExprs>(at(lambdaBodyPos, sExpr))->first;
     cast<NilAtom>(at(lambdaNilPos, sExpr));
 
-    Compiler compiler(source, sourceLoc, argNames, body, this);
+    Compiler compiler(source, sourceLoc, argNames, body, this, vm);
     const auto function = compiler.compile();
 
     const auto lineNum = std::get<0>(sourceLoc[sExpr]);
@@ -224,6 +262,26 @@ void Compiler::compileCall(std::shared_ptr<SExprs> sExprs) {
   const auto lineNum = std::get<0>(sourceLoc[sExprs->first]);
   getCode().pushCode(OpCode::CALL, lineNum);
   getCode().pushCode(argc, lineNum);
+}
+
+std::shared_ptr<SExpr> Compiler::expandMacro(std::shared_ptr<SExpr> sExpr) {
+  auto macroExpr = std::make_shared<FnAtom>(0);
+
+  const auto sExprs = cast<SExprs>(sExpr);
+
+  macroExpr->code.pushCode(OpCode::LOAD_SYM);
+  macroExpr->code.pushCode(macroExpr->code.pushConst(sExprs->first));
+
+  const auto argc = visitEach(sExprs->rest, [&](std::shared_ptr<SExpr> sExpr) {
+    macroExpr->code.pushCode(OpCode::LOAD_CONST);
+    macroExpr->code.pushCode(macroExpr->code.pushConst(sExpr));
+  });
+
+  macroExpr->code.pushCode(OpCode::CALL);
+  macroExpr->code.pushCode(argc);
+  macroExpr->code.pushCode(OpCode::RETURN);
+
+  return vm.exec(macroExpr);
 }
 
 void Compiler::handleSyntaxError(const std::string grammar,
@@ -295,10 +353,10 @@ int Compiler::addUpvalue(int idx, bool isLocal) {
   return upValues.size() - 1;
 }
 
-Compiler::Compiler(std::vector<std::string> source)
+Compiler::Compiler(std::vector<std::string> source, VM &vm)
     : source(source), enclosing(nullptr), arg(std::make_shared<NilAtom>()),
       body(parse(source, sourceLoc)), function(std::make_shared<FnAtom>(0)),
-      stackOffset(0) {}
+      stackOffset(0), vm(vm) {}
 
 std::shared_ptr<FnAtom> Compiler::compile() {
   if (function->arity == -1) {

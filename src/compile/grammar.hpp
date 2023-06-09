@@ -26,6 +26,13 @@ const auto defSymPos = 1;
 const auto defSExprPos = 2;
 const auto defNilPos = 3;
 
+const auto defMacroGrammar =
+    "(defmacro name (symbol*) expression) or (defmacro name symbol expression)";
+const auto defMacroSymPos = 1;
+const auto defMacroArgPos = 2;
+const auto defMacroBodyPos = 3;
+const auto defMacroNilPos = 4;
+
 const auto setGrammar = "(set symbol expression)";
 const auto setSymPos = 1;
 const auto setSExprPos = 2;
@@ -41,11 +48,6 @@ const auto lambdaGrammar =
 const auto lambdaArgPos = 1;
 const auto lambdaBodyPos = 2;
 const auto lambdaNilPos = 3;
-
-const auto defMacroGrammar = "(define-macro symbol (lambda ...))";
-const auto defMacroSymPos = 1;
-const auto defMacroExprPos = 2;
-const auto defMacroNilPos = 3;
 
 const auto ifGrammar = "(if expression_1 expression_2 expression_3)";
 const auto ifTestPos = 1;

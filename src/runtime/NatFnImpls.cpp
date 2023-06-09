@@ -65,6 +65,16 @@
 
 PRED_OP(lispIsSym, isa<SymAtom>(**params));
 
+long genSymCnt = 0;
+std::shared_ptr<SExpr>
+lispGenSym(std::vector<std::shared_ptr<SExpr>>::iterator params,
+           const uint8_t argc) {
+  std::stringstream ss;
+  ss << ";gensym-" << genSymCnt;
+  genSymCnt += 1;
+  return std::make_shared<SymAtom>(ss.str());
+}
+
 PRED_OP(lispIsNum, isa<IntAtom>(**params));
 MATH_CMP_OP(lispNumEq, ==);
 MATH_CMP_OP(lispGt, >);

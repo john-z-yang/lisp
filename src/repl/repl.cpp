@@ -12,6 +12,7 @@
 #include <readline/history.h>
 #include <readline/readline.h>
 #include <regex>
+#include <set>
 #include <string>
 
 bool getConsoleInput(std::vector<std::string> &lines, std::string prompt,
@@ -70,7 +71,7 @@ int execFile(const std::string filePath, VM &vm) {
     std::vector<std::string> lines;
     try {
       if (getFileInput(fs, lines)) {
-        Compiler compiler(lines);
+        Compiler compiler(lines, vm);
         auto main = compiler.compile();
         vm.exec(main);
       } else {
@@ -92,8 +93,12 @@ int execFile(const std::string filePath, VM &vm) {
 void loadLib(VM &vm) {
   const std::string LIB_DIR_ENV_VAR = "LISP_LIB_ENV";
   if (const char *env_p = std::getenv(LIB_DIR_ENV_VAR.c_str())) {
+    std::set<std::filesystem::path> paths;
     for (const auto &entry : std::filesystem::directory_iterator(env_p)) {
-      execFile(std::string(entry.path()), vm);
+      paths.insert(entry.path());
+    }
+    for (const auto &path : paths) {
+      execFile(std::string(path), vm);
     }
   } else {
     std::cerr << std::endl
@@ -122,7 +127,7 @@ int repl() {
     std::vector<std::string> lines;
     try {
       if (getConsoleInput(lines, "lisp> ", "  ... ")) {
-        Compiler compiler(lines);
+        Compiler compiler(lines, vm);
         auto main = compiler.compile();
         const auto res = vm.exec(main);
         std::cout << *res << std::endl;

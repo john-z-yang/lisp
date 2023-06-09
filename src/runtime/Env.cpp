@@ -13,6 +13,7 @@ Env::Env() {
   } while (false)
 
   BIND_NATIVE_FN("sym?", lispIsSym, 1);
+  BIND_NATIVE_FN("gensym", lispGenSym, 0);
 
   BIND_NATIVE_FN("num?", lispIsNum, 1);
   BIND_NATIVE_FN("=", lispNumEq, -1);
@@ -79,3 +80,7 @@ std::shared_ptr<SExpr> Env::find(SymAtom &sym) {
 }
 
 const Env::SymVals &Env::getSymTable() const { return symTable; }
+
+void Env::defMacro(SymAtom &sym) { macros.insert(sym); }
+
+bool Env::isMacro(SymAtom &sym) { return macros.find(sym) != macros.end(); }

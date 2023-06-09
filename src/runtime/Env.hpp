@@ -5,14 +5,18 @@
 #include "../common/sexpr/SymAtom.hpp"
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 
 class Env {
   typedef std::unordered_map<SymAtom, std::shared_ptr<SExpr>,
                              SymAtom::HashFunction>
       SymVals;
 
+  typedef std::unordered_set<SymAtom, SymAtom::HashFunction> Macros;
+
 private:
   SymVals symTable;
+  Macros macros;
 
 public:
   Env();
@@ -24,6 +28,10 @@ public:
   const SymVals &getSymTable() const;
 
   std::shared_ptr<SExpr> find(SymAtom &sym);
+
+  void defMacro(SymAtom &sym);
+
+  bool isMacro(SymAtom &sym);
 };
 
 #endif

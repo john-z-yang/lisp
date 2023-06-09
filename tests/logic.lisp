@@ -6,11 +6,9 @@
 (display (and #t #f))
 (display (and #t #t))
 (and #f (display (quote (You should not be seeing this))))
-(and (display 1) (display 2) (display 3) (define zero 0))
-(display zero)
-(set! zero 0)
-(and #f (display 1) (display 2) (display 3) (define zero 0))
-(and (display 1) (display 2) (display 3) #f (define zero 0))
+(and (display 1) (display 2) (display 3))
+(and #f (display 1) (display 2) (display 3))
+(display (and (display 1) (display 2) (display 3) #f))
 
 (display (or))
 (display (or #t))
@@ -20,9 +18,30 @@
 (display (or #t #f))
 (display (or #t #t))
 (or #t (display (quote (You should not be seeing this))))
-(or (not (display 1)) (not (display 2)) (not (display 3)) (not (define one 1)))
-(display one)
-(set! one 1)
-(or #t (not (display 1)) (not (display 2)) (not (display 3)) (define zero 0))
-(or (not (display 1)) (not (display 2)) (not (display 3)) #t (define zero 0))
+(or (not (display 1)) (not (display 2)) (not (display 3)))
+(or #t (not (display 1)) (not (display 2)) (not (display 3)))
+(or (not (display 1)) (not (display 2)) (not (display 3)) #t)
 (display (or #f 1 #f 2))
+
+(display (cond))
+(display (cond
+  (else 'hello)))
+(display
+  ((lambda l
+    (cond
+      ((or #f #f #f (= (+ 1 2 3)
+                       (+ 1 (- -1) 0)))
+        (display (quote (You should not be seeing this))))
+      ((and #t #t (null? (list 1 2 (list 4 5 6))) #t #t)
+        (display (quote (You should not be seeing this))))
+      (#f
+        (lambda (x y z) (lambda (a b c) (lambda l (+ y a c)))))
+      ((= 0 1)
+        (lambda (x y z) (lambda (a b c) (lambda l (+ y a c)))))
+      (else
+        ((lambda (a b c)
+          ((lambda ()
+            ((lambda (x y z)
+              (if (+ a b x y) (list x a y b z c) #f))
+            4 5 6))))
+        1 2 3))))))
