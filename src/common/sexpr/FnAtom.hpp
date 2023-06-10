@@ -16,7 +16,7 @@ public:
   const int8_t arity;
   unsigned int numUpVals;
 
-  std::ostream &dissassemble(std::ostream &o);
+  std::ostream &dissassemble(std::ostream &o) const;
 
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;

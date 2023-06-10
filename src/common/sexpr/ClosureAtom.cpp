@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <sstream>
 
-ClosureAtom::ClosureAtom(const std::shared_ptr<FnAtom> fnAtom)
+ClosureAtom::ClosureAtom(FnAtom *const fnAtom)
     : Atom(SExpr::Type::CLOSURE), fnAtom(fnAtom) {}
 
 void ClosureAtom::assertArity(const uint8_t argc) const {

@@ -15,9 +15,9 @@ public:
   const bool val;
 
   BoolAtom(const bool val);
-  BoolAtom(const std::shared_ptr<SExpr> sExpr);
+  BoolAtom(SExpr *const sExpr);
 
-  static bool toBool(const std::shared_ptr<SExpr> sExpr);
+  static bool toBool(SExpr *const sExpr);
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;
 };

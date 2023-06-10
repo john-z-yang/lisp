@@ -13,28 +13,25 @@
 class VM {
 private:
   struct CallFrame {
-    std::shared_ptr<ClosureAtom> closure;
+    ClosureAtom *closure;
     std::vector<uint8_t>::size_type ip;
-    std::vector<std::shared_ptr<SExpr>>::size_type bp;
+    std::vector<SExpr *>::size_type bp;
   };
 
   Env globals;
-  std::vector<std::shared_ptr<SExpr>> stack;
+  std::vector<SExpr *> stack;
+  std::vector<std::unique_ptr<SExpr>> heap;
   std::vector<CallFrame> frames;
-  std::unordered_map<std::vector<std::shared_ptr<SExpr>>::size_type,
-                     std::shared_ptr<Upvalue>>
+  std::unordered_map<std::vector<SExpr *>::size_type, std::shared_ptr<Upvalue>>
       openUpvalues;
 
-  std::shared_ptr<SExpr> interp(std::shared_ptr<FnAtom> main);
+  SExpr *interp(FnAtom *main);
 
   void call(const uint8_t argc);
 
-  std::shared_ptr<Upvalue>
-  captureUpvalue(std::vector<std::shared_ptr<SExpr>>::size_type pos);
-  std::shared_ptr<SExpr>
-  peak(std::vector<std::shared_ptr<SExpr>>::size_type distance);
-  std::shared_ptr<SExprs>
-  makeList(std::vector<std::shared_ptr<SExpr>>::size_type size);
+  std::shared_ptr<Upvalue> captureUpvalue(std::vector<SExpr *>::size_type pos);
+  SExpr *peak(std::vector<SExpr *>::size_type distance);
+  SExprs *makeList(std::vector<SExpr *>::size_type size);
 
 public:
   class RuntimeException : public std::exception {
@@ -44,22 +41,26 @@ public:
   private:
     std::string _msg;
     const Env globals;
-    const std::vector<std::shared_ptr<SExpr>> stack;
+    const std::vector<SExpr *> stack;
     const std::vector<CallFrame> frames;
 
   public:
     RuntimeException(const std::string &msg, Env globals,
-                     std::vector<std::shared_ptr<SExpr>> stack,
-                     std::vector<CallFrame> frames);
+                     std::vector<SExpr *> stack, std::vector<CallFrame> frames);
 
     virtual const char *what() const noexcept override;
   };
 
   VM();
-  std::shared_ptr<SExpr> exec(std::shared_ptr<FnAtom> main);
+  SExpr *exec(FnAtom *main);
 
   void defMacro(SymAtom &sym);
   bool isMacro(SymAtom &sym);
+
+  template <typename T, typename... Args> T *alloc(Args &&...args) {
+    heap.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
+    return static_cast<T *>(heap.back().get());
+  }
 };
 
 std::ostream &operator<<(std::ostream &o, const VM::RuntimeException &re);

@@ -8,9 +8,7 @@
 #include <unordered_set>
 
 class Env {
-  typedef std::unordered_map<SymAtom, std::shared_ptr<SExpr>,
-                             SymAtom::HashFunction>
-      SymVals;
+  typedef std::unordered_map<SymAtom, SExpr *, SymAtom::HashFunction> SymVals;
 
   typedef std::unordered_set<SymAtom, SymAtom::HashFunction> Macros;
 
@@ -21,13 +19,13 @@ private:
 public:
   Env();
 
-  void def(SymAtom &sym, std::shared_ptr<SExpr> val);
+  void def(SymAtom &sym, SExpr *val);
 
-  void set(SymAtom &sym, std::shared_ptr<SExpr> val);
+  void set(SymAtom &sym, SExpr *val);
 
   const SymVals &getSymTable() const;
 
-  std::shared_ptr<SExpr> find(SymAtom &sym);
+  SExpr *find(SymAtom &sym);
 
   void defMacro(SymAtom &sym);
 

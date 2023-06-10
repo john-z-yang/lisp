@@ -16,7 +16,7 @@
 #include <string>
 #include <unordered_map>
 
-std::shared_ptr<SExpr> VM::interp(std::shared_ptr<FnAtom> main) {
+SExpr *VM::interp(FnAtom *main) {
 #define CUR_FRAME() (frames.back())
 #define CUR_CLOSURE() (CUR_FRAME().closure)
 #define CUR_FN() (CUR_CLOSURE()->fnAtom)
@@ -38,14 +38,13 @@ std::shared_ptr<SExpr> VM::interp(std::shared_ptr<FnAtom> main) {
       &&SET_UPVALUE,  &&LOAD_STACK, &&SET_STACK, &&JUMP,    &&POP_JUMP_IF_FALSE,
       &&MAKE_LIST};
 
-  stack.push_back(std::make_shared<ClosureAtom>(main));
+  stack.push_back(alloc<ClosureAtom>(main));
   call(0);
 
   DISPATCH();
 
 MAKE_CLOSURE : {
-  const auto closure =
-      std::make_shared<ClosureAtom>(cast<FnAtom>(READ_CONST()));
+  const auto closure = alloc<ClosureAtom>(cast<FnAtom>(READ_CONST()));
   for (unsigned int i{0}; i < closure->fnAtom->numUpVals; ++i) {
     auto isLocal = READ_BYTE();
     auto idx = READ_BYTE();
@@ -132,10 +131,10 @@ POP_JUMP_IF_FALSE : {
 MAKE_LIST : {
   const auto n = stack.size() - BASE_PTR() - 1;
   if (n == 0) {
-    stack.push_back(std::make_shared<NilAtom>());
+    stack.push_back(alloc<NilAtom>());
   } else {
     const auto list = makeList(n);
-    for (std::vector<std::shared_ptr<SExpr>>::size_type i{0}; i < n; ++i) {
+    for (std::vector<SExpr *>::size_type i{0}; i < n; ++i) {
       stack.pop_back();
     }
     stack.push_back(std::move(list));
@@ -165,7 +164,8 @@ void VM::call(const uint8_t argc) {
     frames.push_back({closure, 0, stack.size() - argc - 1});
     return;
   }
-  const auto res = cast<NatFnAtom>(callee)->invoke(stack.end() - argc, argc);
+  const auto res =
+      cast<NatFnAtom>(callee)->invoke(stack.end() - argc, argc, *this);
   for (uint8_t i{0}; i < argc + 1; ++i) {
     stack.pop_back();
   }
@@ -174,7 +174,7 @@ void VM::call(const uint8_t argc) {
 }
 
 std::shared_ptr<Upvalue>
-VM::captureUpvalue(std::vector<std::shared_ptr<SExpr>>::size_type pos) {
+VM::captureUpvalue(std::vector<SExpr *>::size_type pos) {
   auto it = openUpvalues.find(pos);
   if (it != openUpvalues.end()) {
     return it->second;
@@ -183,30 +183,74 @@ VM::captureUpvalue(std::vector<std::shared_ptr<SExpr>>::size_type pos) {
   return openUpvalues[pos];
 }
 
-std::shared_ptr<SExpr>
-VM::peak(std::vector<std::shared_ptr<SExpr>>::size_type distance) {
+SExpr *VM::peak(std::vector<SExpr *>::size_type distance) {
   return stack.rbegin()[distance];
 }
 
-std::shared_ptr<SExprs>
-VM::makeList(const std::vector<std::shared_ptr<SExpr>>::size_type n) {
-  auto list = std::make_shared<SExprs>();
+SExprs *VM::makeList(const std::vector<SExpr *>::size_type n) {
+  auto list = alloc<SExprs>();
   auto cur = list;
   for (auto i = stack.end() - n; i != stack.end(); ++i) {
     cur->first = *i;
     if (i != stack.end() - 1) {
-      cur->rest = std::make_shared<SExprs>();
+      cur->rest = alloc<SExprs>();
       cur = cast<SExprs>(cur->rest);
     } else {
-      cur->rest = std::make_shared<NilAtom>();
+      cur->rest = alloc<NilAtom>();
     }
   }
   return list;
 }
 
-VM::VM() {}
+VM::VM() {
+#define BIND_NATIVE_FN(sym, func, argc)                                        \
+  do {                                                                         \
+    globals.def(*alloc<SymAtom>(sym), alloc<NatFnAtom>(&func, argc));          \
+  } while (false)
 
-std::shared_ptr<SExpr> VM::exec(std::shared_ptr<FnAtom> main) {
+  BIND_NATIVE_FN("sym?", lispIsSym, 1);
+  BIND_NATIVE_FN("gensym", lispGenSym, 0);
+
+  BIND_NATIVE_FN("num?", lispIsNum, 1);
+  BIND_NATIVE_FN("=", lispNumEq, -1);
+  BIND_NATIVE_FN(">", lispGt, -1);
+  BIND_NATIVE_FN(">=", lispGteq, -1);
+  BIND_NATIVE_FN("<", lispLt, -1);
+  BIND_NATIVE_FN("<=", lispLteq, -1);
+  BIND_NATIVE_FN("+", lispAdd, -1);
+  BIND_NATIVE_FN("*", lispMult, -1);
+  BIND_NATIVE_FN("-", lispSub, -1);
+  BIND_NATIVE_FN("/", lispDiv, -1);
+  BIND_NATIVE_FN("abs", lispAbs, 1);
+  BIND_NATIVE_FN("%", lispMod, 2);
+
+  BIND_NATIVE_FN("str?", lispIsStr, 1);
+  BIND_NATIVE_FN("str-len", lispStrLen, 1);
+  BIND_NATIVE_FN("str-sub", lispStrSub, 3);
+  BIND_NATIVE_FN("str-con", lispStrCon, -1);
+  BIND_NATIVE_FN("->str", lispToStr, 1);
+
+  BIND_NATIVE_FN("null?", lispIsNull, 1);
+  BIND_NATIVE_FN("cons?", lispIsCons, 1);
+  BIND_NATIVE_FN("cons", lispCons, 2);
+  BIND_NATIVE_FN("car", lispCar, 1);
+  BIND_NATIVE_FN("cdr", lispCdr, 1);
+
+  BIND_NATIVE_FN("dis", lispDis, 1);
+  BIND_NATIVE_FN("display", lispDisplay, 1);
+
+  BIND_NATIVE_FN("quit", lispQuit, 0);
+  BIND_NATIVE_FN("error", lispError, 1);
+
+  BIND_NATIVE_FN("eq?", lispEq, 2);
+  BIND_NATIVE_FN("eqv?", lispEqv, 2);
+
+  BIND_NATIVE_FN("proc?", lispIsProc, 1);
+
+#undef BIND_NATIVE_FN
+}
+
+SExpr *VM::exec(FnAtom *main) {
   try {
     return interp(main);
   } catch (std::exception &e) {
@@ -220,15 +264,15 @@ std::shared_ptr<SExpr> VM::exec(std::shared_ptr<FnAtom> main) {
   return nullptr;
 }
 
-VM::RuntimeException::RuntimeException(
-    const std::string &msg, Env globals,
-    std::vector<std::shared_ptr<SExpr>> stack, std::vector<CallFrame> frames)
+VM::RuntimeException::RuntimeException(const std::string &msg, Env globals,
+                                       std::vector<SExpr *> stack,
+                                       std::vector<CallFrame> frames)
     : _msg(msg), globals(globals), stack(stack), frames(frames) {}
 
 const char *VM::RuntimeException::what() const noexcept { return _msg.c_str(); }
 
 std::ostream &operator<<(std::ostream &o, const VM::RuntimeException &re) {
-  std::unordered_map<std::shared_ptr<SExpr>, SymAtom> sExprSyms;
+  std::unordered_map<SExpr *, SymAtom> sExprSyms;
   for (const auto &p : re.globals.getSymTable()) {
     sExprSyms.insert({p.second, p.first});
   }

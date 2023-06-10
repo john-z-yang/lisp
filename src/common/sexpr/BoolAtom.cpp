@@ -3,8 +3,8 @@
 #include <memory>
 #include <string>
 
-bool BoolAtom::toBool(std::shared_ptr<SExpr> sExpr) {
-  if (auto boolAtom = std::dynamic_pointer_cast<BoolAtom>(sExpr)) {
+bool BoolAtom::toBool(SExpr *sExpr) {
+  if (auto boolAtom = dynamic_cast<BoolAtom *>(sExpr)) {
     return boolAtom->val;
   }
   return true;
@@ -12,7 +12,7 @@ bool BoolAtom::toBool(std::shared_ptr<SExpr> sExpr) {
 
 BoolAtom::BoolAtom(const bool val) : Atom(SExpr::Type::BOOL), val(val) {}
 
-BoolAtom::BoolAtom(const std::shared_ptr<SExpr> sExpr)
+BoolAtom::BoolAtom(SExpr *const sExpr)
     : Atom(SExpr::Type::BOOL), val(toBool(sExpr)) {}
 
 std::string BoolAtom::toString() const { return (val) ? "#t" : "#f"; }

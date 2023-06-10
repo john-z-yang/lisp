@@ -13,12 +13,12 @@ private:
 
 public:
   TypeError(const std::string &msg, const std::string expected,
-            const std::shared_ptr<SExpr> actual);
+            SExpr *const actual);
 
   virtual const char *what() const noexcept override;
 
   const std::string expected;
-  const std::shared_ptr<SExpr> actual;
+  SExpr *const actual;
 };
 
 std::ostream &operator<<(std::ostream &o, const TypeError &pe);

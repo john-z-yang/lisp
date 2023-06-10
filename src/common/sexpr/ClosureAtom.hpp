@@ -14,11 +14,11 @@ protected:
   bool equals(const SExpr &other) const;
 
 public:
-  ClosureAtom(const std::shared_ptr<FnAtom> fnAtom);
+  ClosureAtom(FnAtom *const fnAtom);
 
   void assertArity(const uint8_t arity) const;
 
-  const std::shared_ptr<FnAtom> fnAtom;
+  FnAtom *const fnAtom;
   std::vector<std::shared_ptr<Upvalue>> upvalues;
 
   std::ostream &dissassemble(std::ostream &o);

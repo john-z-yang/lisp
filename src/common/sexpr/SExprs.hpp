@@ -11,10 +11,10 @@ protected:
   bool equals(const SExpr &other) const;
 
 public:
-  std::shared_ptr<SExpr> first;
-  std::shared_ptr<SExpr> rest;
+  SExpr *first;
+  SExpr *rest;
 
-  SExprs(std::shared_ptr<SExpr> first, std::shared_ptr<SExpr> rest);
+  SExprs(SExpr *first, SExpr *rest);
   SExprs();
 
   static bool classOf(const SExpr &sExpr);

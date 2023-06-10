@@ -13,12 +13,12 @@ std::string FnAtom::toString() const {
 
 bool FnAtom::equals(const SExpr &other) const { return this == &other; }
 
-std::ostream &FnAtom::dissassemble(std::ostream &o) {
+std::ostream &FnAtom::dissassemble(std::ostream &o) const {
   o << "<Function at " << this << ", arity: " << unsigned(arity)
     << ", upvalues: " << numUpVals << ">" << std::endl
     << code << std::endl;
   for (auto i = code.consts.begin(); i != code.consts.end(); ++i) {
-    if (const auto fnAtom = std::dynamic_pointer_cast<FnAtom>(*i)) {
+    if (const auto fnAtom = dynamic_cast<FnAtom *>(*i)) {
       fnAtom->dissassemble(o);
     }
   }

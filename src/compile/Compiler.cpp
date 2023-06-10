@@ -24,24 +24,22 @@
 #include <vector>
 
 Compiler::Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
-                   std::shared_ptr<SExpr> arg, std::shared_ptr<SExpr> body,
-                   Compiler *enclosing, VM &vm)
+                   SExpr *arg, SExpr *body, Compiler *enclosing, VM &vm)
     : source(source), sourceLoc(sourceLoc), vm(vm), enclosing(enclosing),
-      arg(arg), body(body), function(std::make_shared<FnAtom>(0)),
-      stackOffset(1) {
-  if (const auto argNames = std::dynamic_pointer_cast<SExprs>(arg)) {
-    visitEach(argNames, [&](std::shared_ptr<SExpr> sExpr) {
+      arg(arg), body(body), function(vm.alloc<FnAtom>(0)), stackOffset(1) {
+  if (const auto argNames = dynamic_cast<SExprs *>(arg)) {
+    visitEach(argNames, [&](SExpr *sExpr) {
       auto sym = cast<SymAtom>(sExpr);
       locals.push_back({sym, stackOffset, false});
       stackOffset += 1;
     });
 
-    function = std::make_unique<FnAtom>(stackOffset - 1);
-  } else if (const auto argName = std::dynamic_pointer_cast<SymAtom>(arg)) {
+    function = vm.alloc<FnAtom>(stackOffset - 1);
+  } else if (const auto argName = dynamic_cast<SymAtom *>(arg)) {
     locals.push_back({argName, stackOffset, false});
     stackOffset += 1;
 
-    function = std::make_unique<FnAtom>(-1);
+    function = vm.alloc<FnAtom>(-1);
   } else if (!isa<NilAtom>(*arg)) {
     handleSyntaxError(lambdaGrammar, NilAtom::typeName, arg);
   }
@@ -72,8 +70,7 @@ std::vector<Compiler::Token> Compiler::tokenize(std::string line,
   return tokens;
 }
 
-std::shared_ptr<SExpr> Compiler::parse(std::vector<std::string> lines,
-                                       SourceLoc &sourceLoc) {
+SExpr *Compiler::parse(std::vector<std::string> lines, SourceLoc &sourceLoc) {
   auto tokens = tokenize(lines);
   std::vector<Token>::const_iterator it = tokens.begin();
   const auto res = parse(it, sourceLoc);
@@ -83,8 +80,8 @@ std::shared_ptr<SExpr> Compiler::parse(std::vector<std::string> lines,
   return res;
 }
 
-std::shared_ptr<SExpr> Compiler::parse(std::vector<Token>::const_iterator &it,
-                                       SourceLoc &sourceLoc) {
+SExpr *Compiler::parse(std::vector<Token>::const_iterator &it,
+                       SourceLoc &sourceLoc) {
   auto token = *it;
   it += 1;
   if (token.str == "(") {
@@ -94,10 +91,9 @@ std::shared_ptr<SExpr> Compiler::parse(std::vector<Token>::const_iterator &it,
   }
   if (token.str == "'" || token.str == "`" || token.str == "," ||
       token.str == ",@") {
-    auto rest = std::make_shared<SExprs>(parse(it, sourceLoc),
-                                         std::make_shared<NilAtom>());
+    auto rest = vm.alloc<SExprs>(parse(it, sourceLoc), vm.alloc<NilAtom>());
     sourceLoc.insert({rest, {token.row, token.col}});
-    auto sExprs = std::make_shared<SExprs>(parseAtom(token), rest);
+    auto sExprs = vm.alloc<SExprs>(parseAtom(token), rest);
     sourceLoc.insert({sExprs, {token.row, token.col}});
     return sExprs;
   }
@@ -106,74 +102,73 @@ std::shared_ptr<SExpr> Compiler::parse(std::vector<Token>::const_iterator &it,
   return atom;
 }
 
-std::shared_ptr<SExpr> Compiler::parseAtom(Token token) {
+SExpr *Compiler::parseAtom(Token token) {
   if ((token.str.length() >= 1 &&
        all_of(token.str.begin(), token.str.end(), ::isdigit)) ||
       (token.str[0] == '-' && token.str.length() > 1 &&
        all_of(token.str.begin() + 1, token.str.end(), ::isdigit))) {
-    return std::make_shared<IntAtom>(stoi(token.str));
+    return vm.alloc<IntAtom>(stoi(token.str));
   }
   if (token.str.front() == '\"' && token.str.back() == '\"') {
-    return std::make_shared<StringAtom>(token.str);
+    return vm.alloc<StringAtom>(token.str);
   }
   if (token.str == "#t") {
-    return std::make_shared<BoolAtom>(true);
+    return vm.alloc<BoolAtom>(true);
   }
   if (token.str == "#f") {
-    return std::make_shared<BoolAtom>(false);
+    return vm.alloc<BoolAtom>(false);
   }
   if (token.str == "'") {
-    return std::make_shared<SymAtom>("quote");
+    return vm.alloc<SymAtom>("quote");
   }
   if (token.str == "`") {
-    return std::make_shared<SymAtom>("quasiquote");
+    return vm.alloc<SymAtom>("quasiquote");
   }
   if (token.str == ",") {
-    return std::make_shared<SymAtom>("unquote");
+    return vm.alloc<SymAtom>("unquote");
   }
   if (token.str == ",@") {
-    return std::make_shared<SymAtom>("unquote-splicing");
+    return vm.alloc<SymAtom>("unquote-splicing");
   }
-  return std::make_shared<SymAtom>(token.str);
+  return vm.alloc<SymAtom>(token.str);
 }
 
-std::shared_ptr<SExpr>
-Compiler::parseSexprs(std::vector<Token>::const_iterator &it,
-                      SourceLoc &sourceLoc) {
+SExpr *Compiler::parseSexprs(std::vector<Token>::const_iterator &it,
+                             SourceLoc &sourceLoc) {
   auto token = *it;
   if (token.str == ")") {
     it += 1;
-    auto nil = std::make_shared<NilAtom>();
+    auto nil = vm.alloc<NilAtom>();
     sourceLoc.insert({nil, {token.row, token.col - 1}});
     return nil;
   } else if (token.str == "(") {
     it += 1;
     auto first = parseSexprs(it, sourceLoc);
     auto rest = parseSexprs(it, sourceLoc);
-    auto sExprs = std::make_shared<SExprs>(first, rest);
+    auto sExprs = vm.alloc<SExprs>(first, rest);
     sourceLoc.insert({sExprs, {token.row, token.col - 1}});
     return sExprs;
   }
   auto first = parse(it, sourceLoc);
   auto rest = parseSexprs(it, sourceLoc);
-  auto sExprs = std::make_shared<SExprs>(first, rest);
+  auto sExprs = vm.alloc<SExprs>(first, rest);
   sourceLoc.insert({sExprs, {token.row, token.col - 1}});
   return sExprs;
 }
 
-void Compiler::compile(std::shared_ptr<SExpr> sExpr) {
+void Compiler::compile(SExpr *sExpr) {
   if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) || isa<BoolAtom>(*sExpr) ||
       isa<StringAtom>(*sExpr)) {
     const auto lineNum = std::get<0>(sourceLoc[sExpr]);
     getCode().pushCode(OpCode::LOAD_CONST, lineNum);
     getCode().pushCode(getCode().pushConst(sExpr), lineNum);
     return;
-  } else if (const auto sym = std::dynamic_pointer_cast<SymAtom>(sExpr)) {
+  } else if (const auto sym = dynamic_cast<SymAtom *>(sExpr)) {
     compileSym(sym);
     return;
   }
   const auto sExprs = cast<SExprs>(sExpr);
-  if (const auto sym = std::dynamic_pointer_cast<SymAtom>(sExprs->first)) {
+  if (const auto sym = dynamic_cast<SymAtom *>(sExprs->first)) {
     if (sym->val == "quote") {
       compileQuote(sExpr);
       return;
@@ -201,7 +196,7 @@ void Compiler::compile(std::shared_ptr<SExpr> sExpr) {
   compileCall(sExprs);
 }
 
-void Compiler::compileSym(std::shared_ptr<SymAtom> sym) {
+void Compiler::compileSym(SymAtom *sym) {
   const auto lineNum = std::get<0>(sourceLoc[sym]);
 
   if (const auto idx = resolveLocal(sym); idx != -1) {
@@ -218,7 +213,7 @@ void Compiler::compileSym(std::shared_ptr<SymAtom> sym) {
   getCode().pushCode(getCode().pushConst(sym), lineNum);
 }
 
-void Compiler::compileQuote(std::shared_ptr<SExpr> sExpr) {
+void Compiler::compileQuote(SExpr *sExpr) {
   const auto expr = cast<SExprs>(at(quoteArgPos, sExpr))->first;
   cast<NilAtom>(at(quoteNilPos, sExpr));
 
@@ -227,7 +222,7 @@ void Compiler::compileQuote(std::shared_ptr<SExpr> sExpr) {
   getCode().pushCode(getCode().pushConst(expr), lineNum);
 }
 
-void Compiler::compileDef(std::shared_ptr<SExpr> sExpr) {
+void Compiler::compileDef(SExpr *sExpr) {
   if ((locals.empty() && stackOffset > 0) ||
       (!locals.empty() && stackOffset > locals.back().stackOffset + 1)) {
     const auto [row, col] = sourceLoc[sExpr];
@@ -254,7 +249,7 @@ void Compiler::compileDef(std::shared_ptr<SExpr> sExpr) {
   }
 }
 
-void Compiler::compileDefMacro(std::shared_ptr<SExpr> sExpr) {
+void Compiler::compileDefMacro(SExpr *sExpr) {
   if (enclosing) {
     const auto [row, col] = sourceLoc[sExpr];
     throw SyntaxError(
@@ -284,7 +279,7 @@ void Compiler::compileDefMacro(std::shared_ptr<SExpr> sExpr) {
   }
 }
 
-void Compiler::compileSet(std::shared_ptr<SExpr> sExpr) {
+void Compiler::compileSet(SExpr *sExpr) {
   try {
     const auto sym = cast<SymAtom>(cast<SExprs>(at(setSymPos, sExpr))->first);
     const auto expr = cast<SExprs>(at(setSExprPos, sExpr))->first;
@@ -311,7 +306,7 @@ void Compiler::compileSet(std::shared_ptr<SExpr> sExpr) {
   }
 }
 
-void Compiler::compileIf(std::shared_ptr<SExpr> sExpr) {
+void Compiler::compileIf(SExpr *sExpr) {
   try {
     const auto test = cast<SExprs>(at(ifTestPos, sExpr))->first;
     const auto conseq = cast<SExprs>(at(ifConseqPos, sExpr))->first;
@@ -342,7 +337,7 @@ void Compiler::compileIf(std::shared_ptr<SExpr> sExpr) {
   }
 }
 
-void Compiler::compileLambda(std::shared_ptr<SExpr> sExpr) {
+void Compiler::compileLambda(SExpr *sExpr) {
   try {
     const auto argNames = cast<SExprs>(at(lambdaArgPos, sExpr))->first;
     const auto body = cast<SExprs>(at(lambdaBodyPos, sExpr))->first;
@@ -363,10 +358,10 @@ void Compiler::compileLambda(std::shared_ptr<SExpr> sExpr) {
   }
 }
 
-void Compiler::compileCall(std::shared_ptr<SExprs> sExprs) {
+void Compiler::compileCall(SExprs *sExprs) {
   compile(sExprs->first);
   stackOffset += 1;
-  const auto argc = visitEach(sExprs->rest, [&](std::shared_ptr<SExpr> sExpr) {
+  const auto argc = visitEach(sExprs->rest, [&](SExpr *sExpr) {
     this->compile(sExpr);
     stackOffset += 1;
   });
@@ -376,15 +371,15 @@ void Compiler::compileCall(std::shared_ptr<SExprs> sExprs) {
   getCode().pushCode(argc, lineNum);
 }
 
-std::shared_ptr<SExpr> Compiler::expandMacro(std::shared_ptr<SExpr> sExpr) {
-  auto macroExpr = std::make_shared<FnAtom>(0);
+SExpr *Compiler::expandMacro(SExpr *sExpr) {
+  auto macroExpr = vm.alloc<FnAtom>(0);
 
   const auto sExprs = cast<SExprs>(sExpr);
 
   macroExpr->code.pushCode(OpCode::LOAD_SYM);
   macroExpr->code.pushCode(macroExpr->code.pushConst(sExprs->first));
 
-  const auto argc = visitEach(sExprs->rest, [&](std::shared_ptr<SExpr> sExpr) {
+  const auto argc = visitEach(sExprs->rest, [&](SExpr *sExpr) {
     macroExpr->code.pushCode(OpCode::LOAD_CONST);
     macroExpr->code.pushCode(macroExpr->code.pushConst(sExpr));
   });
@@ -396,8 +391,7 @@ std::shared_ptr<SExpr> Compiler::expandMacro(std::shared_ptr<SExpr> sExpr) {
   return vm.exec(macroExpr);
 }
 
-const unsigned int Compiler::visitEach(std::shared_ptr<SExpr> sExprs,
-                                       Visitor visitor) {
+const unsigned int Compiler::visitEach(SExpr *sExprs, Visitor visitor) {
   auto numVisited = 0U;
   auto cur = sExprs;
   while (isa<SExprs>(*cur)) {
@@ -409,9 +403,8 @@ const unsigned int Compiler::visitEach(std::shared_ptr<SExpr> sExprs,
   return numVisited;
 }
 
-std::shared_ptr<SExpr> Compiler::at(const unsigned int n,
-                                    std::shared_ptr<SExpr> sExpr) {
-  std::shared_ptr<SExpr> it = cast<SExprs>(sExpr);
+SExpr *Compiler::at(const unsigned int n, SExpr *sExpr) {
+  SExpr *it = cast<SExprs>(sExpr);
   for (unsigned int i{0}; i < n; ++i) {
     it = cast<SExprs>(it)->rest;
   }
@@ -420,7 +413,7 @@ std::shared_ptr<SExpr> Compiler::at(const unsigned int n,
 
 Code &Compiler::getCode() { return function->code; }
 
-int Compiler::resolveLocal(std::shared_ptr<SymAtom> sym) {
+int Compiler::resolveLocal(SymAtom *sym) {
   auto it = std::find_if(locals.rbegin(), locals.rend(),
                          [&sym](Local local) { return *local.symbol == *sym; });
   if (it == locals.rend()) {
@@ -429,7 +422,7 @@ int Compiler::resolveLocal(std::shared_ptr<SymAtom> sym) {
   return it->stackOffset;
 }
 
-int Compiler::resolveUpvalue(Compiler &caller, std::shared_ptr<SymAtom> sym) {
+int Compiler::resolveUpvalue(Compiler &caller, SymAtom *sym) {
   if (enclosing) {
     if (auto idx = enclosing->resolveLocal(sym); idx != -1) {
       enclosing->locals[idx - 1].isCaptured = true;
@@ -464,7 +457,7 @@ void Compiler::handleUnexpectedToken(const Token &token,
 
 void Compiler::handleSyntaxError(const std::string grammar,
                                  const std::string expected,
-                                 const std::shared_ptr<SExpr> actual) {
+                                 SExpr *const actual) {
   std::stringstream ss;
   ss << "Invalid syntax for " << grammar << "." << std::endl
      << "Expected " << expected << ", but got " << *actual << ".";
@@ -473,11 +466,11 @@ void Compiler::handleSyntaxError(const std::string grammar,
 }
 
 Compiler::Compiler(std::vector<std::string> source, VM &vm)
-    : source(source), vm(vm), enclosing(nullptr),
-      arg(std::make_shared<NilAtom>()), body(parse(source, sourceLoc)),
-      function(std::make_shared<FnAtom>(0)), stackOffset(0) {}
+    : source(source), vm(vm), enclosing(nullptr), arg(vm.alloc<NilAtom>()),
+      body(parse(source, sourceLoc)), function(vm.alloc<FnAtom>(0)),
+      stackOffset(0) {}
 
-std::shared_ptr<FnAtom> Compiler::compile() {
+FnAtom *Compiler::compile() {
   if (function->arity == -1) {
     getCode().pushCode(OpCode::MAKE_LIST);
   }

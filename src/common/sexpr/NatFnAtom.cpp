@@ -8,16 +8,15 @@
 NatFnAtom::NatFnAtom(NativeFn fn, const int argc)
     : Atom(SExpr::Type::NATIVE_FN), fn(fn), argc(argc) {}
 
-std::shared_ptr<SExpr>
-NatFnAtom::invoke(std::vector<std::shared_ptr<SExpr>>::iterator params,
-                  const unsigned int incomingArgc) {
+SExpr *NatFnAtom::invoke(std::vector<SExpr *>::iterator params,
+                         const unsigned int incomingArgc, VM &vm) {
   if (argc != -1 && incomingArgc != (unsigned int)argc) {
     std::stringstream ss;
     ss << "Invalid number of arguments. Expected " << argc
        << " arguments, but got " << incomingArgc << ".";
     throw std::invalid_argument(ss.str());
   }
-  return fn(params, incomingArgc);
+  return fn(params, incomingArgc, vm);
 }
 
 std::string NatFnAtom::toString() const { return "<Native function>"; }
