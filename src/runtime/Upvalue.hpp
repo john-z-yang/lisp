@@ -23,7 +23,7 @@ public:
   void close();
 
   SExpr *get() const;
-  void set(SExpr *&sexpr);
+  void set(SExpr *sexpr);
 };
 
 #endif

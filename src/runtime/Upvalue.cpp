@@ -2,7 +2,7 @@
 
 Upvalue::Upvalue(const std::vector<SExpr *>::size_type stackPos,
                  std::vector<SExpr *> &stack)
-    : stackPos(stackPos), stack(stack) {}
+    : stackPos(stackPos), stack(stack), value(nullptr) {}
 
 bool Upvalue::isOpen() const { return value == nullptr; }
 
@@ -15,7 +15,7 @@ SExpr *Upvalue::get() const {
   return value;
 }
 
-void Upvalue::set(SExpr *&sexpr) {
+void Upvalue::set(SExpr *sexpr) {
   if (isOpen()) {
     stack[stackPos] = sexpr;
   }
