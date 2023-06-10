@@ -5,6 +5,8 @@
 
 SExpr::SExpr(SExpr::Type type) : type(type) {}
 
+SExpr::~SExpr() {}
+
 std::ostream &operator<<(std::ostream &o, const SExpr &sExpr) {
   return o << (isa<SExprs>(sExpr) ? "(" : "") << sExpr.toString();
 }
