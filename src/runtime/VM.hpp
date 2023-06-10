@@ -1,6 +1,7 @@
 #ifndef LISP_SRC_VM_VM_HPP_
 #define LISP_SRC_VM_VM_HPP_
 
+#include "../common/sexpr/BoolAtom.hpp"
 #include "../common/sexpr/ClosureAtom.hpp"
 #include "../common/sexpr/NilAtom.hpp"
 #include "../common/sexpr/SExpr.hpp"
@@ -66,6 +67,9 @@ public:
 };
 
 template <> inline NilAtom *VM::alloc() { return NilAtom::getInstance(); }
+template <> inline BoolAtom *VM::alloc(bool &&val) {
+  return BoolAtom::getInstance(val);
+}
 
 std::ostream &operator<<(std::ostream &o, const VM::RuntimeException &re);
 

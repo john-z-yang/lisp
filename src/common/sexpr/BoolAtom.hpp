@@ -8,18 +8,25 @@
 
 class BoolAtom final : public Atom {
 protected:
+  BoolAtom(const bool val);
+
+  static BoolAtom _true;
+  static BoolAtom _false;
+
   std::string toString() const;
   bool equals(const SExpr &other) const;
 
 public:
-  const bool val;
+  static BoolAtom *getInstance(const bool val);
 
-  BoolAtom(const bool val);
-  BoolAtom(SExpr *const sExpr);
+  const bool val;
 
   static bool toBool(SExpr *const sExpr);
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;
+
+  BoolAtom(BoolAtom &other) = delete;
+  void operator=(const BoolAtom &) = delete;
 };
 
 #endif
