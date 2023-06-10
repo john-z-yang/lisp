@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS_EXTRA =
+CXXFLAGS_EXTRA = -fsanitize=address -g
 CXXFLAGS = -std=c++20 -Wall $(CXXFLAGS_EXTRA)
 
 PERCENT = %
