@@ -2,6 +2,7 @@
 #define LISP_SRC_VM_VM_HPP_
 
 #include "../common/sexpr/ClosureAtom.hpp"
+#include "../common/sexpr/NilAtom.hpp"
 #include "../common/sexpr/SExpr.hpp"
 #include "../common/sexpr/SExprs.hpp"
 #include "Env.hpp"
@@ -63,6 +64,8 @@ public:
     return static_cast<T *>(heap.back().get());
   }
 };
+
+template <> inline NilAtom *VM::alloc() { return NilAtom::getInstance(); }
 
 std::ostream &operator<<(std::ostream &o, const VM::RuntimeException &re);
 
