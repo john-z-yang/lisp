@@ -8,6 +8,8 @@ class NilAtom final : public Atom {
 protected:
   NilAtom();
 
+  static NilAtom instance;
+
   std::string toString() const;
   bool equals(const SExpr &other) const;
 
