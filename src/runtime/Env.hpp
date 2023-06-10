@@ -8,28 +8,30 @@
 #include <unordered_set>
 
 class Env {
-  typedef std::unordered_map<SymAtom, SExpr *, SymAtom::HashFunction> SymVals;
+  typedef std::unordered_map<SymAtom *, SExpr *, SymAtom::HashFunction,
+                             SymAtom::EqualFunction>
+      SymVals;
 
-  typedef std::unordered_set<SymAtom, SymAtom::HashFunction> Macros;
+  typedef std::unordered_set<SymAtom *, SymAtom::HashFunction,
+                             SymAtom::EqualFunction>
+      Macros;
 
 private:
   SymVals symTable;
   Macros macros;
 
 public:
-  Env();
+  void def(SymAtom *sym, SExpr *val);
 
-  void def(SymAtom &sym, SExpr *val);
-
-  void set(SymAtom &sym, SExpr *val);
+  void set(SymAtom *sym, SExpr *val);
 
   const SymVals &getSymTable() const;
 
-  SExpr *find(SymAtom &sym);
+  SExpr *find(SymAtom *sym);
 
-  void defMacro(SymAtom &sym);
+  void defMacro(SymAtom *sym);
 
-  bool isMacro(SymAtom &sym);
+  bool isMacro(SymAtom *sym);
 };
 
 #endif

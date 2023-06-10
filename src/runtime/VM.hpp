@@ -21,6 +21,7 @@ private:
   Env globals;
   std::vector<SExpr *> stack;
   std::vector<std::unique_ptr<SExpr>> heap;
+  std::unordered_map<int, SExpr *> integers;
   std::vector<CallFrame> frames;
   std::unordered_map<std::vector<SExpr *>::size_type, std::shared_ptr<Upvalue>>
       openUpvalues;
@@ -54,8 +55,8 @@ public:
   VM();
   SExpr *exec(FnAtom *main);
 
-  void defMacro(SymAtom &sym);
-  bool isMacro(SymAtom &sym);
+  void defMacro(SymAtom *sym);
+  bool isMacro(SymAtom *sym);
 
   template <typename T, typename... Args> T *alloc(Args &&...args) {
     heap.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));

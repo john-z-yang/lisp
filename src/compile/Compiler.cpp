@@ -188,7 +188,7 @@ void Compiler::compile(SExpr *sExpr) {
     } else if (sym->val == "lambda") {
       compileLambda(sExpr);
       return;
-    } else if (vm.isMacro(*sym)) {
+    } else if (vm.isMacro(sym)) {
       compile(expandMacro(sExpr));
       return;
     }
@@ -273,7 +273,7 @@ void Compiler::compileDefMacro(SExpr *sExpr) {
     getCode().pushCode(OpCode::DEF_SYM, lineNum);
     getCode().pushCode(getCode().pushConst(sym), lineNum);
 
-    vm.defMacro(*sym);
+    vm.defMacro(sym);
   } catch (TypeError &te) {
     handleSyntaxError(defMacroGrammar, te.expected, te.actual);
   }

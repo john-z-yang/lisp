@@ -89,15 +89,15 @@ LOAD_CONST : {
   DISPATCH();
 }
 LOAD_SYM : {
-  stack.push_back(globals.find(*cast<SymAtom>(READ_CONST())));
+  stack.push_back(globals.find(cast<SymAtom>(READ_CONST())));
   DISPATCH();
 }
 DEF_SYM : {
-  globals.def(*cast<SymAtom>(READ_CONST()), stack.back());
+  globals.def(cast<SymAtom>(READ_CONST()), stack.back());
   DISPATCH();
 }
 SET_SYM : {
-  globals.set(*cast<SymAtom>(READ_CONST()), stack.back());
+  globals.set(cast<SymAtom>(READ_CONST()), stack.back());
   DISPATCH();
 }
 LOAD_UPVALUE : {
@@ -205,7 +205,7 @@ SExprs *VM::makeList(const std::vector<SExpr *>::size_type n) {
 VM::VM() {
 #define BIND_NATIVE_FN(sym, func, argc)                                        \
   do {                                                                         \
-    globals.def(*alloc<SymAtom>(sym), alloc<NatFnAtom>(&func, argc));          \
+    globals.def(alloc<SymAtom>(sym), alloc<NatFnAtom>(&func, argc));           \
   } while (false)
 
   BIND_NATIVE_FN("sym?", lispIsSym, 1);
@@ -272,7 +272,7 @@ VM::RuntimeException::RuntimeException(const std::string &msg, Env globals,
 const char *VM::RuntimeException::what() const noexcept { return _msg.c_str(); }
 
 std::ostream &operator<<(std::ostream &o, const VM::RuntimeException &re) {
-  std::unordered_map<SExpr *, SymAtom> sExprSyms;
+  std::unordered_map<SExpr *, SymAtom *> sExprSyms;
   for (const auto &p : re.globals.getSymTable()) {
     sExprSyms.insert({p.second, p.first});
   }
@@ -292,7 +292,7 @@ std::ostream &operator<<(std::ostream &o, const VM::RuntimeException &re) {
     idx += 1;
     auto it = sExprSyms.find(stackFrame.closure);
     if (it != sExprSyms.end()) {
-      o << " (" << it->second << ")";
+      o << " (" << *it->second << ")";
     }
   }
 
@@ -310,6 +310,6 @@ std::ostream &operator<<(std::ostream &o, const VM::RuntimeException &re) {
   return o << std::endl << re.what();
 }
 
-void VM::defMacro(SymAtom &sym) { globals.defMacro(sym); }
+void VM::defMacro(SymAtom *sym) { globals.defMacro(sym); }
 
-bool VM::isMacro(SymAtom &sym) { return globals.isMacro(sym); }
+bool VM::isMacro(SymAtom *sym) { return globals.isMacro(sym); }
