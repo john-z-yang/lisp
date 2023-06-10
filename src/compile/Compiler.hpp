@@ -74,7 +74,7 @@ private:
 
   SExpr *expandMacro(SExpr *macro);
 
-  const unsigned int visitEach(SExpr *sExpr, Visitor visitor);
+  unsigned int visitEach(SExpr *sExpr, Visitor visitor);
   SExpr *at(const unsigned int n, SExpr *sExpr);
   Code &getCode();
 

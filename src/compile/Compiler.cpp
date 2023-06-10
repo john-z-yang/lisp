@@ -242,7 +242,7 @@ void Compiler::compileDef(SExpr *sExpr) {
       getCode().pushCode(OpCode::DEF_SYM, lineNum);
       getCode().pushCode(getCode().pushConst(sym), lineNum);
     } else {
-      locals.push_back({sym, stackOffset});
+      locals.push_back({sym, stackOffset, false});
     }
   } catch (TypeError &te) {
     handleSyntaxError(defGrammar, te.expected, te.actual);
@@ -391,7 +391,7 @@ SExpr *Compiler::expandMacro(SExpr *sExpr) {
   return vm.exec(macroExpr);
 }
 
-const unsigned int Compiler::visitEach(SExpr *sExprs, Visitor visitor) {
+unsigned int Compiler::visitEach(SExpr *sExprs, Visitor visitor) {
   auto numVisited = 0U;
   auto cur = sExprs;
   while (isa<SExprs>(*cur)) {
