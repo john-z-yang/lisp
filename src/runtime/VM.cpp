@@ -130,15 +130,9 @@ POP_JUMP_IF_FALSE : {
 }
 MAKE_LIST : {
   const auto n = stack.size() - BASE_PTR() - 1;
-  if (n == 0) {
-    stack.push_back(alloc<NilAtom>());
-  } else {
-    const auto list = makeList(n);
-    for (std::vector<SExpr *>::size_type i{0}; i < n; ++i) {
-      stack.pop_back();
-    }
-    stack.push_back(std::move(list));
-  }
+  const auto list = makeList(n);
+  stack.resize(stack.size() - n);
+  stack.push_back(list);
   DISPATCH();
 }
 
@@ -187,19 +181,11 @@ SExpr *VM::peak(std::vector<SExpr *>::size_type distance) {
   return stack.rbegin()[distance];
 }
 
-SExprs *VM::makeList(const std::vector<SExpr *>::size_type n) {
-  auto list = alloc<SExprs>();
-  auto cur = list;
-  for (auto i = stack.end() - n; i != stack.end(); ++i) {
-    cur->first = *i;
-    if (i != stack.end() - 1) {
-      cur->rest = alloc<SExprs>();
-      cur = cast<SExprs>(cur->rest);
-    } else {
-      cur->rest = alloc<NilAtom>();
-    }
+SExpr *VM::makeList(const std::vector<SExpr *>::size_type n) {
+  if (n == 0) {
+    return alloc<NilAtom>();
   }
-  return list;
+  return alloc<SExprs>(*(stack.end() - n), makeList(n - 1));
 }
 
 VM::VM() {

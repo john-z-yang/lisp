@@ -34,7 +34,7 @@ private:
 
   std::shared_ptr<Upvalue> captureUpvalue(std::vector<SExpr *>::size_type pos);
   SExpr *peak(std::vector<SExpr *>::size_type distance);
-  SExprs *makeList(std::vector<SExpr *>::size_type size);
+  SExpr *makeList(std::vector<SExpr *>::size_type size);
 
 public:
   class RuntimeException : public std::exception {
