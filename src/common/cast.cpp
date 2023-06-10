@@ -13,9 +13,10 @@ template <typename To, typename From> To *cast(From *f) {
   if (auto ptr = dynamic_cast<To *>(f)) {
     return ptr;
   }
-  std::cout << "Mismatched types. Expected " << To::typeName << ", but got "
-            << *f << ".";
-  return nullptr;
+  std::stringstream ss;
+  ss << "Mismatched types. Expected " << To::typeName << ", but got " << *f
+     << ".";
+  throw TypeError(ss.str(), To::typeName, f);
 }
 
 #endif
