@@ -26,20 +26,16 @@
 Compiler::Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
                    SExpr *arg, SExpr *body, Compiler *enclosing, VM &vm)
     : source(source), sourceLoc(sourceLoc), vm(vm), enclosing(enclosing),
-      arg(arg), body(body), function(vm.alloc<FnAtom>(0)), stackOffset(1) {
+      arg(arg), body(body), stackOffset(1) {
   if (const auto argNames = dynamic_cast<SExprs *>(arg)) {
     visitEach(argNames, [&](SExpr *sExpr) {
       auto sym = cast<SymAtom>(sExpr);
       locals.push_back({sym, stackOffset, false});
       stackOffset += 1;
     });
-
-    function = vm.alloc<FnAtom>(stackOffset - 1);
   } else if (const auto argName = dynamic_cast<SymAtom *>(arg)) {
     locals.push_back({argName, stackOffset, false});
     stackOffset += 1;
-
-    function = vm.alloc<FnAtom>(-1);
   } else if (!isa<NilAtom>(*arg)) {
     handleSyntaxError(lambdaGrammar, NilAtom::typeName, arg);
   }
@@ -160,8 +156,8 @@ void Compiler::compile(SExpr *sExpr) {
   if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) || isa<BoolAtom>(*sExpr) ||
       isa<StringAtom>(*sExpr)) {
     const auto lineNum = std::get<0>(sourceLoc[sExpr]);
-    getCode().pushCode(OpCode::LOAD_CONST, lineNum);
-    getCode().pushCode(getCode().pushConst(sExpr), lineNum);
+    code.pushCode(OpCode::LOAD_CONST, lineNum);
+    code.pushCode(code.pushConst(sExpr), lineNum);
     return;
   } else if (const auto sym = dynamic_cast<SymAtom *>(sExpr)) {
     compileSym(sym);
@@ -200,17 +196,17 @@ void Compiler::compileSym(SymAtom *sym) {
   const auto lineNum = std::get<0>(sourceLoc[sym]);
 
   if (const auto idx = resolveLocal(sym); idx != -1) {
-    getCode().pushCode(OpCode::LOAD_STACK, lineNum);
-    getCode().pushCode((uint8_t)idx, lineNum);
+    code.pushCode(OpCode::LOAD_STACK, lineNum);
+    code.pushCode((uint8_t)idx, lineNum);
     return;
   }
   if (const auto idx = resolveUpvalue(*this, sym); idx != -1) {
-    getCode().pushCode(OpCode::LOAD_UPVALUE, lineNum);
-    getCode().pushCode((uint8_t)idx, lineNum);
+    code.pushCode(OpCode::LOAD_UPVALUE, lineNum);
+    code.pushCode((uint8_t)idx, lineNum);
     return;
   }
-  getCode().pushCode(OpCode::LOAD_SYM, lineNum);
-  getCode().pushCode(getCode().pushConst(sym), lineNum);
+  code.pushCode(OpCode::LOAD_SYM, lineNum);
+  code.pushCode(code.pushConst(sym), lineNum);
 }
 
 void Compiler::compileQuote(SExpr *sExpr) {
@@ -218,8 +214,8 @@ void Compiler::compileQuote(SExpr *sExpr) {
   cast<NilAtom>(at(quoteNilPos, sExpr));
 
   const auto lineNum = std::get<0>(sourceLoc[sExpr]);
-  getCode().pushCode(OpCode::LOAD_CONST, lineNum);
-  getCode().pushCode(getCode().pushConst(expr), lineNum);
+  code.pushCode(OpCode::LOAD_CONST, lineNum);
+  code.pushCode(code.pushConst(expr), lineNum);
 }
 
 void Compiler::compileDef(SExpr *sExpr) {
@@ -239,8 +235,8 @@ void Compiler::compileDef(SExpr *sExpr) {
 
     const auto lineNum = std::get<0>(sourceLoc[sExpr]);
     if (enclosing == nullptr) {
-      getCode().pushCode(OpCode::DEF_SYM, lineNum);
-      getCode().pushCode(getCode().pushConst(sym), lineNum);
+      code.pushCode(OpCode::DEF_SYM, lineNum);
+      code.pushCode(code.pushConst(sym), lineNum);
     } else {
       locals.push_back({sym, stackOffset, false});
     }
@@ -267,11 +263,11 @@ void Compiler::compileDefMacro(SExpr *sExpr) {
     const auto function = compiler.compile();
 
     const auto lineNum = std::get<0>(sourceLoc[sExpr]);
-    getCode().pushCode(OpCode::MAKE_CLOSURE, lineNum);
-    getCode().pushCode(getCode().pushConst(function), lineNum);
+    code.pushCode(OpCode::MAKE_CLOSURE, lineNum);
+    code.pushCode(code.pushConst(function), lineNum);
 
-    getCode().pushCode(OpCode::DEF_SYM, lineNum);
-    getCode().pushCode(getCode().pushConst(sym), lineNum);
+    code.pushCode(OpCode::DEF_SYM, lineNum);
+    code.pushCode(code.pushConst(sym), lineNum);
 
     vm.defMacro(sym);
   } catch (TypeError &te) {
@@ -290,17 +286,17 @@ void Compiler::compileSet(SExpr *sExpr) {
     const auto lineNum = std::get<0>(sourceLoc[sExpr]);
 
     if (const auto idx = resolveLocal(sym); idx != -1) {
-      getCode().pushCode(OpCode::SET_STACK, lineNum);
-      getCode().pushCode(idx, lineNum);
+      code.pushCode(OpCode::SET_STACK, lineNum);
+      code.pushCode(idx, lineNum);
       return;
     }
     if (const auto idx = resolveUpvalue(*this, sym); idx != -1) {
-      getCode().pushCode(OpCode::SET_UPVALUE, lineNum);
-      getCode().pushCode((uint8_t)idx, lineNum);
+      code.pushCode(OpCode::SET_UPVALUE, lineNum);
+      code.pushCode((uint8_t)idx, lineNum);
       return;
     }
-    getCode().pushCode(OpCode::SET_SYM, lineNum);
-    getCode().pushCode(getCode().pushConst(sym), lineNum);
+    code.pushCode(OpCode::SET_SYM, lineNum);
+    code.pushCode(code.pushConst(sym), lineNum);
   } catch (TypeError &te) {
     handleSyntaxError(setGrammar, te.expected, te.actual);
   }
@@ -316,22 +312,21 @@ void Compiler::compileIf(SExpr *sExpr) {
     compile(test);
 
     const auto testLoc = std::get<0>(sourceLoc[test]);
-    const auto jifIdx =
-        getCode().pushCode(OpCode::POP_JUMP_IF_FALSE, testLoc) + 1;
-    getCode().pushCode(UINT8_MAX, testLoc);
-    getCode().pushCode(UINT8_MAX, testLoc);
+    const auto jifIdx = code.pushCode(OpCode::POP_JUMP_IF_FALSE, testLoc) + 1;
+    code.pushCode(UINT8_MAX, testLoc);
+    code.pushCode(UINT8_MAX, testLoc);
 
     compile(conseq);
 
     const auto conseqLoc = std::get<0>(sourceLoc[conseq]);
-    const auto jIdx = getCode().pushCode(OpCode::JUMP, conseqLoc) + 1;
-    getCode().pushCode(UINT8_MAX, conseqLoc);
-    getCode().pushCode(UINT8_MAX, conseqLoc);
-    getCode().patchJump(jifIdx);
+    const auto jIdx = code.pushCode(OpCode::JUMP, conseqLoc) + 1;
+    code.pushCode(UINT8_MAX, conseqLoc);
+    code.pushCode(UINT8_MAX, conseqLoc);
+    code.patchJump(jifIdx);
 
     compile(alt);
 
-    getCode().patchJump(jIdx);
+    code.patchJump(jIdx);
   } catch (TypeError &te) {
     handleSyntaxError(ifGrammar, te.expected, te.actual);
   }
@@ -347,11 +342,11 @@ void Compiler::compileLambda(SExpr *sExpr) {
     const auto function = compiler.compile();
 
     const auto lineNum = std::get<0>(sourceLoc[sExpr]);
-    getCode().pushCode(OpCode::MAKE_CLOSURE, lineNum);
-    getCode().pushCode(getCode().pushConst(function), lineNum);
+    code.pushCode(OpCode::MAKE_CLOSURE, lineNum);
+    code.pushCode(code.pushConst(function), lineNum);
     for (const auto &upValue : compiler.upValues) {
-      getCode().pushCode(upValue.isLocal ? 1 : 0);
-      getCode().pushCode(upValue.idx);
+      code.pushCode(upValue.isLocal ? 1 : 0);
+      code.pushCode(upValue.idx);
     }
   } catch (TypeError &te) {
     handleSyntaxError(lambdaGrammar, te.expected, te.actual);
@@ -367,28 +362,28 @@ void Compiler::compileCall(SExprs *sExprs) {
   });
 
   const auto lineNum = std::get<0>(sourceLoc[sExprs->first]);
-  getCode().pushCode(OpCode::CALL, lineNum);
-  getCode().pushCode(argc, lineNum);
+  code.pushCode(OpCode::CALL, lineNum);
+  code.pushCode(argc, lineNum);
 }
 
 SExpr *Compiler::expandMacro(SExpr *sExpr) {
-  auto macroExpr = vm.alloc<FnAtom>(0);
+  Code macro;
 
   const auto sExprs = cast<SExprs>(sExpr);
 
-  macroExpr->code.pushCode(OpCode::LOAD_SYM);
-  macroExpr->code.pushCode(macroExpr->code.pushConst(sExprs->first));
+  macro.pushCode(OpCode::LOAD_SYM);
+  macro.pushCode(macro.pushConst(sExprs->first));
 
   const auto argc = visitEach(sExprs->rest, [&](SExpr *sExpr) {
-    macroExpr->code.pushCode(OpCode::LOAD_CONST);
-    macroExpr->code.pushCode(macroExpr->code.pushConst(sExpr));
+    macro.pushCode(OpCode::LOAD_CONST);
+    macro.pushCode(macro.pushConst(sExpr));
   });
 
-  macroExpr->code.pushCode(OpCode::CALL);
-  macroExpr->code.pushCode(argc);
-  macroExpr->code.pushCode(OpCode::RETURN);
+  macro.pushCode(OpCode::CALL);
+  macro.pushCode(argc);
+  macro.pushCode(OpCode::RETURN);
 
-  return vm.exec(macroExpr);
+  return vm.exec(vm.alloc<FnAtom>(0, 0, macro));
 }
 
 unsigned int Compiler::visitEach(SExpr *sExprs, Visitor visitor) {
@@ -410,8 +405,6 @@ SExpr *Compiler::at(const unsigned int n, SExpr *sExpr) {
   }
   return it;
 }
-
-Code &Compiler::getCode() { return function->code; }
 
 int Compiler::resolveLocal(SymAtom *sym) {
   auto it = std::find_if(locals.rbegin(), locals.rend(),
@@ -467,30 +460,32 @@ void Compiler::handleSyntaxError(const std::string grammar,
 
 Compiler::Compiler(std::vector<std::string> source, VM &vm)
     : source(source), vm(vm), enclosing(nullptr), arg(vm.alloc<NilAtom>()),
-      body(parse(source, sourceLoc)), function(vm.alloc<FnAtom>(0)),
-      stackOffset(0) {}
+      body(parse(source, sourceLoc)), stackOffset(0) {}
 
 FnAtom *Compiler::compile() {
-  if (function->arity == -1) {
-    getCode().pushCode(OpCode::MAKE_LIST);
+  if (isa<SymAtom>(*arg)) {
+    code.pushCode(OpCode::MAKE_LIST);
   }
 
   compile(body);
-  getCode().pushCode(OpCode::SET_STACK);
-  getCode().pushCode(0);
-  getCode().pushCode(OpCode::POP_TOP);
+  code.pushCode(OpCode::SET_STACK);
+  code.pushCode(0);
+  code.pushCode(OpCode::POP_TOP);
 
   for (const auto &local : locals | std::views::reverse) {
     if (local.isCaptured) {
-      getCode().pushCode(OpCode::CLOSE_UPVALUE);
+      code.pushCode(OpCode::CLOSE_UPVALUE);
     } else {
-      getCode().pushCode(OpCode::POP_TOP);
+      code.pushCode(OpCode::POP_TOP);
     }
   }
-  getCode().pushCode(OpCode::RETURN);
+  code.pushCode(OpCode::RETURN);
 
-  function->numUpVals = upValues.size();
-  return function;
+  if (isa<SymAtom>(*arg)) {
+    return vm.alloc<FnAtom>(-1, upValues.size(), code);
+  }
+
+  return vm.alloc<FnAtom>(locals.size(), upValues.size(), code);
 }
 
 void Compiler::verifyLex(std::string &line, const unsigned int lineNum,

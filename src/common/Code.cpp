@@ -87,7 +87,7 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
     case OpCode::MAKE_CLOSURE: {
       const auto fn = cast<FnAtom>(code.consts[READ_BYTE()]);
       o << "MAKE_CLOSURE" << *fn;
-      for (unsigned int i{0}; i < fn->numUpVals; i++) {
+      for (unsigned int i{0}; i < fn->numUpvals; i++) {
         const auto isLocal = unsigned(READ_BYTE());
         const auto idx = unsigned(READ_BYTE());
         o << std::endl

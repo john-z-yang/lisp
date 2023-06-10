@@ -10,11 +10,11 @@ protected:
   bool equals(const SExpr &other) const;
 
 public:
-  FnAtom(int8_t arity);
+  FnAtom(const int8_t arity, const unsigned int numUpvals, const Code code);
 
-  Code code;
   const int8_t arity;
-  unsigned int numUpVals;
+  const unsigned int numUpvals;
+  const Code code;
 
   std::ostream &dissassemble(std::ostream &o) const;
 

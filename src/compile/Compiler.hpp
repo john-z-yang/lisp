@@ -43,9 +43,12 @@ private:
   VM &vm;
 
   Compiler *const enclosing;
+
+  Code code;
+
   SExpr *const arg;
   SExpr *const body;
-  FnAtom *function;
+
   std::vector<Local> locals;
   std::vector<UpValue> upValues;
   uint8_t stackOffset;
@@ -76,7 +79,6 @@ private:
 
   unsigned int visitEach(SExpr *sExpr, Visitor visitor);
   SExpr *at(const unsigned int n, SExpr *sExpr);
-  Code &getCode();
 
   int resolveLocal(SymAtom *sym);
   int resolveUpvalue(Compiler &caller, SymAtom *sym);

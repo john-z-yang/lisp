@@ -2,8 +2,10 @@
 #include <memory>
 #include <sstream>
 
-FnAtom::FnAtom(int8_t arity)
-    : Atom(SExpr::Type::FUNCTION), arity(arity), numUpVals(0) {}
+FnAtom::FnAtom(const int8_t arity, const unsigned int numUpvals,
+               const Code code)
+    : Atom(SExpr::Type::FUNCTION), arity(arity), numUpvals(numUpvals),
+      code(code) {}
 
 std::string FnAtom::toString() const {
   std::stringstream ss;
@@ -15,7 +17,7 @@ bool FnAtom::equals(const SExpr &other) const { return this == &other; }
 
 std::ostream &FnAtom::dissassemble(std::ostream &o) const {
   o << "<Function at " << this << ", arity: " << unsigned(arity)
-    << ", upvalues: " << numUpVals << ">" << std::endl
+    << ", upvalues: " << numUpvals << ">" << std::endl
     << code << std::endl;
   for (auto i = code.consts.begin(); i != code.consts.end(); ++i) {
     if (const auto fnAtom = dynamic_cast<FnAtom *>(*i)) {

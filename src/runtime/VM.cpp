@@ -45,7 +45,7 @@ SExpr *VM::interp(FnAtom *main) {
 
 MAKE_CLOSURE : {
   const auto closure = alloc<ClosureAtom>(cast<FnAtom>(READ_CONST()));
-  for (unsigned int i{0}; i < closure->fnAtom->numUpVals; ++i) {
+  for (unsigned int i{0}; i < closure->fnAtom->numUpvals; ++i) {
     auto isLocal = READ_BYTE();
     auto idx = READ_BYTE();
     if (isLocal == 1) {
