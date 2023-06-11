@@ -5,14 +5,13 @@
 #include "../common/sexpr/NatFnAtom.hpp"
 #include "../common/sexpr/NilAtom.hpp"
 #include "../common/sexpr/SExprs.hpp"
+#include "RuntimeError.hpp"
 #include "Upvalue.hpp"
-#include <cstdint>
 #include <exception>
 #include <iomanip>
 #include <iterator>
 #include <memory>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -244,58 +243,12 @@ const SExpr *VM::exec(const FnAtom *main) {
   } catch (std::exception &e) {
     std::stringstream ss;
     ss << "Runtime error: " << e.what();
-    const auto re = RuntimeException(ss.str(), globals, stack, frames);
+    const auto re = RuntimeError(ss.str(), globals, stack, frames);
     stack.clear();
     frames.clear();
     throw re;
   }
   return nullptr;
-}
-
-VM::RuntimeException::RuntimeException(const std::string &msg, Env globals,
-                                       std::vector<const SExpr *> stack,
-                                       std::vector<CallFrame> frames)
-    : _msg(msg), globals(globals), stack(stack), frames(frames) {}
-
-const char *VM::RuntimeException::what() const noexcept { return _msg.c_str(); }
-
-std::ostream &operator<<(std::ostream &o, const VM::RuntimeException &re) {
-  std::unordered_map<const SExpr *, const SymAtom *> sExprSyms;
-  for (const auto &p : re.globals.getSymTable()) {
-    sExprSyms.insert({p.second, p.first});
-  }
-
-  const unsigned int PADDING_WIDTH = 4;
-  const unsigned int IDX_WIDTH = 8;
-
-  o << "In code object with ip: " << re.frames.back().ip << std::endl;
-
-  o << std::setw(PADDING_WIDTH) << std::right
-    << re.frames.back().closure->fnAtom->code << "Call stack:";
-  for (unsigned int idx = 0; const auto &stackFrame : re.frames) {
-    o << std::endl
-      << std::setw(PADDING_WIDTH) << "" << std::setw(IDX_WIDTH) << std::left
-      << idx << "<Closure: " << stackFrame.closure << ", ip: " << stackFrame.ip
-      << ", bp: " << stackFrame.bp << ">";
-    idx += 1;
-    auto it = sExprSyms.find(stackFrame.closure);
-    if (it != sExprSyms.end()) {
-      o << " (" << *it->second << ")";
-    }
-  }
-
-  o << std::endl << "Data stack:";
-  for (unsigned int idx = 0; const auto &sexpr : re.stack) {
-    o << std::endl
-      << std::setw(PADDING_WIDTH) << "" << std::setw(IDX_WIDTH) << std::left
-      << idx << *sexpr;
-    idx += 1;
-    auto it = sExprSyms.find(sexpr);
-    if (it != sExprSyms.end()) {
-      o << " (" << it->second << ")";
-    }
-  }
-  return o << std::endl << re.what();
 }
 
 void VM::defMacro(const SymAtom *sym) { globals.defMacro(sym); }

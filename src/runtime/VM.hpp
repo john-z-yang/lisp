@@ -12,6 +12,8 @@
 #include <vector>
 
 class VM {
+  friend class RuntimeError;
+
 private:
   struct CallFrame {
     const ClosureAtom *closure;
@@ -38,24 +40,6 @@ private:
   const SExpr *makeList(std::vector<const SExpr *>::size_type size);
 
 public:
-  class RuntimeException : public std::exception {
-    friend std::ostream &operator<<(std::ostream &o,
-                                    const VM::RuntimeException &re);
-
-  private:
-    std::string _msg;
-    const Env globals;
-    const std::vector<const SExpr *> stack;
-    const std::vector<CallFrame> frames;
-
-  public:
-    RuntimeException(const std::string &msg, Env globals,
-                     std::vector<const SExpr *> stack,
-                     std::vector<CallFrame> frames);
-
-    virtual const char *what() const noexcept override;
-  };
-
   VM();
   const SExpr *exec(const FnAtom *main);
 
@@ -72,7 +56,5 @@ template <> inline const NilAtom *VM::alloc() { return NilAtom::getInstance(); }
 template <> inline const BoolAtom *VM::alloc(bool &&val) {
   return BoolAtom::getInstance(val);
 }
-
-std::ostream &operator<<(std::ostream &o, const VM::RuntimeException &re);
 
 #endif

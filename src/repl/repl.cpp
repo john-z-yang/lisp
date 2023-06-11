@@ -1,6 +1,7 @@
 #include "repl.hpp"
 #include "../compile/Compiler.hpp"
 #include "../compile/SyntaxError.hpp"
+#include "../runtime/RuntimeError.hpp"
 #include "../runtime/VM.hpp"
 #include <cstdlib>
 #include <cstring>
@@ -80,7 +81,7 @@ int execFile(const std::string filePath, VM &vm) {
       std::cerr << "In line " << lines.size() << " of \"" << filePath << "\""
                 << std::endl
                 << se;
-    } catch (VM::RuntimeException &re) {
+    } catch (RuntimeError &re) {
       std::cerr << "In line " << lines.size() << " of \"" << filePath << "\""
                 << std::endl
                 << re;
@@ -136,7 +137,7 @@ int repl() {
       }
     } catch (SyntaxError &se) {
       std::cerr << "In <std::cin>" << std::endl << se << std::endl;
-    } catch (VM::RuntimeException &re) {
+    } catch (RuntimeError &re) {
       std::cerr << "In <std::cin>" << std::endl << re << std::endl;
     }
   }
