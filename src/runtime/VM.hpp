@@ -21,18 +21,19 @@ private:
     std::vector<const SExpr *>::size_type bp;
   };
 
-  Env globals;
-  std::vector<const SExpr *> stack;
   std::vector<std::unique_ptr<const SExpr>> heap;
-  std::unordered_map<int, const SExpr *> integers;
-  std::vector<CallFrame> frames;
+
+  Env globals;
+
+  std::vector<const SExpr *> stack;
+  std::vector<CallFrame> callFrames;
   std::unordered_map<std::vector<const SExpr *>::size_type,
                      std::shared_ptr<Upvalue>>
       openUpvalues;
 
-  const SExpr *interp(const FnAtom *main);
-
   void call(const uint8_t argc);
+
+  const SExpr *interp(const FnAtom *main);
 
   std::shared_ptr<Upvalue>
   captureUpvalue(std::vector<const SExpr *>::size_type pos);

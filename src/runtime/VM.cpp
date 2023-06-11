@@ -17,12 +17,12 @@
 #include <vector>
 
 const SExpr *VM::interp(const FnAtom *main) {
-#define CUR_FRAME() (frames.back())
-#define CUR_CLOSURE() (CUR_FRAME().closure)
+#define CUR_CALL_FRAME() (callFrames.back())
+#define CUR_CLOSURE() (CUR_CALL_FRAME().closure)
 #define CUR_FN() (CUR_CLOSURE()->fnAtom)
 #define CUR_CODE() (CUR_FN()->code)
-#define BASE_PTR() (CUR_FRAME().bp)
-#define INST_PTR() (CUR_FRAME().ip)
+#define BASE_PTR() (CUR_CALL_FRAME().bp)
+#define INST_PTR() (CUR_CALL_FRAME().ip)
 
 #define READ_BYTE() (CUR_CODE().byteCodes[INST_PTR()++])
 #define READ_SHORT()                                                           \
@@ -63,13 +63,13 @@ CALL : {
   DISPATCH();
 }
 RETURN : {
-  if (frames.size() == 1) {
+  if (callFrames.size() == 1) {
     const auto res = stack.back();
-    frames.clear();
+    callFrames.clear();
     stack.clear();
     return res;
   }
-  frames.pop_back();
+  callFrames.pop_back();
   DISPATCH();
 }
 POP_TOP : {
@@ -137,7 +137,7 @@ MAKE_LIST : {
   DISPATCH();
 }
 
-#undef CUR_FRAME
+#undef CUR_CALL_FRAME
 #undef CUR_CLOSURE
 #undef CUR_FN
 #undef CUR_CODE
@@ -156,7 +156,7 @@ void VM::call(const uint8_t argc) {
   if (isa<ClosureAtom>(callee)) {
     const auto closure = cast<ClosureAtom>(callee);
     closure->assertArity(argc);
-    frames.push_back({closure, 0, stack.size() - argc - 1});
+    callFrames.push_back({closure, 0, stack.size() - argc - 1});
     return;
   }
   const auto res =
@@ -243,9 +243,9 @@ const SExpr *VM::exec(const FnAtom *main) {
   } catch (std::exception &e) {
     std::stringstream ss;
     ss << "Runtime error: " << e.what();
-    const auto re = RuntimeError(ss.str(), globals, stack, frames);
+    const auto re = RuntimeError(ss.str(), globals, stack, callFrames);
     stack.clear();
-    frames.clear();
+    callFrames.clear();
     throw re;
   }
   return nullptr;
