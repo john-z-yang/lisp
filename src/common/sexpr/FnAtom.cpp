@@ -20,7 +20,7 @@ std::ostream &FnAtom::dissassemble(std::ostream &o) const {
     << ", upvalues: " << numUpvals << ">" << std::endl
     << code << std::endl;
   for (auto i = code.consts.begin(); i != code.consts.end(); ++i) {
-    if (const auto fnAtom = dynamic_cast<FnAtom *>(*i)) {
+    if (const auto fnAtom = dynamic_cast<const FnAtom *>(*i)) {
       fnAtom->dissassemble(o);
     }
   }

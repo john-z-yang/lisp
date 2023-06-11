@@ -6,7 +6,7 @@
 #include <sstream>
 #include <string>
 
-SExprs::SExprs(SExpr *first, SExpr *rest)
+SExprs::SExprs(const SExpr *first, const SExpr *rest)
     : SExpr(SExpr::Type::SEXPRS), first(first), rest(rest) {}
 
 SExprs::SExprs() : SExpr(SExpr::Type::SEXPRS), first(nullptr), rest(nullptr) {}

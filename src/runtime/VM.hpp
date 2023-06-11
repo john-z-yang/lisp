@@ -5,7 +5,6 @@
 #include "../common/sexpr/ClosureAtom.hpp"
 #include "../common/sexpr/NilAtom.hpp"
 #include "../common/sexpr/SExpr.hpp"
-#include "../common/sexpr/SExprs.hpp"
 #include "Env.hpp"
 #include "Upvalue.hpp"
 #include <memory>
@@ -15,26 +14,28 @@
 class VM {
 private:
   struct CallFrame {
-    ClosureAtom *closure;
+    const ClosureAtom *closure;
     std::vector<uint8_t>::size_type ip;
-    std::vector<SExpr *>::size_type bp;
+    std::vector<const SExpr *>::size_type bp;
   };
 
   Env globals;
-  std::vector<SExpr *> stack;
-  std::vector<std::unique_ptr<SExpr>> heap;
-  std::unordered_map<int, SExpr *> integers;
+  std::vector<const SExpr *> stack;
+  std::vector<std::unique_ptr<const SExpr>> heap;
+  std::unordered_map<int, const SExpr *> integers;
   std::vector<CallFrame> frames;
-  std::unordered_map<std::vector<SExpr *>::size_type, std::shared_ptr<Upvalue>>
+  std::unordered_map<std::vector<const SExpr *>::size_type,
+                     std::shared_ptr<Upvalue>>
       openUpvalues;
 
-  SExpr *interp(FnAtom *main);
+  const SExpr *interp(const FnAtom *main);
 
   void call(const uint8_t argc);
 
-  std::shared_ptr<Upvalue> captureUpvalue(std::vector<SExpr *>::size_type pos);
-  SExpr *peak(std::vector<SExpr *>::size_type distance);
-  SExpr *makeList(std::vector<SExpr *>::size_type size);
+  std::shared_ptr<Upvalue>
+  captureUpvalue(std::vector<const SExpr *>::size_type pos);
+  const SExpr *peak(std::vector<const SExpr *>::size_type distance);
+  const SExpr *makeList(std::vector<const SExpr *>::size_type size);
 
 public:
   class RuntimeException : public std::exception {
@@ -44,30 +45,31 @@ public:
   private:
     std::string _msg;
     const Env globals;
-    const std::vector<SExpr *> stack;
+    const std::vector<const SExpr *> stack;
     const std::vector<CallFrame> frames;
 
   public:
     RuntimeException(const std::string &msg, Env globals,
-                     std::vector<SExpr *> stack, std::vector<CallFrame> frames);
+                     std::vector<const SExpr *> stack,
+                     std::vector<CallFrame> frames);
 
     virtual const char *what() const noexcept override;
   };
 
   VM();
-  SExpr *exec(FnAtom *main);
+  const SExpr *exec(const FnAtom *main);
 
-  void defMacro(SymAtom *sym);
-  bool isMacro(SymAtom *sym);
+  void defMacro(const SymAtom *sym);
+  bool isMacro(const SymAtom *sym);
 
-  template <typename T, typename... Args> T *alloc(Args &&...args) {
-    heap.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
-    return static_cast<T *>(heap.back().get());
+  template <typename T, typename... Args> const T *alloc(Args &&...args) {
+    heap.emplace_back(std::make_unique<const T>(std::forward<Args>(args)...));
+    return static_cast<const T *>(heap.back().get());
   }
 };
 
-template <> inline NilAtom *VM::alloc() { return NilAtom::getInstance(); }
-template <> inline BoolAtom *VM::alloc(bool &&val) {
+template <> inline const NilAtom *VM::alloc() { return NilAtom::getInstance(); }
+template <> inline const BoolAtom *VM::alloc(bool &&val) {
   return BoolAtom::getInstance(val);
 }
 

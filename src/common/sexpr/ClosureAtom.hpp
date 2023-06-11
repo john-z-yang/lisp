@@ -14,14 +14,16 @@ protected:
   bool equals(const SExpr &other) const;
 
 public:
-  ClosureAtom(FnAtom *const fnAtom);
+  ClosureAtom(const FnAtom *fnAtom);
+  ClosureAtom(const FnAtom *fnAtom,
+              const std::vector<std::shared_ptr<Upvalue>> upvalues);
 
   void assertArity(const uint8_t arity) const;
 
-  FnAtom *const fnAtom;
-  std::vector<std::shared_ptr<Upvalue>> upvalues;
+  const FnAtom *const fnAtom;
+  const std::vector<std::shared_ptr<Upvalue>> upvalues;
 
-  std::ostream &dissassemble(std::ostream &o);
+  std::ostream &dissassemble(std::ostream &o) const;
 
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;

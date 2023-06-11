@@ -9,21 +9,21 @@ class Upvalue {
   friend bool operator==(const Upvalue &lhs, const Upvalue &rhs);
 
 private:
-  const std::vector<SExpr *>::size_type stackPos;
-  std::vector<SExpr *> &stack;
+  const std::vector<const SExpr *>::size_type stackPos;
+  std::vector<const SExpr *> &stack;
 
-  SExpr *value;
+  const SExpr *value;
 
   bool isOpen() const;
 
 public:
-  Upvalue(const std::vector<SExpr *>::size_type stackPos,
-          std::vector<SExpr *> &stack);
+  Upvalue(const std::vector<const SExpr *>::size_type stackPos,
+          std::vector<const SExpr *> &stack);
 
   void close();
 
-  SExpr *get() const;
-  void set(SExpr *sexpr);
+  const SExpr *get() const;
+  void set(const SExpr *sexpr);
 };
 
 #endif

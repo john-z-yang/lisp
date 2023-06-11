@@ -11,10 +11,10 @@ protected:
   bool equals(const SExpr &other) const;
 
 public:
-  SExpr *first;
-  SExpr *rest;
+  const SExpr *first;
+  const SExpr *rest;
 
-  SExprs(SExpr *first, SExpr *rest);
+  SExprs(const SExpr *first, const SExpr *rest);
   SExprs();
 
   static bool classOf(const SExpr &sExpr);

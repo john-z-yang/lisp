@@ -13,7 +13,7 @@ uint8_t Code::pushCode(const uint8_t code, const unsigned int lineNum) {
   return byteCodes.size() - 1;
 }
 
-uint8_t Code::pushConst(SExpr *sExpr) {
+uint8_t Code::pushConst(const SExpr *sExpr) {
   consts.push_back(sExpr);
   return consts.size() - 1;
 }

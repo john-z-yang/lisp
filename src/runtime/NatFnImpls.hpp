@@ -6,8 +6,8 @@
 #include <memory>
 #include <vector>
 
-typedef SExpr *(NativeFn)(std::vector<SExpr *>::iterator params,
-                          const uint8_t argc, VM &vm);
+typedef const SExpr *(NativeFn)(std::vector<const SExpr *>::iterator params,
+                                const uint8_t argc, VM &vm);
 
 NativeFn lispIsSym;
 NativeFn lispGenSym;

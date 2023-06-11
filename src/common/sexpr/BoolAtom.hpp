@@ -21,7 +21,7 @@ public:
 
   const bool val;
 
-  static bool toBool(SExpr *const sExpr);
+  static bool toBool(const SExpr *const sExpr);
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;
 

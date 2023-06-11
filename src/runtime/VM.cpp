@@ -15,8 +15,9 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
-SExpr *VM::interp(FnAtom *main) {
+const SExpr *VM::interp(const FnAtom *main) {
 #define CUR_FRAME() (frames.back())
 #define CUR_CLOSURE() (CUR_FRAME().closure)
 #define CUR_FN() (CUR_CLOSURE()->fnAtom)
@@ -44,17 +45,18 @@ SExpr *VM::interp(FnAtom *main) {
   DISPATCH();
 
 MAKE_CLOSURE : {
-  const auto closure = alloc<ClosureAtom>(cast<FnAtom>(READ_CONST()));
-  for (unsigned int i{0}; i < closure->fnAtom->numUpvals; ++i) {
+  const auto fnAtom = cast<FnAtom>(READ_CONST());
+  std::vector<std::shared_ptr<Upvalue>> upvalues;
+  for (unsigned int i{0}; i < fnAtom->numUpvals; ++i) {
     auto isLocal = READ_BYTE();
     auto idx = READ_BYTE();
     if (isLocal == 1) {
-      closure->upvalues.push_back(captureUpvalue(BASE_PTR() + idx));
+      upvalues.push_back(captureUpvalue(BASE_PTR() + idx));
     } else {
-      closure->upvalues.push_back(CUR_CLOSURE()->upvalues[idx]);
+      upvalues.push_back(CUR_CLOSURE()->upvalues[idx]);
     }
   }
-  stack.push_back(std::move(closure));
+  stack.push_back(alloc<ClosureAtom>(fnAtom, upvalues));
 }
   DISPATCH();
 CALL : {
@@ -168,7 +170,7 @@ void VM::call(const uint8_t argc) {
 }
 
 std::shared_ptr<Upvalue>
-VM::captureUpvalue(std::vector<SExpr *>::size_type pos) {
+VM::captureUpvalue(std::vector<const SExpr *>::size_type pos) {
   auto it = openUpvalues.find(pos);
   if (it != openUpvalues.end()) {
     return it->second;
@@ -177,11 +179,11 @@ VM::captureUpvalue(std::vector<SExpr *>::size_type pos) {
   return openUpvalues[pos];
 }
 
-SExpr *VM::peak(std::vector<SExpr *>::size_type distance) {
+const SExpr *VM::peak(std::vector<const SExpr *>::size_type distance) {
   return stack.rbegin()[distance];
 }
 
-SExpr *VM::makeList(const std::vector<SExpr *>::size_type n) {
+const SExpr *VM::makeList(const std::vector<const SExpr *>::size_type n) {
   if (n == 0) {
     return alloc<NilAtom>();
   }
@@ -236,7 +238,7 @@ VM::VM() {
 #undef BIND_NATIVE_FN
 }
 
-SExpr *VM::exec(FnAtom *main) {
+const SExpr *VM::exec(const FnAtom *main) {
   try {
     return interp(main);
   } catch (std::exception &e) {
@@ -251,14 +253,14 @@ SExpr *VM::exec(FnAtom *main) {
 }
 
 VM::RuntimeException::RuntimeException(const std::string &msg, Env globals,
-                                       std::vector<SExpr *> stack,
+                                       std::vector<const SExpr *> stack,
                                        std::vector<CallFrame> frames)
     : _msg(msg), globals(globals), stack(stack), frames(frames) {}
 
 const char *VM::RuntimeException::what() const noexcept { return _msg.c_str(); }
 
 std::ostream &operator<<(std::ostream &o, const VM::RuntimeException &re) {
-  std::unordered_map<SExpr *, SymAtom *> sExprSyms;
+  std::unordered_map<const SExpr *, const SymAtom *> sExprSyms;
   for (const auto &p : re.globals.getSymTable()) {
     sExprSyms.insert({p.second, p.first});
   }
@@ -296,6 +298,6 @@ std::ostream &operator<<(std::ostream &o, const VM::RuntimeException &re) {
   return o << std::endl << re.what();
 }
 
-void VM::defMacro(SymAtom *sym) { globals.defMacro(sym); }
+void VM::defMacro(const SymAtom *sym) { globals.defMacro(sym); }
 
-bool VM::isMacro(SymAtom *sym) { return globals.isMacro(sym); }
+bool VM::isMacro(const SymAtom *sym) { return globals.isMacro(sym); }

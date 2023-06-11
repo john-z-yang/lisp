@@ -24,16 +24,17 @@
 #include <vector>
 
 Compiler::Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
-                   SExpr *arg, SExpr *body, Compiler *enclosing, VM &vm)
+                   const SExpr *arg, const SExpr *body, Compiler *enclosing,
+                   VM &vm)
     : source(source), sourceLoc(sourceLoc), vm(vm), enclosing(enclosing),
       arg(arg), body(body), stackOffset(1) {
-  if (const auto argNames = dynamic_cast<SExprs *>(arg)) {
-    visitEach(argNames, [&](SExpr *sExpr) {
+  if (const auto argNames = dynamic_cast<const SExprs *>(arg)) {
+    visitEach(argNames, [&](const SExpr *sExpr) {
       auto sym = cast<SymAtom>(sExpr);
       locals.push_back({sym, stackOffset, false});
       stackOffset += 1;
     });
-  } else if (const auto argName = dynamic_cast<SymAtom *>(arg)) {
+  } else if (const auto argName = dynamic_cast<const SymAtom *>(arg)) {
     locals.push_back({argName, stackOffset, false});
     stackOffset += 1;
   } else if (!isa<NilAtom>(*arg)) {
@@ -66,7 +67,8 @@ std::vector<Compiler::Token> Compiler::tokenize(std::string line,
   return tokens;
 }
 
-SExpr *Compiler::parse(std::vector<std::string> lines, SourceLoc &sourceLoc) {
+const SExpr *Compiler::parse(std::vector<std::string> lines,
+                             SourceLoc &sourceLoc) {
   auto tokens = tokenize(lines);
   std::vector<Token>::const_iterator it = tokens.begin();
   const auto res = parse(it, sourceLoc);
@@ -76,8 +78,8 @@ SExpr *Compiler::parse(std::vector<std::string> lines, SourceLoc &sourceLoc) {
   return res;
 }
 
-SExpr *Compiler::parse(std::vector<Token>::const_iterator &it,
-                       SourceLoc &sourceLoc) {
+const SExpr *Compiler::parse(std::vector<Token>::const_iterator &it,
+                             SourceLoc &sourceLoc) {
   auto token = *it;
   it += 1;
   if (token.str == "(") {
@@ -98,7 +100,7 @@ SExpr *Compiler::parse(std::vector<Token>::const_iterator &it,
   return atom;
 }
 
-SExpr *Compiler::parseAtom(Token token) {
+const SExpr *Compiler::parseAtom(Token token) {
   if ((token.str.length() >= 1 &&
        all_of(token.str.begin(), token.str.end(), ::isdigit)) ||
       (token.str[0] == '-' && token.str.length() > 1 &&
@@ -129,8 +131,8 @@ SExpr *Compiler::parseAtom(Token token) {
   return vm.alloc<SymAtom>(token.str);
 }
 
-SExpr *Compiler::parseSexprs(std::vector<Token>::const_iterator &it,
-                             SourceLoc &sourceLoc) {
+const SExpr *Compiler::parseSexprs(std::vector<Token>::const_iterator &it,
+                                   SourceLoc &sourceLoc) {
   auto token = *it;
   if (token.str == ")") {
     it += 1;
@@ -152,19 +154,19 @@ SExpr *Compiler::parseSexprs(std::vector<Token>::const_iterator &it,
   return sExprs;
 }
 
-void Compiler::compile(SExpr *sExpr) {
+void Compiler::compile(const SExpr *sExpr) {
   if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) || isa<BoolAtom>(*sExpr) ||
       isa<StringAtom>(*sExpr)) {
     const auto lineNum = std::get<0>(sourceLoc[sExpr]);
     code.pushCode(OpCode::LOAD_CONST, lineNum);
     code.pushCode(code.pushConst(sExpr), lineNum);
     return;
-  } else if (const auto sym = dynamic_cast<SymAtom *>(sExpr)) {
+  } else if (const auto sym = dynamic_cast<const SymAtom *>(sExpr)) {
     compileSym(sym);
     return;
   }
   const auto sExprs = cast<SExprs>(sExpr);
-  if (const auto sym = dynamic_cast<SymAtom *>(sExprs->first)) {
+  if (const auto sym = dynamic_cast<const SymAtom *>(sExprs->first)) {
     if (sym->val == "quote") {
       compileQuote(sExpr);
       return;
@@ -192,7 +194,7 @@ void Compiler::compile(SExpr *sExpr) {
   compileCall(sExprs);
 }
 
-void Compiler::compileSym(SymAtom *sym) {
+void Compiler::compileSym(const SymAtom *sym) {
   const auto lineNum = std::get<0>(sourceLoc[sym]);
 
   if (const auto idx = resolveLocal(sym); idx != -1) {
@@ -209,7 +211,7 @@ void Compiler::compileSym(SymAtom *sym) {
   code.pushCode(code.pushConst(sym), lineNum);
 }
 
-void Compiler::compileQuote(SExpr *sExpr) {
+void Compiler::compileQuote(const SExpr *sExpr) {
   const auto expr = cast<SExprs>(at(quoteArgPos, sExpr))->first;
   cast<NilAtom>(at(quoteNilPos, sExpr));
 
@@ -218,7 +220,7 @@ void Compiler::compileQuote(SExpr *sExpr) {
   code.pushCode(code.pushConst(expr), lineNum);
 }
 
-void Compiler::compileDef(SExpr *sExpr) {
+void Compiler::compileDef(const SExpr *sExpr) {
   if ((locals.empty() && stackOffset > 0) ||
       (!locals.empty() && stackOffset > locals.back().stackOffset + 1)) {
     const auto [row, col] = sourceLoc[sExpr];
@@ -245,7 +247,7 @@ void Compiler::compileDef(SExpr *sExpr) {
   }
 }
 
-void Compiler::compileDefMacro(SExpr *sExpr) {
+void Compiler::compileDefMacro(const SExpr *sExpr) {
   if (enclosing) {
     const auto [row, col] = sourceLoc[sExpr];
     throw SyntaxError(
@@ -275,7 +277,7 @@ void Compiler::compileDefMacro(SExpr *sExpr) {
   }
 }
 
-void Compiler::compileSet(SExpr *sExpr) {
+void Compiler::compileSet(const SExpr *sExpr) {
   try {
     const auto sym = cast<SymAtom>(cast<SExprs>(at(setSymPos, sExpr))->first);
     const auto expr = cast<SExprs>(at(setSExprPos, sExpr))->first;
@@ -302,7 +304,7 @@ void Compiler::compileSet(SExpr *sExpr) {
   }
 }
 
-void Compiler::compileIf(SExpr *sExpr) {
+void Compiler::compileIf(const SExpr *sExpr) {
   try {
     const auto test = cast<SExprs>(at(ifTestPos, sExpr))->first;
     const auto conseq = cast<SExprs>(at(ifConseqPos, sExpr))->first;
@@ -332,7 +334,7 @@ void Compiler::compileIf(SExpr *sExpr) {
   }
 }
 
-void Compiler::compileLambda(SExpr *sExpr) {
+void Compiler::compileLambda(const SExpr *sExpr) {
   try {
     const auto argNames = cast<SExprs>(at(lambdaArgPos, sExpr))->first;
     const auto body = cast<SExprs>(at(lambdaBodyPos, sExpr))->first;
@@ -353,10 +355,10 @@ void Compiler::compileLambda(SExpr *sExpr) {
   }
 }
 
-void Compiler::compileCall(SExprs *sExprs) {
+void Compiler::compileCall(const SExprs *sExprs) {
   compile(sExprs->first);
   stackOffset += 1;
-  const auto argc = visitEach(sExprs->rest, [&](SExpr *sExpr) {
+  const auto argc = visitEach(sExprs->rest, [&](const SExpr *sExpr) {
     this->compile(sExpr);
     stackOffset += 1;
   });
@@ -366,7 +368,7 @@ void Compiler::compileCall(SExprs *sExprs) {
   code.pushCode(argc, lineNum);
 }
 
-SExpr *Compiler::expandMacro(SExpr *sExpr) {
+const SExpr *Compiler::expandMacro(const SExpr *sExpr) {
   Code macro;
 
   const auto sExprs = cast<SExprs>(sExpr);
@@ -374,7 +376,7 @@ SExpr *Compiler::expandMacro(SExpr *sExpr) {
   macro.pushCode(OpCode::LOAD_SYM);
   macro.pushCode(macro.pushConst(sExprs->first));
 
-  const auto argc = visitEach(sExprs->rest, [&](SExpr *sExpr) {
+  const auto argc = visitEach(sExprs->rest, [&](const SExpr *sExpr) {
     macro.pushCode(OpCode::LOAD_CONST);
     macro.pushCode(macro.pushConst(sExpr));
   });
@@ -386,7 +388,7 @@ SExpr *Compiler::expandMacro(SExpr *sExpr) {
   return vm.exec(vm.alloc<FnAtom>(0, 0, macro));
 }
 
-unsigned int Compiler::visitEach(SExpr *sExprs, Visitor visitor) {
+unsigned int Compiler::visitEach(const SExpr *sExprs, Visitor visitor) {
   auto numVisited = 0U;
   auto cur = sExprs;
   while (isa<SExprs>(*cur)) {
@@ -398,15 +400,15 @@ unsigned int Compiler::visitEach(SExpr *sExprs, Visitor visitor) {
   return numVisited;
 }
 
-SExpr *Compiler::at(const unsigned int n, SExpr *sExpr) {
-  SExpr *it = cast<SExprs>(sExpr);
+const SExpr *Compiler::at(const unsigned int n, const SExpr *sExpr) {
+  const SExpr *it = cast<SExprs>(sExpr);
   for (unsigned int i{0}; i < n; ++i) {
     it = cast<SExprs>(it)->rest;
   }
   return it;
 }
 
-int Compiler::resolveLocal(SymAtom *sym) {
+int Compiler::resolveLocal(const SymAtom *sym) {
   auto it = std::find_if(locals.rbegin(), locals.rend(),
                          [&sym](Local local) { return *local.symbol == *sym; });
   if (it == locals.rend()) {
@@ -415,7 +417,7 @@ int Compiler::resolveLocal(SymAtom *sym) {
   return it->stackOffset;
 }
 
-int Compiler::resolveUpvalue(Compiler &caller, SymAtom *sym) {
+int Compiler::resolveUpvalue(Compiler &caller, const SymAtom *sym) {
   if (enclosing) {
     if (auto idx = enclosing->resolveLocal(sym); idx != -1) {
       enclosing->locals[idx - 1].isCaptured = true;
@@ -450,7 +452,7 @@ void Compiler::handleUnexpectedToken(const Token &token,
 
 void Compiler::handleSyntaxError(const std::string grammar,
                                  const std::string expected,
-                                 SExpr *const actual) {
+                                 const SExpr *const actual) {
   std::stringstream ss;
   ss << "Invalid syntax for " << grammar << "." << std::endl
      << "Expected " << expected << ", but got " << *actual << ".";
@@ -462,7 +464,7 @@ Compiler::Compiler(std::vector<std::string> source, VM &vm)
     : source(source), vm(vm), enclosing(nullptr), arg(vm.alloc<NilAtom>()),
       body(parse(source, sourceLoc)), stackOffset(0) {}
 
-FnAtom *Compiler::compile() {
+const FnAtom *Compiler::compile() {
   if (isa<SymAtom>(*arg)) {
     code.pushCode(OpCode::MAKE_LIST);
   }

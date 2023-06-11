@@ -21,8 +21,8 @@ BoolAtom *BoolAtom::getInstance(const bool val) {
   return &BoolAtom::_false;
 }
 
-bool BoolAtom::toBool(SExpr *sExpr) {
-  if (auto boolAtom = dynamic_cast<BoolAtom *>(sExpr)) {
+bool BoolAtom::toBool(const SExpr *sExpr) {
+  if (auto boolAtom = dynamic_cast<const BoolAtom *>(sExpr)) {
     return boolAtom->val;
   }
   return true;
