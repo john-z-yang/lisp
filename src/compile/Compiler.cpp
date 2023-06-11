@@ -37,7 +37,7 @@ Compiler::Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
   } else if (const auto argName = dynamic_cast<const SymAtom *>(arg)) {
     locals.push_back({argName, stackOffset, false});
     stackOffset += 1;
-  } else if (!isa<NilAtom>(*arg)) {
+  } else if (!isa<NilAtom>(arg)) {
     handleSyntaxError(lambdaGrammar, NilAtom::typeName, arg);
   }
 }
@@ -155,8 +155,8 @@ const SExpr *Compiler::parseSexprs(std::vector<Token>::const_iterator &it,
 }
 
 void Compiler::compile(const SExpr *sExpr) {
-  if (isa<NilAtom>(*sExpr) || isa<IntAtom>(*sExpr) || isa<BoolAtom>(*sExpr) ||
-      isa<StringAtom>(*sExpr)) {
+  if (isa<NilAtom>(sExpr) || isa<IntAtom>(sExpr) || isa<BoolAtom>(sExpr) ||
+      isa<StringAtom>(sExpr)) {
     const auto lineNum = std::get<0>(sourceLoc[sExpr]);
     code.pushCode(OpCode::LOAD_CONST, lineNum);
     code.pushCode(code.pushConst(sExpr), lineNum);
@@ -391,7 +391,7 @@ const SExpr *Compiler::expandMacro(const SExpr *sExpr) {
 unsigned int Compiler::visitEach(const SExpr *sExprs, Visitor visitor) {
   auto numVisited = 0U;
   auto cur = sExprs;
-  while (isa<SExprs>(*cur)) {
+  while (isa<SExprs>(cur)) {
     auto sExprs = cast<SExprs>(cur);
     visitor(sExprs->first);
     cur = sExprs->rest;
@@ -465,7 +465,7 @@ Compiler::Compiler(std::vector<std::string> source, VM &vm)
       body(parse(source, sourceLoc)), stackOffset(0) {}
 
 const FnAtom *Compiler::compile() {
-  if (isa<SymAtom>(*arg)) {
+  if (isa<SymAtom>(arg)) {
     code.pushCode(OpCode::MAKE_LIST);
   }
 
@@ -483,7 +483,7 @@ const FnAtom *Compiler::compile() {
   }
   code.pushCode(OpCode::RETURN);
 
-  if (isa<SymAtom>(*arg)) {
+  if (isa<SymAtom>(arg)) {
     return vm.alloc<FnAtom>(-1, upValues.size(), code);
   }
 

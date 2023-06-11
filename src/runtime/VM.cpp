@@ -154,7 +154,7 @@ MAKE_LIST : {
 
 void VM::call(const uint8_t argc) {
   const auto callee = peak(argc);
-  if (isa<ClosureAtom>(*callee)) {
+  if (isa<ClosureAtom>(callee)) {
     const auto closure = cast<ClosureAtom>(callee);
     closure->assertArity(argc);
     frames.push_back({closure, 0, stack.size() - argc - 1});

@@ -9,6 +9,10 @@ template <typename To, typename From> bool isa(From &f) {
   return To::classOf(f);
 }
 
+template <typename To, typename From> bool isa(From *f) {
+  return To::classOf(*f);
+}
+
 template <typename To, typename From> const To *cast(const From *f) {
   if (auto ptr = dynamic_cast<const To *>(f)) {
     return ptr;

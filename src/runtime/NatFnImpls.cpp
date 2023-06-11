@@ -59,7 +59,7 @@
     return vm.alloc<BoolAtom>(cond);                                           \
   }
 
-PRED_OP(lispIsSym, isa<SymAtom>(**params));
+PRED_OP(lispIsSym, isa<SymAtom>(*params));
 
 long genSymCnt = 0;
 const SExpr *lispGenSym(std::vector<const SExpr *>::iterator params,
@@ -70,7 +70,7 @@ const SExpr *lispGenSym(std::vector<const SExpr *>::iterator params,
   return vm.alloc<SymAtom>(ss.str());
 }
 
-PRED_OP(lispIsNum, isa<IntAtom>(**params));
+PRED_OP(lispIsNum, isa<IntAtom>(*params));
 MATH_CMP_OP(lispNumEq, ==);
 MATH_CMP_OP(lispGt, >);
 MATH_CMP_OP(lispGteq, >=);
@@ -92,7 +92,7 @@ const SExpr *lispMod(std::vector<const SExpr *>::iterator params,
   return vm.alloc<IntAtom>(lhs % rhs);
 }
 
-PRED_OP(lispIsStr, isa<StringAtom>(**params));
+PRED_OP(lispIsStr, isa<StringAtom>(*params));
 const SExpr *lispStrLen(std::vector<const SExpr *>::iterator params,
                         const uint8_t argc, VM &vm) {
   return vm.alloc<IntAtom>(cast<StringAtom>(*params)->unescaped.size());
@@ -126,7 +126,7 @@ const SExpr *lispStrCon(std::vector<const SExpr *>::iterator params,
 }
 const SExpr *lispToStr(std::vector<const SExpr *>::iterator params,
                        const uint8_t argc, VM &vm) {
-  if (isa<StringAtom>(**params)) {
+  if (isa<StringAtom>(*params)) {
     return *params;
   }
   std::stringstream ss;
@@ -139,8 +139,8 @@ const SExpr *lispToStr(std::vector<const SExpr *>::iterator params,
   return vm.alloc<StringAtom>(ss.str());
 }
 
-PRED_OP(lispIsNull, isa<NilAtom>(**params));
-PRED_OP(lispIsCons, isa<SExprs>(**params));
+PRED_OP(lispIsNull, isa<NilAtom>(*params));
+PRED_OP(lispIsCons, isa<SExprs>(*params));
 const SExpr *lispCons(std::vector<const SExpr *>::iterator params,
                       const uint8_t argc, VM &vm) {
   return vm.alloc<SExprs>(*params, *(params + 1));
@@ -192,8 +192,8 @@ const SExpr *lispEqv(std::vector<const SExpr *>::iterator params,
 
 const SExpr *lispIsProc(std::vector<const SExpr *>::iterator params,
                         const uint8_t argc, VM &vm) {
-  return vm.alloc<BoolAtom>(isa<ClosureAtom>(**params) ||
-                            isa<NatFnAtom>(**params));
+  return vm.alloc<BoolAtom>(isa<ClosureAtom>(*params) ||
+                            isa<NatFnAtom>(*params));
 }
 
 #undef MATH_CMP_OP

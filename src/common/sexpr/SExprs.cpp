@@ -13,14 +13,14 @@ SExprs::SExprs() : SExpr(SExpr::Type::SEXPRS), first(nullptr), rest(nullptr) {}
 
 std::string SExprs::toString() const {
   std::string str = "";
-  str += isa<SExprs>(*first) ? "(" : "";
+  str += isa<SExprs>(first) ? "(" : "";
   str += first->toString();
-  if (isa<NilAtom>(*rest)) {
+  if (isa<NilAtom>(rest)) {
     str += ")";
-  } else if (!isa<SExprs>(*rest)) {
+  } else if (!isa<SExprs>(rest)) {
     str += " . " + rest->toString() + ")";
   } else {
-    str += isa<NilAtom>(*rest) ? ")" : " " + rest->toString();
+    str += isa<NilAtom>(rest) ? ")" : " " + rest->toString();
   }
   return str;
 }
