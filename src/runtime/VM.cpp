@@ -50,10 +50,7 @@ const SExpr *VM::exec(const FnAtom *main) {
 
 #define GC_ATOMIC(stmts)                                                       \
   do {                                                                         \
-    const auto gcSetting = enableGC;                                           \
-    enableGC = false;                                                          \
-    stmts;                                                                     \
-    enableGC = gcSetting;                                                      \
+                                                                               \
   } while (false)
 
   static void *dispatchTable[] = {
@@ -152,9 +149,16 @@ POP_JUMP_IF_FALSE : {
   DISPATCH();
 }
 MAKE_LIST : {
-  GC_ATOMIC(const auto n = stack.size() - BASE_PTR() - 1;
-            const auto list = makeList(n); stack.resize(stack.size() - n);
-            stack.push_back(list););
+  const auto gcSetting = enableGC;
+  enableGC = false;
+
+  const auto n = stack.size() - BASE_PTR() - 1;
+
+  const auto list = makeList(n);
+  stack.erase(stack.end() - n, stack.end());
+  stack.push_back(list);
+
+  enableGC = gcSetting;
   DISPATCH();
 }
 
