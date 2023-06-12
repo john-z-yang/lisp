@@ -8,7 +8,7 @@ std::string IntAtom::toString() const { return std::to_string(val); }
 
 bool IntAtom::equals(const SExpr &other) const {
   if (isa<IntAtom>(other)) {
-    return val == dynamic_cast<const IntAtom &>(other).val;
+    return val == cast<IntAtom>(other).val;
   }
   return false;
 }

@@ -5,8 +5,12 @@
 #include <iomanip>
 #include <sstream>
 
-ClosureAtom::ClosureAtom(const std::shared_ptr<FnAtom> fnAtom)
+ClosureAtom::ClosureAtom(const FnAtom *fnAtom)
     : Atom(SExpr::Type::CLOSURE), fnAtom(fnAtom) {}
+
+ClosureAtom::ClosureAtom(const FnAtom *fnAtom,
+                         const std::vector<std::shared_ptr<Upvalue>> upvalues)
+    : Atom(SExpr::Type::CLOSURE), fnAtom(fnAtom), upvalues(upvalues) {}
 
 void ClosureAtom::assertArity(const uint8_t argc) const {
   if (fnAtom->arity != -1 && argc != (uint8_t)fnAtom->arity) {
@@ -17,7 +21,7 @@ void ClosureAtom::assertArity(const uint8_t argc) const {
   }
 }
 
-std::ostream &ClosureAtom::dissassemble(std::ostream &o) {
+std::ostream &ClosureAtom::dissassemble(std::ostream &o) const {
   const unsigned int PADDING_WIDTH = 4;
   o << "<Closure at " << this << ">, instance of:" << std::endl
     << std::setw(PADDING_WIDTH) << "";
@@ -39,7 +43,7 @@ std::string ClosureAtom::toString() const {
 
 bool ClosureAtom::equals(const SExpr &other) const {
   if (isa<ClosureAtom>(other)) {
-    const auto closure = dynamic_cast<const ClosureAtom &>(other);
+    const auto closure = cast<ClosureAtom>(other);
     if (fnAtom != closure.fnAtom) {
       return false;
     }

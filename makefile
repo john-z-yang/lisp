@@ -1,6 +1,8 @@
 CXX = g++
+CXXFLAGS = -std=c++20 $(CXXFLAGS_ASAN) $(CXXFLAGS_WARN) $(CXXFLAGS_EXTRA)
+CXXFLAGS_ASAN = -fsanitize=address,undefined -g
+CXXFLAGS_WARN = -pedantic -Wall -Wextra -Wno-gnu-label-as-value -Wno-unused-parameter
 CXXFLAGS_EXTRA =
-CXXFLAGS = -std=c++20 -Wall $(CXXFLAGS_EXTRA)
 
 PERCENT = %
 define NEWLINE
@@ -26,8 +28,8 @@ _DEPS =  common/sexpr/Atom.hpp \
 	common/sexpr/NilAtom.hpp common/sexpr/SExpr.hpp common/sexpr/SExprs.hpp \
 	common/sexpr/StringAtom.hpp common/sexpr/SymAtom.hpp common/Code.hpp \
 	common/TypeError.hpp compile/Compiler.hpp compile/SyntaxError.hpp \
-	repl/repl.hpp runtime/Env.hpp runtime/NatFnImpls.hpp runtime/Upvalue.hpp \
-	runtime/VM.hpp
+	repl/repl.hpp runtime/Env.hpp runtime/NatFnImpls.hpp \
+	runtime/RuntimeError.hpp runtime/Upvalue.hpp runtime/VM.hpp
 
 DEPS = $(addprefix $(SRCDIR)/,$(_DEPS))
 OBJS = $(patsubst %.hpp,$(OUTDIR)/%.o,$(subst /,_,$(_DEPS)))

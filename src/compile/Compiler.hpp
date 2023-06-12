@@ -14,7 +14,7 @@
 
 class Compiler {
 private:
-  typedef std::unordered_map<std::shared_ptr<SExpr>,
+  typedef std::unordered_map<const SExpr *,
                              std::tuple<const unsigned int, const unsigned int>>
       SourceLoc;
 
@@ -24,10 +24,10 @@ private:
     std::string str;
   };
 
-  typedef std::function<void(std::shared_ptr<SExpr>)> Visitor;
+  typedef std::function<void(const SExpr *)> Visitor;
 
   struct Local {
-    const std::shared_ptr<SymAtom> symbol;
+    const SymAtom *const symbol;
     const uint8_t stackOffset;
     bool isCaptured;
   };
@@ -43,57 +43,57 @@ private:
   VM &vm;
 
   Compiler *const enclosing;
-  const std::shared_ptr<SExpr> arg;
-  const std::shared_ptr<SExpr> body;
-  std::shared_ptr<FnAtom> function;
+
+  Code code;
+
+  const SExpr *const arg;
+  const SExpr *const body;
+
   std::vector<Local> locals;
   std::vector<UpValue> upValues;
   uint8_t stackOffset;
 
   Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
-           std::shared_ptr<SExpr> arg, std::shared_ptr<SExpr> body,
-           Compiler *enclosing, VM &vm);
+           const SExpr *arg, const SExpr *body, Compiler *enclosing, VM &vm);
 
   static std::vector<Token> tokenize(std::vector<std::string> lines);
   static std::vector<Token> tokenize(std::string line, const unsigned int row);
 
-  static std::shared_ptr<SExpr> parse(std::vector<std::string> lines,
-                                      SourceLoc &sourceLoc);
-  static std::shared_ptr<SExpr> parse(std::vector<Token>::const_iterator &it,
-                                      SourceLoc &sourceLoc);
-  static std::shared_ptr<SExpr> parseAtom(Token token);
-  static std::shared_ptr<SExpr>
-  parseSexprs(std::vector<Token>::const_iterator &it, SourceLoc &sourceLoc);
+  const SExpr *parse(std::vector<std::string> lines, SourceLoc &sourceLoc);
+  const SExpr *parse(std::vector<Token>::const_iterator &it,
+                     SourceLoc &sourceLoc);
+  const SExpr *parseAtom(Token token);
+  const SExpr *parseSexprs(std::vector<Token>::const_iterator &it,
+                           SourceLoc &sourceLoc);
 
-  void compile(std::shared_ptr<SExpr> sExpr);
-  void compileSym(std::shared_ptr<SymAtom> sym);
-  void compileQuote(std::shared_ptr<SExpr> sExpr);
-  void compileDef(std::shared_ptr<SExpr> sExpr);
-  void compileDefMacro(std::shared_ptr<SExpr> sExpr);
-  void compileSet(std::shared_ptr<SExpr> sExpr);
-  void compileIf(std::shared_ptr<SExpr> sExpr);
-  void compileLambda(std::shared_ptr<SExpr> sExpr);
-  void compileCall(std::shared_ptr<SExprs> sExprs);
+  void compile(const SExpr *sExpr);
+  void compileSym(const SymAtom *sym);
+  void compileQuote(const SExpr *sExpr);
+  void compileDef(const SExpr *sExpr);
+  void compileDefMacro(const SExpr *sExpr);
+  void compileSet(const SExpr *sExpr);
+  void compileIf(const SExpr *sExpr);
+  void compileLambda(const SExpr *sExpr);
+  void compileCall(const SExprs *sExprs);
 
-  std::shared_ptr<SExpr> expandMacro(std::shared_ptr<SExpr>);
+  const SExpr *expandMacro(const SExpr *macro);
 
-  const unsigned int visitEach(std::shared_ptr<SExpr> sExpr, Visitor visitor);
-  std::shared_ptr<SExpr> at(const unsigned int n, std::shared_ptr<SExpr> sExpr);
-  Code &getCode();
+  unsigned int visitEach(const SExpr *sExpr, Visitor visitor);
+  const SExpr *at(const unsigned int n, const SExpr *sExpr);
 
-  int resolveLocal(std::shared_ptr<SymAtom> sym);
-  int resolveUpvalue(Compiler &caller, std::shared_ptr<SymAtom> sym);
+  int resolveLocal(const SymAtom *sym);
+  int resolveUpvalue(Compiler &caller, const SymAtom *sym);
   int addUpvalue(int idx, bool isLocal);
 
   static void handleUnexpectedToken(const Token &token,
                                     const std::string &line);
   void handleSyntaxError(const std::string grammar, const std::string expected,
-                         const std::shared_ptr<SExpr> actual);
+                         const SExpr *const actual);
 
 public:
   Compiler(std::vector<std::string> source, VM &vm);
 
-  std::shared_ptr<FnAtom> compile();
+  const FnAtom *compile();
 
   static void verifyLex(std::string &line, const unsigned int lineNum,
                         uint32_t &openParen, uint32_t &closedParen);

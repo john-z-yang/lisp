@@ -18,8 +18,8 @@ public:
 
   NatFnAtom(NativeFn fn, const int argc);
 
-  std::shared_ptr<SExpr> invoke(std::vector<std::shared_ptr<SExpr>>::iterator,
-                                const unsigned int argc);
+  const SExpr *invoke(std::vector<const SExpr *>::iterator,
+                      const unsigned int argc, VM &vm) const;
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;
 };

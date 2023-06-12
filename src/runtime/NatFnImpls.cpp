@@ -14,38 +14,35 @@
 #include <stdexcept>
 
 #define MATH_CMP_OP(name, op)                                                  \
-  std::shared_ptr<SExpr> name(                                                 \
-      std::vector<std::shared_ptr<SExpr>>::iterator params,                    \
-      const uint8_t argc) {                                                    \
+  const SExpr *name(std::vector<const SExpr *>::iterator params,               \
+                    const uint8_t argc, VM &vm) {                              \
     const auto prev = cast<IntAtom>(*params)->val;                             \
     ++params;                                                                  \
     for (uint8_t i{1}; i < argc; ++i) {                                        \
       if (!(prev op cast<IntAtom>(*params)->val)) {                            \
-        return std::make_shared<BoolAtom>(false);                              \
+        return vm.alloc<BoolAtom>(false);                                      \
       }                                                                        \
       ++params;                                                                \
     }                                                                          \
-    return std::make_shared<BoolAtom>(true);                                   \
+    return vm.alloc<BoolAtom>(true);                                           \
   }
 
 #define MATH_CUM_OP(name, op, init)                                            \
-  std::shared_ptr<SExpr> name(                                                 \
-      std::vector<std::shared_ptr<SExpr>>::iterator params,                    \
-      const uint8_t argc) {                                                    \
+  const SExpr *name(std::vector<const SExpr *>::iterator params,               \
+                    const uint8_t argc, VM &vm) {                              \
     int res = init;                                                            \
     for (uint8_t i{0}; i < argc; ++i) {                                        \
       res op cast<IntAtom>(*params)->val;                                      \
       ++params;                                                                \
     }                                                                          \
-    return std::make_shared<IntAtom>(res);                                     \
+    return vm.alloc<IntAtom>(res);                                             \
   }
 
 #define MATH_DIM_OP(name, op, unaryOp)                                         \
-  std::shared_ptr<SExpr> name(                                                 \
-      std::vector<std::shared_ptr<SExpr>>::iterator params,                    \
-      const uint8_t argc) {                                                    \
+  const SExpr *name(std::vector<const SExpr *>::iterator params,               \
+                    const uint8_t argc, VM &vm) {                              \
     if (argc == 1) {                                                           \
-      return std::make_shared<IntAtom>(unaryOp cast<IntAtom>(*params)->val);   \
+      return vm.alloc<IntAtom>(unaryOp cast<IntAtom>(*params)->val);           \
     }                                                                          \
     int res = cast<IntAtom>(*params)->val;                                     \
     ++params;                                                                  \
@@ -53,29 +50,27 @@
       res op cast<IntAtom>(*params)->val;                                      \
       ++params;                                                                \
     }                                                                          \
-    return std::make_shared<IntAtom>(res);                                     \
+    return vm.alloc<IntAtom>(res);                                             \
   }
 
 #define PRED_OP(name, cond)                                                    \
-  std::shared_ptr<SExpr> name(                                                 \
-      std::vector<std::shared_ptr<SExpr>>::iterator params,                    \
-      const uint8_t argc) {                                                    \
-    return std::make_shared<BoolAtom>(cond);                                   \
+  const SExpr *name(std::vector<const SExpr *>::iterator params,               \
+                    const uint8_t argc, VM &vm) {                              \
+    return vm.alloc<BoolAtom>(cond);                                           \
   }
 
-PRED_OP(lispIsSym, isa<SymAtom>(**params));
+PRED_OP(lispIsSym, isa<SymAtom>(*params));
 
 long genSymCnt = 0;
-std::shared_ptr<SExpr>
-lispGenSym(std::vector<std::shared_ptr<SExpr>>::iterator params,
-           const uint8_t argc) {
+const SExpr *lispGenSym(std::vector<const SExpr *>::iterator params,
+                        const uint8_t argc, VM &vm) {
   std::stringstream ss;
   ss << ";gensym-" << genSymCnt;
   genSymCnt += 1;
-  return std::make_shared<SymAtom>(ss.str());
+  return vm.alloc<SymAtom>(ss.str());
 }
 
-PRED_OP(lispIsNum, isa<IntAtom>(**params));
+PRED_OP(lispIsNum, isa<IntAtom>(*params));
 MATH_CMP_OP(lispNumEq, ==);
 MATH_CMP_OP(lispGt, >);
 MATH_CMP_OP(lispGteq, >=);
@@ -85,29 +80,25 @@ MATH_CUM_OP(lispAdd, +=, 0);
 MATH_CUM_OP(lispMult, *=, 1);
 MATH_DIM_OP(lispSub, -=, 0 -);
 MATH_DIM_OP(lispDiv, /=, 1 /);
-std::shared_ptr<SExpr>
-lispAbs(std::vector<std::shared_ptr<SExpr>>::iterator params,
-        const uint8_t argc) {
-  return std::make_shared<IntAtom>(abs(cast<IntAtom>(*params)->val));
+const SExpr *lispAbs(std::vector<const SExpr *>::iterator params,
+                     const uint8_t argc, VM &vm) {
+  return vm.alloc<IntAtom>(abs(cast<IntAtom>(*params)->val));
 }
-std::shared_ptr<SExpr>
-lispMod(std::vector<std::shared_ptr<SExpr>>::iterator params,
-        const uint8_t argc) {
+const SExpr *lispMod(std::vector<const SExpr *>::iterator params,
+                     const uint8_t argc, VM &vm) {
   const auto lhs = cast<IntAtom>(*params)->val;
   ++params;
   const auto rhs = cast<IntAtom>(*params)->val;
-  return std::make_shared<IntAtom>(lhs % rhs);
+  return vm.alloc<IntAtom>(lhs % rhs);
 }
 
-PRED_OP(lispIsStr, isa<StringAtom>(**params));
-std::shared_ptr<SExpr>
-lispStrLen(std::vector<std::shared_ptr<SExpr>>::iterator params,
-           const uint8_t argc) {
-  return std::make_shared<IntAtom>(cast<StringAtom>(*params)->unescaped.size());
+PRED_OP(lispIsStr, isa<StringAtom>(*params));
+const SExpr *lispStrLen(std::vector<const SExpr *>::iterator params,
+                        const uint8_t argc, VM &vm) {
+  return vm.alloc<IntAtom>(cast<StringAtom>(*params)->unescaped.size());
 }
-std::shared_ptr<SExpr>
-lispStrSub(std::vector<std::shared_ptr<SExpr>>::iterator params,
-           const uint8_t argc) {
+const SExpr *lispStrSub(std::vector<const SExpr *>::iterator params,
+                        const uint8_t argc, VM &vm) {
   auto str = cast<StringAtom>(*params);
   auto pos = cast<IntAtom>(*(params + 1))->val;
   auto len = cast<IntAtom>(*(params + 2))->val;
@@ -120,11 +111,10 @@ lispStrSub(std::vector<std::shared_ptr<SExpr>>::iterator params,
         << ")";
     throw std::invalid_argument(ess.str());
   }
-  return std::make_shared<StringAtom>(ss.str());
+  return vm.alloc<StringAtom>(ss.str());
 }
-std::shared_ptr<SExpr>
-lispStrCon(std::vector<std::shared_ptr<SExpr>>::iterator params,
-           const uint8_t argc) {
+const SExpr *lispStrCon(std::vector<const SExpr *>::iterator params,
+                        const uint8_t argc, VM &vm) {
   std::stringstream ss;
   ss << "\"";
   for (uint8_t i{0}; i < argc; ++i) {
@@ -132,12 +122,11 @@ lispStrCon(std::vector<std::shared_ptr<SExpr>>::iterator params,
     ++params;
   }
   ss << "\"";
-  return std::make_shared<StringAtom>(ss.str());
+  return vm.alloc<StringAtom>(ss.str());
 }
-std::shared_ptr<SExpr>
-lispToStr(std::vector<std::shared_ptr<SExpr>>::iterator params,
-          const uint8_t argc) {
-  if (isa<StringAtom>(**params)) {
+const SExpr *lispToStr(std::vector<const SExpr *>::iterator params,
+                       const uint8_t argc, VM &vm) {
+  if (isa<StringAtom>(*params)) {
     return *params;
   }
   std::stringstream ss;
@@ -147,74 +136,64 @@ lispToStr(std::vector<std::shared_ptr<SExpr>>::iterator params,
     ++params;
   }
   ss << "\"";
-  return std::make_shared<StringAtom>(ss.str());
+  return vm.alloc<StringAtom>(ss.str());
 }
 
-PRED_OP(lispIsNull, isa<NilAtom>(**params));
-PRED_OP(lispIsCons, isa<SExprs>(**params));
-std::shared_ptr<SExpr>
-lispCons(std::vector<std::shared_ptr<SExpr>>::iterator params,
-         const uint8_t argc) {
-  return std::make_shared<SExprs>(*params, *(params + 1));
+PRED_OP(lispIsNull, isa<NilAtom>(*params));
+PRED_OP(lispIsCons, isa<SExprs>(*params));
+const SExpr *lispCons(std::vector<const SExpr *>::iterator params,
+                      const uint8_t argc, VM &vm) {
+  return vm.alloc<SExprs>(*params, *(params + 1));
 }
-std::shared_ptr<SExpr>
-lispCar(std::vector<std::shared_ptr<SExpr>>::iterator params,
-        const uint8_t argc) {
+const SExpr *lispCar(std::vector<const SExpr *>::iterator params,
+                     const uint8_t argc, VM &vm) {
   return cast<SExprs>(*params)->first;
 }
-std::shared_ptr<SExpr>
-lispCdr(std::vector<std::shared_ptr<SExpr>>::iterator params,
-        const uint8_t argc) {
+const SExpr *lispCdr(std::vector<const SExpr *>::iterator params,
+                     const uint8_t argc, VM &vm) {
   return cast<SExprs>(*params)->rest;
 }
 
-std::shared_ptr<SExpr>
-lispDis(std::vector<std::shared_ptr<SExpr>>::iterator params,
-        const uint8_t argc) {
+const SExpr *lispDis(std::vector<const SExpr *>::iterator params,
+                     const uint8_t argc, VM &vm) {
   cast<ClosureAtom>(*params)->dissassemble(std::cout);
-  return std::make_shared<NilAtom>();
+  return vm.alloc<NilAtom>();
 }
-std::shared_ptr<SExpr>
-lispDisplay(std::vector<std::shared_ptr<SExpr>>::iterator params,
-            const uint8_t argc) {
-  if (auto stringAtom = std::dynamic_pointer_cast<StringAtom>(*params)) {
+const SExpr *lispDisplay(std::vector<const SExpr *>::iterator params,
+                         const uint8_t argc, VM &vm) {
+  if (auto stringAtom = dynCast<StringAtom>(*params)) {
     std::cout << stringAtom->unescaped << std::endl;
   } else {
     std::cout << **params << std::endl;
   }
-  return std::make_shared<NilAtom>();
+  return vm.alloc<NilAtom>();
 }
 
-std::shared_ptr<SExpr>
-lispQuit(std::vector<std::shared_ptr<SExpr>>::iterator params,
-         const uint8_t argc) {
+const SExpr *lispQuit(std::vector<const SExpr *>::iterator params,
+                      const uint8_t argc, VM &vm) {
   std::cout << "Farewell." << std::endl;
   exit(0);
 }
-std::shared_ptr<SExpr>
-lispError(std::vector<std::shared_ptr<SExpr>>::iterator params,
-          const uint8_t argc) {
+const SExpr *lispError(std::vector<const SExpr *>::iterator params,
+                       const uint8_t argc, VM &vm) {
   std::stringstream ss;
   ss << **params;
   throw std::runtime_error(ss.str());
 }
 
-std::shared_ptr<SExpr>
-lispEq(std::vector<std::shared_ptr<SExpr>>::iterator params,
-       const uint8_t argc) {
-  return std::make_shared<BoolAtom>((*params) == (*(params + 1)));
+const SExpr *lispEq(std::vector<const SExpr *>::iterator params,
+                    const uint8_t argc, VM &vm) {
+  return vm.alloc<BoolAtom>((*params) == (*(params + 1)));
 }
-std::shared_ptr<SExpr>
-lispEqv(std::vector<std::shared_ptr<SExpr>>::iterator params,
-        const uint8_t argc) {
-  return std::make_shared<BoolAtom>(**params == **(params + 1));
+const SExpr *lispEqv(std::vector<const SExpr *>::iterator params,
+                     const uint8_t argc, VM &vm) {
+  return vm.alloc<BoolAtom>(**params == **(params + 1));
 }
 
-std::shared_ptr<SExpr>
-lispIsProc(std::vector<std::shared_ptr<SExpr>>::iterator params,
-           const uint8_t argc) {
-  return std::make_shared<BoolAtom>(isa<ClosureAtom>(**params) ||
-                                    isa<NatFnAtom>(**params));
+const SExpr *lispIsProc(std::vector<const SExpr *>::iterator params,
+                        const uint8_t argc, VM &vm) {
+  return vm.alloc<BoolAtom>(isa<ClosureAtom>(*params) ||
+                            isa<NatFnAtom>(*params));
 }
 
 #undef MATH_CMP_OP

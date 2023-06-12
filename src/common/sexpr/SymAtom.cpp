@@ -9,7 +9,7 @@ std::string SymAtom::toString() const { return val; }
 
 bool SymAtom::equals(const SExpr &other) const {
   if (isa<SymAtom>(other)) {
-    return val == dynamic_cast<const SymAtom &>(other).val;
+    return val == cast<SymAtom>(other).val;
   }
   return false;
 }
@@ -20,6 +20,11 @@ bool SymAtom::classOf(const SExpr &sExpr) {
 
 const std::string SymAtom::typeName = "<Symbol>";
 
-size_t SymAtom::HashFunction::operator()(const SymAtom &sym) const {
-  return std::hash<std::string>()(sym.val);
+size_t SymAtom::HashFunction::operator()(const SymAtom *sym) const {
+  return std::hash<std::string>()(sym->val);
+}
+
+bool SymAtom::EqualFunction::operator()(const SymAtom *lhs,
+                                        const SymAtom *rhs) const {
+  return *lhs == *rhs;
 }

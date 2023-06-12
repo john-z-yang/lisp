@@ -3,29 +3,36 @@
 #include <memory>
 #include <string>
 
-bool BoolAtom::toBool(std::shared_ptr<SExpr> sExpr) {
-  if (auto boolAtom = std::dynamic_pointer_cast<BoolAtom>(sExpr)) {
-    return boolAtom->val;
-  }
-  return true;
-}
-
 BoolAtom::BoolAtom(const bool val) : Atom(SExpr::Type::BOOL), val(val) {}
-
-BoolAtom::BoolAtom(const std::shared_ptr<SExpr> sExpr)
-    : Atom(SExpr::Type::BOOL), val(toBool(sExpr)) {}
 
 std::string BoolAtom::toString() const { return (val) ? "#t" : "#f"; }
 
 bool BoolAtom::equals(const SExpr &other) const {
   if (isa<BoolAtom>(other)) {
-    return val == dynamic_cast<const BoolAtom &>(other).val;
+    return val == cast<BoolAtom>(other).val;
   }
   return false;
+}
+
+BoolAtom *BoolAtom::getInstance(const bool val) {
+  if (val) {
+    return &BoolAtom::_true;
+  }
+  return &BoolAtom::_false;
+}
+
+bool BoolAtom::toBool(const SExpr *sExpr) {
+  if (sExpr == &_false) {
+    return false;
+  }
+  return true;
 }
 
 bool BoolAtom::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::BOOL;
 }
+
+BoolAtom BoolAtom::_true(true);
+BoolAtom BoolAtom::_false(false);
 
 const std::string BoolAtom::typeName = "<Boolean>";

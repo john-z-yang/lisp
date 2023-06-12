@@ -20,7 +20,12 @@ public:
 
   class HashFunction {
   public:
-    size_t operator()(const SymAtom &sym) const;
+    size_t operator()(const SymAtom *sym) const;
+  };
+
+  class EqualFunction {
+  public:
+    bool operator()(const SymAtom *lhs, const SymAtom *rhs) const;
   };
 };
 

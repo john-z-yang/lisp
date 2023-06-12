@@ -17,7 +17,7 @@ std::string StringAtom::unescape(const std::string literal) {
 
 bool StringAtom::equals(const SExpr &other) const {
   if (isa<StringAtom>(other)) {
-    return literal == dynamic_cast<const StringAtom &>(other).literal;
+    return literal == cast<StringAtom>(other).literal;
   }
   return false;
 }

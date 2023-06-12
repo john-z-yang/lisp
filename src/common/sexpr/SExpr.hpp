@@ -19,6 +19,7 @@ public:
   const Type type;
 
   SExpr(SExpr::Type type);
+  virtual ~SExpr();
 };
 
 std::ostream &operator<<(std::ostream &o, const SExpr &sExpr);

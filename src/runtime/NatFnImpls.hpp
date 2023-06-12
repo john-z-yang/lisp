@@ -2,11 +2,12 @@
 #define LISP_SRC_VM_NATIVEFNS_HPP_
 
 #include "../common/sexpr/SExpr.hpp"
+#include "../runtime/VM.hpp"
 #include <memory>
 #include <vector>
 
-typedef std::shared_ptr<SExpr>(NativeFn)(
-    std::vector<std::shared_ptr<SExpr>>::iterator params, const uint8_t argc);
+typedef const SExpr *(NativeFn)(std::vector<const SExpr *>::iterator params,
+                                const uint8_t argc, VM &vm);
 
 NativeFn lispIsSym;
 NativeFn lispGenSym;
