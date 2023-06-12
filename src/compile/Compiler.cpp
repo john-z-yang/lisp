@@ -28,13 +28,13 @@ Compiler::Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
                    VM &vm)
     : source(source), sourceLoc(sourceLoc), vm(vm), enclosing(enclosing),
       arg(arg), body(body), stackOffset(1) {
-  if (const auto argNames = dynamic_cast<const SExprs *>(arg)) {
+  if (const auto argNames = dynCast<SExprs>(arg)) {
     visitEach(argNames, [&](const SExpr *sExpr) {
       auto sym = cast<SymAtom>(sExpr);
       locals.push_back({sym, stackOffset, false});
       stackOffset += 1;
     });
-  } else if (const auto argName = dynamic_cast<const SymAtom *>(arg)) {
+  } else if (const auto argName = dynCast<SymAtom>(arg)) {
     locals.push_back({argName, stackOffset, false});
     stackOffset += 1;
   } else if (!isa<NilAtom>(arg)) {
@@ -161,12 +161,12 @@ void Compiler::compile(const SExpr *sExpr) {
     code.pushCode(OpCode::LOAD_CONST, lineNum);
     code.pushCode(code.pushConst(sExpr), lineNum);
     return;
-  } else if (const auto sym = dynamic_cast<const SymAtom *>(sExpr)) {
+  } else if (const auto sym = dynCast<SymAtom>(sExpr)) {
     compileSym(sym);
     return;
   }
   const auto sExprs = cast<SExprs>(sExpr);
-  if (const auto sym = dynamic_cast<const SymAtom *>(sExprs->first)) {
+  if (const auto sym = dynCast<SymAtom>(sExprs->first)) {
     if (sym->val == "quote") {
       compileQuote(sExpr);
       return;

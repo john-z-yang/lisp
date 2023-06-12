@@ -14,7 +14,6 @@
 #include <memory>
 #include <sstream>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 const SExpr *VM::eval(const FnAtom *main, bool withGC) {
@@ -235,20 +234,17 @@ void VM::mark(const SExpr *sexpr) {
 }
 
 void VM::trace(const SExpr *sexpr) {
-  if (isa<SExprs>(sexpr)) {
-    const auto sexprs = dynamic_cast<const SExprs *>(sexpr);
+  if (const auto sexprs = dynCast<SExprs>(sexpr)) {
     mark(sexprs->first);
     mark(sexprs->rest);
     return;
   }
-  if (isa<FnAtom>(sexpr)) {
-    const auto fnAtom = dynamic_cast<const FnAtom *>(sexpr);
+  if (const auto fnAtom = dynCast<FnAtom>(sexpr)) {
     std::for_each(fnAtom->code.consts.begin(), fnAtom->code.consts.end(),
                   [&](const SExpr *sexpr) { mark(sexpr); });
     return;
   }
-  if (isa<ClosureAtom>(sexpr)) {
-    const auto closureAtom = dynamic_cast<const ClosureAtom *>(sexpr);
+  if (const auto closureAtom = dynCast<ClosureAtom>(sexpr)) {
     mark(closureAtom->fnAtom);
     std::for_each(
         closureAtom->upvalues.begin(), closureAtom->upvalues.end(),

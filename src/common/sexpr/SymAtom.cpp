@@ -9,7 +9,7 @@ std::string SymAtom::toString() const { return val; }
 
 bool SymAtom::equals(const SExpr &other) const {
   if (isa<SymAtom>(other)) {
-    return val == dynamic_cast<const SymAtom &>(other).val;
+    return val == cast<SymAtom>(other).val;
   }
   return false;
 }

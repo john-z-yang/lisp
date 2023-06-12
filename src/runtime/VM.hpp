@@ -81,8 +81,10 @@ public:
       gc();
       gcHeapSize = heap.size() * LISP_GC_HEAP_GROWTH_FACTOR;
     }
-    heap.emplace_back(std::make_unique<const T>(std::forward<Args>(args)...));
-    return static_cast<const T *>(heap.back().get());
+    auto unique = std::make_unique<const T>(std::forward<Args>(args)...);
+    const auto ptr = unique.get();
+    heap.emplace_back(std::move(unique));
+    return ptr;
   }
 };
 
@@ -94,8 +96,10 @@ template <> inline const IntAtom *VM::alloc(int &&val) {
   if (val >= LISP_INT_CACHE_MIN && val <= LISP_INT_CACHE_MAX) {
     return intCache.at(val - LISP_INT_CACHE_MIN).get();
   }
-  heap.emplace_back(std::make_unique<const IntAtom>(val));
-  return static_cast<const IntAtom *>(heap.back().get());
+  auto unique = std::make_unique<const IntAtom>(val);
+  const auto ptr = unique.get();
+  heap.emplace_back(std::move(unique));
+  return ptr;
 }
 
 #endif

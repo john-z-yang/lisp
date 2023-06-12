@@ -1,4 +1,5 @@
 #include "FnAtom.hpp"
+#include "../cast.cpp"
 #include <memory>
 #include <sstream>
 
@@ -20,7 +21,7 @@ std::ostream &FnAtom::dissassemble(std::ostream &o) const {
     << ", upvalues: " << numUpvals << ">" << std::endl
     << code << std::endl;
   for (auto i = code.consts.begin(); i != code.consts.end(); ++i) {
-    if (const auto fnAtom = dynamic_cast<const FnAtom *>(*i)) {
+    if (const auto fnAtom = dynCast<FnAtom>(*i)) {
       fnAtom->dissassemble(o);
     }
   }

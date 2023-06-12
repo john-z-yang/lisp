@@ -161,7 +161,7 @@ const SExpr *lispDis(std::vector<const SExpr *>::iterator params,
 }
 const SExpr *lispDisplay(std::vector<const SExpr *>::iterator params,
                          const uint8_t argc, VM &vm) {
-  if (auto stringAtom = dynamic_cast<const StringAtom *>(*params)) {
+  if (auto stringAtom = dynCast<StringAtom>(*params)) {
     std::cout << stringAtom->unescaped << std::endl;
   } else {
     std::cout << **params << std::endl;

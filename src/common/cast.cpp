@@ -13,12 +13,29 @@ template <typename To, typename From> bool isa(From *f) {
   return To::classOf(*f);
 }
 
-template <typename To, typename From> const To *cast(const From *f) {
-  if (auto ptr = dynamic_cast<const To *>(f)) {
-    return ptr;
+template <typename To, typename From> const To *dynCast(const From *f) {
+  if (isa<To>(f)) {
+    return static_cast<const To *>(f);
+  }
+  return nullptr;
+}
+
+template <typename To, typename From> const To &cast(const From &f) {
+  if (isa<To>(f)) {
+    return static_cast<const To &>(f);
   }
   std::stringstream ss;
-  ss << "Mismatched types. Expected " << To::typeName << ", but got " << *f
+  ss << "Mismatched types. Expected " << To::typeName << ", but got " << f
+     << ".";
+  throw TypeError(ss.str(), To::typeName, &f);
+}
+
+template <typename To, typename From> const To *cast(const From *f) {
+  if (isa<To>(f)) {
+    return static_cast<const To *>(f);
+  }
+  std::stringstream ss;
+  ss << "Mismatched types. Expected " << To::typeName << ", but got " << f
      << ".";
   throw TypeError(ss.str(), To::typeName, f);
 }

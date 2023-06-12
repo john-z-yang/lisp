@@ -9,7 +9,7 @@ std::string BoolAtom::toString() const { return (val) ? "#t" : "#f"; }
 
 bool BoolAtom::equals(const SExpr &other) const {
   if (isa<BoolAtom>(other)) {
-    return val == dynamic_cast<const BoolAtom &>(other).val;
+    return val == cast<BoolAtom>(other).val;
   }
   return false;
 }
