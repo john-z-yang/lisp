@@ -39,7 +39,7 @@ private:
   bool enableGC;
   size_t gcHeapSize;
 
-  std::unordered_set<std::unique_ptr<const SExpr>> heap;
+  std::vector<std::unique_ptr<const SExpr>> heap;
 
   std::unordered_set<const SExpr *> black;
   std::unordered_set<const SExpr *> grey;
@@ -81,10 +81,8 @@ public:
       gc();
       gcHeapSize = heap.size() * LISP_GC_HEAP_GROWTH_FACTOR;
     }
-    auto unique = std::make_unique<const T>(std::forward<Args>(args)...);
-    const auto ptr = unique.get();
-    heap.emplace(std::move(unique));
-    return static_cast<const T *>(ptr);
+    heap.emplace_back(std::make_unique<const T>(std::forward<Args>(args)...));
+    return static_cast<const T *>(heap.back().get());
   }
 };
 
@@ -96,10 +94,8 @@ template <> inline const IntAtom *VM::alloc(int &&val) {
   if (val >= LISP_INT_CACHE_MIN && val <= LISP_INT_CACHE_MAX) {
     return intCache.at(val - LISP_INT_CACHE_MIN).get();
   }
-  auto unique = std::make_unique<const IntAtom>(val);
-  const auto ptr = unique.get();
-  heap.emplace(std::move(unique));
-  return ptr;
+  heap.emplace_back(std::make_unique<const IntAtom>(val));
+  return static_cast<const IntAtom *>(heap.back().get());
 }
 
 #endif
