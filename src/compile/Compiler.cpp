@@ -385,7 +385,7 @@ const SExpr *Compiler::expandMacro(const SExpr *sExpr) {
   macro.pushCode(argc);
   macro.pushCode(OpCode::RETURN);
 
-  return vm.exec(vm.alloc<FnAtom>(0, 0, macro));
+  return vm.eval(vm.alloc<FnAtom>(0, 0, macro));
 }
 
 unsigned int Compiler::visitEach(const SExpr *sExprs, Visitor visitor) {

@@ -11,6 +11,7 @@ class Env {
   typedef std::unordered_map<const SymAtom *, const SExpr *,
                              SymAtom::HashFunction, SymAtom::EqualFunction>
       SymVals;
+  friend class VM;
 
   typedef std::unordered_set<const SymAtom *, SymAtom::HashFunction,
                              SymAtom::EqualFunction>
