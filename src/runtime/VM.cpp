@@ -255,7 +255,7 @@ void VM::trace(const SExpr *sexpr) {
 }
 
 void VM::markGlobals() {
-  for (const auto &[sym, sexpr] : globals.symTable) {
+  for (const auto &[sym, sexpr] : globals.getSymTable()) {
     grey.emplace(sym);
     grey.emplace(sexpr);
   }
