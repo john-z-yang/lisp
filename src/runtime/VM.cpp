@@ -235,17 +235,20 @@ void VM::mark(const SExpr *sexpr) {
 }
 
 void VM::trace(const SExpr *sexpr) {
-  if (const auto sexprs = dynamic_cast<const SExprs *>(sexpr)) {
+  if (isa<SExprs>(sexpr)) {
+    const auto sexprs = dynamic_cast<const SExprs *>(sexpr);
     mark(sexprs->first);
     mark(sexprs->rest);
     return;
   }
-  if (const auto fnAtom = dynamic_cast<const FnAtom *>(sexpr)) {
+  if (isa<FnAtom>(sexpr)) {
+    const auto fnAtom = dynamic_cast<const FnAtom *>(sexpr);
     std::for_each(fnAtom->code.consts.begin(), fnAtom->code.consts.end(),
                   [&](const SExpr *sexpr) { mark(sexpr); });
     return;
   }
-  if (const auto closureAtom = dynamic_cast<const ClosureAtom *>(sexpr)) {
+  if (isa<ClosureAtom>(sexpr)) {
+    const auto closureAtom = dynamic_cast<const ClosureAtom *>(sexpr);
     mark(closureAtom->fnAtom);
     std::for_each(
         closureAtom->upvalues.begin(), closureAtom->upvalues.end(),
