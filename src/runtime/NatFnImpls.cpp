@@ -8,6 +8,7 @@
 #include "../common/sexpr/SExprs.hpp"
 #include "../common/sexpr/StringAtom.hpp"
 #include "../common/sexpr/SymAtom.hpp"
+#include <cmath>
 #include <cstdlib>
 #include <exception>
 #include <memory>
