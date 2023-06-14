@@ -8,8 +8,8 @@
 
 #include "../common/sexpr/BoolAtom.hpp"
 #include "../common/sexpr/ClosureAtom.hpp"
-#include "../common/sexpr/IntAtom.hpp"
 #include "../common/sexpr/NilAtom.hpp"
+#include "../common/sexpr/NumAtom.hpp"
 #include "../common/sexpr/SExpr.hpp"
 #include "Env.hpp"
 #include "Upvalue.hpp"
@@ -43,7 +43,7 @@ private:
 
   std::unordered_set<const SExpr *> black;
   std::unordered_set<const SExpr *> grey;
-  std::vector<std::unique_ptr<const IntAtom>> intCache;
+  std::vector<std::unique_ptr<const NumAtom>> intCache;
 
   const SExpr *eval(const FnAtom *main, bool withGC);
   const SExpr *exec(const FnAtom *main);
@@ -92,11 +92,11 @@ template <> inline const NilAtom *VM::alloc() { return NilAtom::getInstance(); }
 template <> inline const BoolAtom *VM::alloc(bool &&val) {
   return BoolAtom::getInstance(val);
 }
-template <> inline const IntAtom *VM::alloc(int &&val) {
+template <> inline const NumAtom *VM::alloc(int &&val) {
   if (val >= LISP_INT_CACHE_MIN && val <= LISP_INT_CACHE_MAX) {
     return intCache.at(val - LISP_INT_CACHE_MIN).get();
   }
-  auto unique = std::make_unique<const IntAtom>(val);
+  auto unique = std::make_unique<const NumAtom>(val);
   const auto ptr = unique.get();
   heap.emplace_back(std::move(unique));
   return ptr;

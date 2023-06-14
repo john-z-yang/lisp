@@ -4,8 +4,8 @@
 #include "../common/TypeError.hpp"
 #include "../common/cast.cpp"
 #include "../common/sexpr/BoolAtom.hpp"
-#include "../common/sexpr/IntAtom.hpp"
 #include "../common/sexpr/NilAtom.hpp"
+#include "../common/sexpr/NumAtom.hpp"
 #include "../common/sexpr/SExprs.hpp"
 #include "../common/sexpr/StringAtom.hpp"
 #include "../common/sexpr/SymAtom.hpp"
@@ -101,11 +101,8 @@ const SExpr *Compiler::parse(std::vector<Token>::const_iterator &it,
 }
 
 const SExpr *Compiler::parseAtom(Token token) {
-  if ((token.str.length() >= 1 &&
-       all_of(token.str.begin(), token.str.end(), ::isdigit)) ||
-      (token.str[0] == '-' && token.str.length() > 1 &&
-       all_of(token.str.begin() + 1, token.str.end(), ::isdigit))) {
-    return vm.alloc<IntAtom>(stoi(token.str));
+  if (NumAtom::isNum(token.str)) {
+    return vm.alloc<NumAtom>(token.str);
   }
   if (token.str.front() == '\"' && token.str.back() == '\"') {
     return vm.alloc<StringAtom>(token.str);
@@ -155,7 +152,7 @@ const SExpr *Compiler::parseSexprs(std::vector<Token>::const_iterator &it,
 }
 
 void Compiler::compile(const SExpr *sExpr) {
-  if (isa<NilAtom>(sExpr) || isa<IntAtom>(sExpr) || isa<BoolAtom>(sExpr) ||
+  if (isa<NilAtom>(sExpr) || isa<NumAtom>(sExpr) || isa<BoolAtom>(sExpr) ||
       isa<StringAtom>(sExpr)) {
     const auto lineNum = std::get<0>(sourceLoc[sExpr]);
     code.pushCode(OpCode::LOAD_CONST, lineNum);

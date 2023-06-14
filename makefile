@@ -24,7 +24,7 @@ endef
 
 _DEPS =  common/sexpr/Atom.hpp \
 	common/sexpr/BoolAtom.hpp common/sexpr/ClosureAtom.hpp \
-	common/sexpr/FnAtom.hpp common/sexpr/IntAtom.hpp common/sexpr/NatFnAtom.hpp \
+	common/sexpr/FnAtom.hpp common/sexpr/NumAtom.hpp common/sexpr/NatFnAtom.hpp \
 	common/sexpr/NilAtom.hpp common/sexpr/SExpr.hpp common/sexpr/SExprs.hpp \
 	common/sexpr/StringAtom.hpp common/sexpr/SymAtom.hpp common/Code.hpp \
 	common/TypeError.hpp compile/Compiler.hpp compile/SyntaxError.hpp \

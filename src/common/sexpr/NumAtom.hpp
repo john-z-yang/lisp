@@ -5,17 +5,19 @@
 #include <memory>
 #include <string>
 
-class IntAtom final : public Atom {
+class NumAtom final : public Atom {
 protected:
   std::string toString() const;
   bool equals(const SExpr &other) const;
 
 public:
-  const int val;
+  const double val;
 
-  IntAtom(const int val);
+  NumAtom(const double val);
+  NumAtom(const std::string s);
 
   static bool classOf(const SExpr &sExpr);
+  static bool isNum(const std::string s);
   static const std::string typeName;
 };
 
