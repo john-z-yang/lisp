@@ -24,7 +24,7 @@ Clone this repository.
 git clone https://github.com/john-z-yang/lisp
 ```
 
-Build the project.
+Build the project. (**Note**: the default recipe will compile with sanitizers ([`ASan`](https://clang.llvm.org/docs/AddressSanitizer.html) and [`UBSan`](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html)\) which will hinder performance, use `CXXFLAGS_ASAN` variable to control them).
 
 ```bash
 make
