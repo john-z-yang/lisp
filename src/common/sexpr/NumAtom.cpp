@@ -5,9 +5,6 @@
 
 NumAtom::NumAtom(const double val) : Atom(SExpr::Type::NUM), val(val) {}
 
-NumAtom::NumAtom(const std::string s)
-    : Atom(SExpr::Type::NUM), val(std::stod(s)) {}
-
 std::string NumAtom::toString() const {
   std::stringstream ss;
   ss << val;
@@ -23,15 +20,6 @@ bool NumAtom::equals(const SExpr &other) const {
 
 bool NumAtom::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::NUM;
-}
-
-bool NumAtom::isNum(const std::string s) {
-  try {
-    std::stod(s);
-  } catch (...) {
-    return false;
-  }
-  return true;
 }
 
 const std::string NumAtom::typeName = "<Number>";

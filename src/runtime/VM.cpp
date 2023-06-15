@@ -285,7 +285,7 @@ void VM::reset() {
 }
 
 VM::VM() : enableGC(false), gcHeapSize(LISP_GC_INIT_HEAP_SIZE) {
-  for (int i{LISP_INT_CACHE_MIN}; i <= LISP_INT_CACHE_MAX; i++) {
+  for (double i{LISP_INT_CACHE_MIN}; i <= LISP_INT_CACHE_MAX; i++) {
     intCache.push_back(std::make_unique<NumAtom>(i));
   }
 

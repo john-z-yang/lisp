@@ -3,8 +3,8 @@
 
 #define LISP_GC_HEAP_GROWTH_FACTOR 2
 #define LISP_GC_INIT_HEAP_SIZE 4096
-#define LISP_INT_CACHE_MAX 256
-#define LISP_INT_CACHE_MIN -16
+#define LISP_INT_CACHE_MAX 256.0
+#define LISP_INT_CACHE_MIN -16.0
 
 #include "../common/sexpr/BoolAtom.hpp"
 #include "../common/sexpr/ClosureAtom.hpp"
@@ -92,14 +92,18 @@ template <> inline const NilAtom *VM::alloc() { return NilAtom::getInstance(); }
 template <> inline const BoolAtom *VM::alloc(bool &&val) {
   return BoolAtom::getInstance(val);
 }
-template <> inline const NumAtom *VM::alloc(int &&val) {
-  if (val >= LISP_INT_CACHE_MIN && val <= LISP_INT_CACHE_MAX) {
+template <> inline const NumAtom *VM::alloc(double &val) {
+  if (val >= LISP_INT_CACHE_MIN && val <= LISP_INT_CACHE_MAX &&
+      floor(val) == val) {
     return intCache.at(val - LISP_INT_CACHE_MIN).get();
   }
   auto unique = std::make_unique<const NumAtom>(val);
   const auto ptr = unique.get();
   heap.emplace_back(std::move(unique));
   return ptr;
+}
+template <> inline const NumAtom *VM::alloc(double &&val) {
+  return alloc<NumAtom>(val);
 }
 
 #endif

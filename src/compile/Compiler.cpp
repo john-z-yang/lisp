@@ -13,6 +13,7 @@
 #include "SyntaxError.hpp"
 #include "grammar.hpp"
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <iterator>
 #include <memory>
@@ -67,6 +68,15 @@ std::vector<Compiler::Token> Compiler::tokenize(std::string line,
   return tokens;
 }
 
+bool Compiler::isNum(const std::string s) {
+  try {
+    std::stod(s);
+  } catch (...) {
+    return false;
+  }
+  return true;
+}
+
 const SExpr *Compiler::parse(std::vector<std::string> lines,
                              SourceLoc &sourceLoc) {
   auto tokens = tokenize(lines);
@@ -100,9 +110,32 @@ const SExpr *Compiler::parse(std::vector<Token>::const_iterator &it,
   return atom;
 }
 
+const SExpr *Compiler::parseSexprs(std::vector<Token>::const_iterator &it,
+                                   SourceLoc &sourceLoc) {
+  auto token = *it;
+  if (token.str == ")") {
+    it += 1;
+    auto nil = vm.alloc<NilAtom>();
+    sourceLoc.insert({nil, {token.row, token.col - 1}});
+    return nil;
+  } else if (token.str == "(") {
+    it += 1;
+    auto first = parseSexprs(it, sourceLoc);
+    auto rest = parseSexprs(it, sourceLoc);
+    auto sExprs = vm.alloc<SExprs>(first, rest);
+    sourceLoc.insert({sExprs, {token.row, token.col - 1}});
+    return sExprs;
+  }
+  auto first = parse(it, sourceLoc);
+  auto rest = parseSexprs(it, sourceLoc);
+  auto sExprs = vm.alloc<SExprs>(first, rest);
+  sourceLoc.insert({sExprs, {token.row, token.col - 1}});
+  return sExprs;
+}
+
 const SExpr *Compiler::parseAtom(Token token) {
-  if (NumAtom::isNum(token.str)) {
-    return vm.alloc<NumAtom>(token.str);
+  if (isNum(token.str)) {
+    return vm.alloc<NumAtom>(std::stod(token.str));
   }
   if (token.str.front() == '\"' && token.str.back() == '\"') {
     return vm.alloc<StringAtom>(token.str);
@@ -126,29 +159,6 @@ const SExpr *Compiler::parseAtom(Token token) {
     return vm.alloc<SymAtom>("unquote-splicing");
   }
   return vm.alloc<SymAtom>(token.str);
-}
-
-const SExpr *Compiler::parseSexprs(std::vector<Token>::const_iterator &it,
-                                   SourceLoc &sourceLoc) {
-  auto token = *it;
-  if (token.str == ")") {
-    it += 1;
-    auto nil = vm.alloc<NilAtom>();
-    sourceLoc.insert({nil, {token.row, token.col - 1}});
-    return nil;
-  } else if (token.str == "(") {
-    it += 1;
-    auto first = parseSexprs(it, sourceLoc);
-    auto rest = parseSexprs(it, sourceLoc);
-    auto sExprs = vm.alloc<SExprs>(first, rest);
-    sourceLoc.insert({sExprs, {token.row, token.col - 1}});
-    return sExprs;
-  }
-  auto first = parse(it, sourceLoc);
-  auto rest = parseSexprs(it, sourceLoc);
-  auto sExprs = vm.alloc<SExprs>(first, rest);
-  sourceLoc.insert({sExprs, {token.row, token.col - 1}});
-  return sExprs;
 }
 
 void Compiler::compile(const SExpr *sExpr) {

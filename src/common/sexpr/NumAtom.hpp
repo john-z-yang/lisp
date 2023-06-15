@@ -14,10 +14,8 @@ public:
   const double val;
 
   NumAtom(const double val);
-  NumAtom(const std::string s);
 
   static bool classOf(const SExpr &sExpr);
-  static bool isNum(const std::string s);
   static const std::string typeName;
 };
 
