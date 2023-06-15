@@ -13,6 +13,7 @@
 #include "../common/sexpr/SExpr.hpp"
 #include "Env.hpp"
 #include "Upvalue.hpp"
+#include <cmath>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
