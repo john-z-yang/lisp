@@ -12,6 +12,7 @@ protected:
 
 public:
   const std::string val;
+  const size_t hash;
 
   SymAtom(std::string val);
 

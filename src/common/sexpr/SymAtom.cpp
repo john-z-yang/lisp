@@ -3,7 +3,8 @@
 #include <memory>
 #include <string>
 
-SymAtom::SymAtom(std::string val) : Atom(SExpr::Type::SYM), val(val) {}
+SymAtom::SymAtom(std::string val)
+    : Atom(SExpr::Type::SYM), val(val), hash(std::hash<std::string>()(val)) {}
 
 std::string SymAtom::toString() const { return val; }
 
@@ -21,10 +22,10 @@ bool SymAtom::classOf(const SExpr &sExpr) {
 const std::string SymAtom::typeName = "<Symbol>";
 
 size_t SymAtom::HashFunction::operator()(const SymAtom *sym) const {
-  return std::hash<std::string>()(sym->val);
+  return sym->hash;
 }
 
 bool SymAtom::EqualFunction::operator()(const SymAtom *lhs,
                                         const SymAtom *rhs) const {
-  return *lhs == *rhs;
+  return lhs->hash == rhs->hash;
 }
