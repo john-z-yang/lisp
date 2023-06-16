@@ -60,11 +60,13 @@ private:
   static std::vector<Token> tokenize(std::string line, const unsigned int row);
   static bool isNum(const std::string s);
 
-  const SExpr *parse(std::vector<std::string> lines, SourceLoc &sourceLoc);
+  const SExpr *parse();
   const SExpr *parse(std::vector<Token>::const_iterator &it,
-                     SourceLoc &sourceLoc);
+                     const std::vector<Token>::const_iterator &end);
   const SExpr *parseSexprs(std::vector<Token>::const_iterator &it,
-                           SourceLoc &sourceLoc);
+                           const std::vector<Token>::const_iterator &end);
+  const SExpr *parseList(std::vector<Token>::const_iterator &it,
+                         const std::vector<Token>::const_iterator &end);
   const SExpr *parseAtom(Token token);
 
   void compile(const SExpr *sExpr);

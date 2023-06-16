@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <string>
 
-const auto quoteGrammar = "(quote expression)";
+const auto quoteGrammar = "(quote datum)";
 const auto quoteArgPos = 1;
 const auto quoteNilPos = 2;
 
@@ -54,5 +54,7 @@ const auto ifTestPos = 1;
 const auto ifConseqPos = 2;
 const auto ifAltPos = 3;
 const auto ifNilPos = 4;
+
+const auto dotGrammer = "(datum* . datum)";
 
 #endif

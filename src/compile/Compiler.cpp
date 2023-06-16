@@ -77,29 +77,28 @@ bool Compiler::isNum(const std::string s) {
   return true;
 }
 
-const SExpr *Compiler::parse(std::vector<std::string> lines,
-                             SourceLoc &sourceLoc) {
-  auto tokens = tokenize(lines);
+const SExpr *Compiler::parse() {
+  auto tokens = tokenize(source);
   std::vector<Token>::const_iterator it = tokens.begin();
-  const auto res = parse(it, sourceLoc);
+  const auto res = parse(it, tokens.end());
   if (it != tokens.end()) {
-    handleUnexpectedToken(*it, lines[it->row - 1]);
+    handleUnexpectedToken(*it, source[it->row - 1]);
   }
   return res;
 }
 
 const SExpr *Compiler::parse(std::vector<Token>::const_iterator &it,
-                             SourceLoc &sourceLoc) {
+                             const std::vector<Token>::const_iterator &end) {
   auto token = *it;
   it += 1;
   if (token.str == "(") {
-    auto sExprs = parseSexprs(it, sourceLoc);
+    auto sExprs = parseSexprs(it, end);
     sourceLoc.insert({sExprs, {token.row, token.col}});
     return sExprs;
   }
   if (token.str == "'" || token.str == "`" || token.str == "," ||
       token.str == ",@") {
-    auto rest = vm.alloc<SExprs>(parse(it, sourceLoc), vm.alloc<NilAtom>());
+    auto rest = vm.alloc<SExprs>(parse(it, end), vm.alloc<NilAtom>());
     sourceLoc.insert({rest, {token.row, token.col}});
     auto sExprs = vm.alloc<SExprs>(parseAtom(token), rest);
     sourceLoc.insert({sExprs, {token.row, token.col}});
@@ -110,8 +109,9 @@ const SExpr *Compiler::parse(std::vector<Token>::const_iterator &it,
   return atom;
 }
 
-const SExpr *Compiler::parseSexprs(std::vector<Token>::const_iterator &it,
-                                   SourceLoc &sourceLoc) {
+const SExpr *
+Compiler::parseSexprs(std::vector<Token>::const_iterator &it,
+                      const std::vector<Token>::const_iterator &end) {
   auto token = *it;
   if (token.str == ")") {
     it += 1;
@@ -120,14 +120,31 @@ const SExpr *Compiler::parseSexprs(std::vector<Token>::const_iterator &it,
     return nil;
   } else if (token.str == "(") {
     it += 1;
-    auto first = parseSexprs(it, sourceLoc);
-    auto rest = parseSexprs(it, sourceLoc);
+    auto first = parseSexprs(it, end);
+    auto rest = parseSexprs(it, end);
     auto sExprs = vm.alloc<SExprs>(first, rest);
     sourceLoc.insert({sExprs, {token.row, token.col - 1}});
     return sExprs;
   }
-  auto first = parse(it, sourceLoc);
-  auto rest = parseSexprs(it, sourceLoc);
+  return parseList(it, end);
+}
+
+const SExpr *
+Compiler::parseList(std::vector<Token>::const_iterator &it,
+                    const std::vector<Token>::const_iterator &end) {
+  auto token = *it;
+  auto first = parse(it, end);
+  const SExpr *rest = nullptr;
+  if (it->str == ".") {
+    it += 1;
+    rest = parse(it, end);
+    if (it == end) {
+      handleSyntaxError(dotGrammer, "datum", rest);
+    }
+    it += 1;
+  } else {
+    rest = parseSexprs(it, end);
+  }
   auto sExprs = vm.alloc<SExprs>(first, rest);
   sourceLoc.insert({sExprs, {token.row, token.col - 1}});
   return sExprs;
@@ -469,7 +486,7 @@ void Compiler::handleSyntaxError(const std::string grammar,
 
 Compiler::Compiler(std::vector<std::string> source, VM &vm)
     : source(source), vm(vm), enclosing(nullptr), arg(vm.alloc<NilAtom>()),
-      body(parse(source, sourceLoc)), stackOffset(0) {}
+      body(parse()), stackOffset(0) {}
 
 const FnAtom *Compiler::compile() {
   if (isa<SymAtom>(arg)) {
