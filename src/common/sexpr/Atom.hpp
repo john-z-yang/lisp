@@ -6,6 +6,8 @@
 class Atom : public SExpr {
 public:
   Atom(SExpr::Type type);
+
+  static bool classOf(const SExpr &sExpr);
 };
 
 #endif

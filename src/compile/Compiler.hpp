@@ -37,24 +37,24 @@ private:
     bool isLocal;
   };
 
-  std::vector<std::string> source;
-  SourceLoc sourceLoc;
-
   VM &vm;
 
   Compiler *const enclosing;
 
-  Code code;
+  std::vector<std::string> source;
+  SourceLoc sourceLoc;
 
-  const SExpr *const arg;
+  const SExpr *const params;
   const SExpr *const body;
 
   std::vector<Local> locals;
   std::vector<UpValue> upValues;
   uint8_t stackOffset;
 
+  Code code;
+
   Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
-           const SExpr *arg, const SExpr *body, Compiler *enclosing, VM &vm);
+           const SExpr *param, const SExpr *body, Compiler *enclosing, VM &vm);
 
   static std::vector<Token> tokenize(std::vector<std::string> lines);
   static std::vector<Token> tokenize(std::string line, const unsigned int row);
@@ -69,15 +69,18 @@ private:
                          const std::vector<Token>::const_iterator &end);
   const SExpr *parseAtom(Token token);
 
-  void compile(const SExpr *sExpr);
+  void compileStmt(const SExpr *sExpr);
+  void compileExpr(const SExpr *sExpr);
+  void compileLambda(const SExpr *sExpr);
+  void compileCall(const SExprs *sExprs);
+  void compileAtom(const Atom *atom);
   void compileSym(const SymAtom *sym);
   void compileQuote(const SExpr *sExpr);
   void compileDef(const SExpr *sExpr);
   void compileDefMacro(const SExpr *sExpr);
   void compileSet(const SExpr *sExpr);
   void compileIf(const SExpr *sExpr);
-  void compileLambda(const SExpr *sExpr);
-  void compileCall(const SExprs *sExprs);
+  void compileRet();
 
   const SExpr *expandMacro(const SExpr *macro);
 
@@ -87,6 +90,9 @@ private:
   int resolveLocal(const SymAtom *sym);
   int resolveUpvalue(Compiler &caller, const SymAtom *sym);
   int addUpvalue(int idx, bool isLocal);
+
+  bool isVariadic();
+  int countParams();
 
   static void handleUnexpectedToken(const Token &token,
                                     const std::string &line);

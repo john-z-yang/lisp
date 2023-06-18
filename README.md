@@ -94,12 +94,18 @@ _Happy hacking!_
 
 ### Logic
 
-| Syntax                                 | Description                                                                                                                                                   |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| (**if** _test conseq alt_)             | Evaluates _test_, if the result is _truthy_, evalulate _conseq_, evalulate _alt_ otherwise.                                                                   |
-| (**cond** _(test expr)* (else expr)?_) | Evaluates each pair of _(test expr)_ in sequence, if the result of _test_ is _truthy_, evalulate its _expr_ (_else_ always evaluates to #t).                  |
-| (**and** _expr*_)                      | Evaluate _expression_ from left to right. When one of them evaluates to `#f`, return `#f`. If all of them are _truthy_, return the result of the last _expr_. |
-| (**or** _expr*_)                       | Evaluate _expression_ from left to right. When one of them evaluates to a _truthy_ value, return the result. If all of them are `#f`, return `#f`.            |
+| Syntax                                 | Description                                                                                                                                             |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| (**if** _test conseq alt_)             | Evaluates _test_, if the result is _truthy_, evalulate _conseq_, evalulate _alt_ otherwise.                                                             |
+| (**cond** _(test expr)* (else expr)?_) | Evaluates each pair of _(test expr)_ in sequence, if the result of _test_ is _truthy_, evalulate its _expr_ (_else_ always evaluates to #t).            |
+| (**and** _expr*_)                      | Evaluate _expr_ from left to right. When one of them evaluates to `#f`, return `#f`. If all of them are _truthy_, return the result of the last _expr_. |
+| (**or** _expr*_)                       | Evaluate _expr_ from left to right. When one of them evaluates to a _truthy_ value, return the result. If all of them are `#f`, return `#f`.            |
+
+### Sequencing
+
+| Syntax              | Description                                                                                             |
+| ------------------- | ------------------------------------------------------------------------------------------------------- |
+| (**begin** _expr*_) | Evaluate _expr_ in sequence, return the result of the last _expr_, if no expr is provided, return `'()` |
 
 ## Built-In Functions
 
@@ -230,6 +236,7 @@ flowchart TB
 | **JUMP** _offset_                  | Set `ip` of current frame to `offset`.                                                                                                                                                                |
 | **POP_JUMP_IF_FALSE** _offset_     | Set `ip` of current frame to `offset` if **TOS** is not _truthy_.                                                                                                                                     |
 | **MAKE_LIST** _argc_               | Pop `argc` elements from **TOS**, push those elements as cons list onto the stack.                                                                                                                    |
+| **MAKE_NIL**                       | Push `'()` onto the stack                                                                                                                                                                             |
 
 #### Example
 

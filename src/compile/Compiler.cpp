@@ -25,21 +25,21 @@
 #include <vector>
 
 Compiler::Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
-                   const SExpr *arg, const SExpr *body, Compiler *enclosing,
+                   const SExpr *param, const SExpr *body, Compiler *enclosing,
                    VM &vm)
-    : source(source), sourceLoc(sourceLoc), vm(vm), enclosing(enclosing),
-      arg(arg), body(body), stackOffset(1) {
-  if (const auto argNames = dynCast<SExprs>(arg)) {
+    : vm(vm), enclosing(enclosing), source(source), sourceLoc(sourceLoc),
+      params(param), body(body), stackOffset(1) {
+  if (const auto argNames = dynCast<SExprs>(param)) {
     visitEach(argNames, [&](const SExpr *sExpr) {
       auto sym = cast<SymAtom>(sExpr);
       locals.push_back({sym, stackOffset, false});
       stackOffset += 1;
     });
-  } else if (const auto argName = dynCast<SymAtom>(arg)) {
+  } else if (const auto argName = dynCast<SymAtom>(param)) {
     locals.push_back({argName, stackOffset, false});
     stackOffset += 1;
-  } else if (!isa<NilAtom>(arg)) {
-    handleSyntaxError(lambdaGrammar, NilAtom::typeName, arg);
+  } else if (!isa<NilAtom>(param)) {
+    handleSyntaxError(lambdaGrammar, NilAtom::typeName, param);
   }
 }
 
@@ -178,28 +178,47 @@ const SExpr *Compiler::parseAtom(Token token) {
   return vm.alloc<SymAtom>(token.str);
 }
 
-void Compiler::compile(const SExpr *sExpr) {
-  if (isa<NilAtom>(sExpr) || isa<NumAtom>(sExpr) || isa<BoolAtom>(sExpr) ||
-      isa<StringAtom>(sExpr)) {
-    const auto lineNum = std::get<0>(sourceLoc[sExpr]);
-    code.pushCode(OpCode::LOAD_CONST, lineNum);
-    code.pushCode(code.pushConst(sExpr), lineNum);
-    return;
-  } else if (const auto sym = dynCast<SymAtom>(sExpr)) {
-    compileSym(sym);
+void Compiler::compileStmt(const SExpr *sExpr) {
+  if (const auto sExprs = dynCast<SExprs>(sExpr)) {
+    if (const auto sym = dynCast<SymAtom>(sExprs->first)) {
+      if (sym->val == "define") {
+        compileDef(sExpr);
+        return;
+      } else if (sym->val == "defmacro") {
+        compileDefMacro(sExpr);
+        return;
+      } else if (sym->val == "begin") {
+        code.pushCode(OpCode::MAKE_NIL);
+        visitEach(sExprs->rest, [&](const SExpr *sExpr) {
+          stackOffset += 1;
+          this->compileStmt(sExpr);
+        });
+        return;
+      }
+    }
+  }
+  compileExpr(sExpr);
+}
+
+void Compiler::compileExpr(const SExpr *sExpr) {
+  if (const auto atom = dynCast<Atom>(sExpr)) {
+    compileAtom(atom);
     return;
   }
   const auto sExprs = cast<SExprs>(sExpr);
   if (const auto sym = dynCast<SymAtom>(sExprs->first)) {
-    if (sym->val == "quote") {
+    if (vm.isMacro(sym)) {
+      compileExpr(expandMacro(sExpr));
+      return;
+    } else if (sym->val == "begin") {
+      code.pushCode(OpCode::MAKE_NIL);
+      visitEach(sExprs->rest, [&](const SExpr *sExpr) {
+        code.pushCode(OpCode::POP_TOP);
+        this->compileExpr(sExpr);
+      });
+      return;
+    } else if (sym->val == "quote") {
       compileQuote(sExpr);
-      return;
-    }
-    if (sym->val == "define") {
-      compileDef(sExpr);
-      return;
-    } else if (sym->val == "defmacro") {
-      compileDefMacro(sExpr);
       return;
     } else if (sym->val == "set!") {
       compileSet(sExpr);
@@ -210,12 +229,54 @@ void Compiler::compile(const SExpr *sExpr) {
     } else if (sym->val == "lambda") {
       compileLambda(sExpr);
       return;
-    } else if (vm.isMacro(sym)) {
-      compile(expandMacro(sExpr));
-      return;
+    } else if (sym->val == "define" || sym->val == "defmacro") {
+      const auto [row, col] = sourceLoc[sExpr];
+      throw SyntaxError(
+          "Invalid syntax for define: cannot use define as an expression",
+          source[row - 1], row, col);
     }
   }
   compileCall(sExprs);
+}
+
+void Compiler::compileLambda(const SExpr *sExpr) {
+  try {
+    const auto argNames = cast<SExprs>(at(lambdaArgPos, sExpr))->first;
+    const auto body = cast<SExprs>(at(lambdaBodyPos, sExpr))->first;
+
+    Compiler compiler(source, sourceLoc, argNames, body, this, vm);
+    const auto function = compiler.compile();
+
+    const auto lineNum = std::get<0>(sourceLoc[sExpr]);
+    code.pushCode(OpCode::MAKE_CLOSURE, lineNum);
+    code.pushCode(code.pushConst(function), lineNum);
+    for (const auto &upValue : compiler.upValues) {
+      code.pushCode(upValue.isLocal ? 1 : 0);
+      code.pushCode(upValue.idx);
+    }
+  } catch (TypeError &te) {
+    handleSyntaxError(lambdaGrammar, te.expected, te.actual);
+  }
+}
+
+void Compiler::compileCall(const SExprs *sExprs) {
+  compileExpr(sExprs->first);
+  const auto argc = visitEach(
+      sExprs->rest, [&](const SExpr *sExpr) { this->compileExpr(sExpr); });
+
+  const auto lineNum = std::get<0>(sourceLoc[sExprs->first]);
+  code.pushCode(OpCode::CALL, lineNum);
+  code.pushCode(argc, lineNum);
+}
+
+void Compiler::compileAtom(const Atom *atom) {
+  if (const auto symAtom = dynCast<SymAtom>(atom)) {
+    compileSym(cast<SymAtom>(atom));
+    return;
+  }
+  const auto lineNum = std::get<0>(sourceLoc[atom]);
+  code.pushCode(OpCode::LOAD_CONST, lineNum);
+  code.pushCode(code.pushConst(atom), lineNum);
 }
 
 void Compiler::compileSym(const SymAtom *sym) {
@@ -245,19 +306,12 @@ void Compiler::compileQuote(const SExpr *sExpr) {
 }
 
 void Compiler::compileDef(const SExpr *sExpr) {
-  if ((locals.empty() && stackOffset > 0) ||
-      (!locals.empty() && stackOffset > locals.back().stackOffset + 1)) {
-    const auto [row, col] = sourceLoc[sExpr];
-    throw SyntaxError(
-        "Invalid syntax for define: cannot use define as an argument",
-        source[row - 1], row, col);
-  }
   try {
     const auto sym = cast<SymAtom>(cast<SExprs>(at(defSymPos, sExpr))->first);
     const auto expr = cast<SExprs>(at(defSExprPos, sExpr))->first;
     cast<NilAtom>(at(defNilPos, sExpr));
 
-    compile(expr);
+    compileExpr(expr);
 
     const auto lineNum = std::get<0>(sourceLoc[sExpr]);
     if (enclosing == nullptr) {
@@ -307,7 +361,7 @@ void Compiler::compileSet(const SExpr *sExpr) {
     const auto expr = cast<SExprs>(at(setSExprPos, sExpr))->first;
     cast<NilAtom>(at(setNilPos, sExpr));
 
-    compile(expr);
+    compileExpr(expr);
 
     const auto lineNum = std::get<0>(sourceLoc[sExpr]);
 
@@ -335,14 +389,14 @@ void Compiler::compileIf(const SExpr *sExpr) {
     const auto alt = cast<SExprs>(at(ifAltPos, sExpr))->first;
     cast<NilAtom>(at(ifNilPos, sExpr));
 
-    compile(test);
+    compileExpr(test);
 
     const auto testLoc = std::get<0>(sourceLoc[test]);
     const auto jifIdx = code.pushCode(OpCode::POP_JUMP_IF_FALSE, testLoc) + 1;
     code.pushCode(UINT8_MAX, testLoc);
     code.pushCode(UINT8_MAX, testLoc);
 
-    compile(conseq);
+    compileExpr(conseq);
 
     const auto conseqLoc = std::get<0>(sourceLoc[conseq]);
     const auto jIdx = code.pushCode(OpCode::JUMP, conseqLoc) + 1;
@@ -350,7 +404,7 @@ void Compiler::compileIf(const SExpr *sExpr) {
     code.pushCode(UINT8_MAX, conseqLoc);
     code.patchJump(jifIdx);
 
-    compile(alt);
+    compileExpr(alt);
 
     code.patchJump(jIdx);
   } catch (TypeError &te) {
@@ -358,38 +412,24 @@ void Compiler::compileIf(const SExpr *sExpr) {
   }
 }
 
-void Compiler::compileLambda(const SExpr *sExpr) {
-  try {
-    const auto argNames = cast<SExprs>(at(lambdaArgPos, sExpr))->first;
-    const auto body = cast<SExprs>(at(lambdaBodyPos, sExpr))->first;
-    cast<NilAtom>(at(lambdaNilPos, sExpr));
+void Compiler::compileRet() {
+  code.pushCode(OpCode::SET_STACK);
+  code.pushCode(0);
 
-    Compiler compiler(source, sourceLoc, argNames, body, this, vm);
-    const auto function = compiler.compile();
-
-    const auto lineNum = std::get<0>(sourceLoc[sExpr]);
-    code.pushCode(OpCode::MAKE_CLOSURE, lineNum);
-    code.pushCode(code.pushConst(function), lineNum);
-    for (const auto &upValue : compiler.upValues) {
-      code.pushCode(upValue.isLocal ? 1 : 0);
-      code.pushCode(upValue.idx);
+  auto local = locals.rbegin();
+  for (auto curOffset{stackOffset}; curOffset > 0; --curOffset) {
+    if (local != locals.rend() && local->stackOffset == curOffset) {
+      if (local->isCaptured) {
+        code.pushCode(OpCode::CLOSE_UPVALUE);
+      } else {
+        code.pushCode(OpCode::POP_TOP);
+      }
+      ++local;
+      continue;
     }
-  } catch (TypeError &te) {
-    handleSyntaxError(lambdaGrammar, te.expected, te.actual);
+    code.pushCode(OpCode::POP_TOP);
   }
-}
-
-void Compiler::compileCall(const SExprs *sExprs) {
-  compile(sExprs->first);
-  stackOffset += 1;
-  const auto argc = visitEach(sExprs->rest, [&](const SExpr *sExpr) {
-    this->compile(sExpr);
-    stackOffset += 1;
-  });
-
-  const auto lineNum = std::get<0>(sourceLoc[sExprs->first]);
-  code.pushCode(OpCode::CALL, lineNum);
-  code.pushCode(argc, lineNum);
+  code.pushCode(OpCode::RETURN);
 }
 
 const SExpr *Compiler::expandMacro(const SExpr *sExpr) {
@@ -467,6 +507,15 @@ int Compiler::addUpvalue(int idx, bool isLocal) {
   return upValues.size() - 1;
 }
 
+bool Compiler::isVariadic() { return isa<SymAtom>(params); }
+
+int Compiler::countParams() {
+  if (isVariadic()) {
+    return -1;
+  }
+  return visitEach(params, [](const SExpr *sExpr) {});
+}
+
 void Compiler::handleUnexpectedToken(const Token &token,
                                      const std::string &line) {
   std::stringstream ss;
@@ -485,33 +534,18 @@ void Compiler::handleSyntaxError(const std::string grammar,
 }
 
 Compiler::Compiler(std::vector<std::string> source, VM &vm)
-    : source(source), vm(vm), enclosing(nullptr), arg(vm.alloc<NilAtom>()),
-      body(parse()), stackOffset(0) {}
+    : vm(vm), enclosing(nullptr), source(source), params(vm.alloc<NilAtom>()),
+      body(parse()), stackOffset(1) {}
 
 const FnAtom *Compiler::compile() {
-  if (isa<SymAtom>(arg)) {
+  if (isVariadic()) {
     code.pushCode(OpCode::MAKE_LIST);
   }
 
-  compile(body);
-  code.pushCode(OpCode::SET_STACK);
-  code.pushCode(0);
-  code.pushCode(OpCode::POP_TOP);
+  compileStmt(body);
+  compileRet();
 
-  for (const auto &local : locals | std::views::reverse) {
-    if (local.isCaptured) {
-      code.pushCode(OpCode::CLOSE_UPVALUE);
-    } else {
-      code.pushCode(OpCode::POP_TOP);
-    }
-  }
-  code.pushCode(OpCode::RETURN);
-
-  if (isa<SymAtom>(arg)) {
-    return vm.alloc<FnAtom>(-1, upValues.size(), code);
-  }
-
-  return vm.alloc<FnAtom>(locals.size(), upValues.size(), code);
+  return vm.alloc<FnAtom>(countParams(), upValues.size(), code);
 }
 
 void Compiler::verifyLex(std::string &line, const unsigned int lineNum,

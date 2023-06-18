@@ -57,7 +57,7 @@ const SExpr *VM::exec(const FnAtom *main) {
       &&MAKE_CLOSURE, &&CALL,       &&RETURN,    &&POP_TOP, &&CLOSE_UPVALUE,
       &&LOAD_CONST,   &&LOAD_SYM,   &&DEF_SYM,   &&SET_SYM, &&LOAD_UPVALUE,
       &&SET_UPVALUE,  &&LOAD_STACK, &&SET_STACK, &&JUMP,    &&POP_JUMP_IF_FALSE,
-      &&MAKE_LIST};
+      &&MAKE_LIST,    &&MAKE_NIL};
 
   call(0);
 
@@ -159,6 +159,10 @@ MAKE_LIST : {
   stack.push_back(list);
 
   enableGC = gcSetting;
+  DISPATCH();
+}
+MAKE_NIL : {
+  stack.push_back(alloc<NilAtom>());
   DISPATCH();
 }
 
