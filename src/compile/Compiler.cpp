@@ -25,7 +25,7 @@
 #include <vector>
 
 Compiler::Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
-                   const SExpr *param, const SExpr *body, Compiler *enclosing,
+                   const SExpr *param, const SExprs *body, Compiler *enclosing,
                    VM &vm)
     : vm(vm), enclosing(enclosing), source(source), sourceLoc(sourceLoc),
       params(param), body(body), stackOffset(1) {
@@ -77,14 +77,14 @@ bool Compiler::isNum(const std::string s) {
   return true;
 }
 
-const SExpr *Compiler::parse() {
+const SExprs *Compiler::parse() {
   auto tokens = tokenize(source);
   std::vector<Token>::const_iterator it = tokens.begin();
   const auto res = parse(it, tokens.end());
   if (it != tokens.end()) {
     handleUnexpectedToken(*it, source[it->row - 1]);
   }
-  return res;
+  return vm.alloc<SExprs>(res, vm.alloc<NilAtom>());
 }
 
 const SExpr *Compiler::parse(std::vector<Token>::const_iterator &it,
@@ -242,7 +242,7 @@ void Compiler::compileExpr(const SExpr *sExpr) {
 void Compiler::compileLambda(const SExpr *sExpr) {
   try {
     const auto argNames = cast<SExprs>(at(lambdaArgPos, sExpr))->first;
-    const auto body = cast<SExprs>(at(lambdaBodyPos, sExpr))->first;
+    const auto body = cast<SExprs>(at(lambdaBodyPos, sExpr));
 
     Compiler compiler(source, sourceLoc, argNames, body, this, vm);
     const auto function = compiler.compile();
@@ -336,8 +336,7 @@ void Compiler::compileDefMacro(const SExpr *sExpr) {
     const auto sym =
         cast<SymAtom>(cast<SExprs>(at(defMacroSymPos, sExpr))->first);
     const auto argNames = cast<SExprs>(at(defMacroArgPos, sExpr))->first;
-    const auto body = cast<SExprs>(at(defMacroBodyPos, sExpr))->first;
-    cast<NilAtom>(at(defMacroNilPos, sExpr));
+    const auto body = cast<SExprs>(at(defMacroBodyPos, sExpr));
 
     Compiler compiler(source, sourceLoc, argNames, body, this, vm);
     const auto function = compiler.compile();
@@ -542,7 +541,11 @@ const FnAtom *Compiler::compile() {
     code.pushCode(OpCode::MAKE_LIST);
   }
 
-  compileStmt(body);
+  code.pushCode(OpCode::MAKE_NIL);
+  visitEach(body, [&](const SExpr *sExpr) {
+    stackOffset += 1;
+    this->compileStmt(sExpr);
+  });
   compileRet();
 
   return vm.alloc<FnAtom>(countParams(), upValues.size(), code);

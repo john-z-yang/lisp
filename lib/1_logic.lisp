@@ -10,21 +10,26 @@
                 #f))))
 
 (defmacro or args
+  (define tmp (gensym))
   (if (null? args) #f
       (if (null? (cdr args)) (car args)
-          ((lambda (tmp)
-             (list (list 'lambda
-                         (list tmp)
-                         (list 'if
-                               tmp
-                               tmp
-                               (cons 'or (cdr args))))
-                   (car args)))
-           (gensym)))))
+          (list (list 'lambda
+                      (list tmp)
+                      (list 'if
+                            tmp
+                            tmp
+                            (cons 'or (cdr args))))
+                (car args)))))
 
 (defmacro cond sexprs
   (if (null? sexprs) '()
-      ((lambda (cur-clause next-clause err-msg)
+      ((lambda ()
+         (define cur-clause (car sexprs))
+         (define next-clause (cdr sexprs))
+         (define err-msg
+           (str-con "Invalid syntax for cond. "
+                    "Expected (cond (test expr)* (else expr)), but got "
+                    (->str (cons 'cond sexprs))))
          (if (not (cons? cur-clause))
              (error err-msg)
              (list 'if
@@ -37,10 +42,5 @@
                    (if (null? (cdr cur-clause))
                        (error (str-con err-msg
                                        "(missing expression after test)."))
-                       (car (cdr cur-clause)))
-                   (cons 'cond next-clause))))
-       (car sexprs)
-       (cdr sexprs)
-       (str-con "Invalid syntax for cond. "
-                "Expected (cond (test expr)* (else expr)), but got "
-                (->str (cons 'cond sexprs))))))
+                       (cons 'begin (cdr cur-clause)))
+                   (cons 'cond next-clause)))))))

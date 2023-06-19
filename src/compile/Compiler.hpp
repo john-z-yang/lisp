@@ -45,7 +45,7 @@ private:
   SourceLoc sourceLoc;
 
   const SExpr *const params;
-  const SExpr *const body;
+  const SExprs *const body;
 
   std::vector<Local> locals;
   std::vector<UpValue> upValues;
@@ -54,13 +54,13 @@ private:
   Code code;
 
   Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
-           const SExpr *param, const SExpr *body, Compiler *enclosing, VM &vm);
+           const SExpr *param, const SExprs *body, Compiler *enclosing, VM &vm);
 
   static std::vector<Token> tokenize(std::vector<std::string> lines);
   static std::vector<Token> tokenize(std::string line, const unsigned int row);
   static bool isNum(const std::string s);
 
-  const SExpr *parse();
+  const SExprs *parse();
   const SExpr *parse(std::vector<Token>::const_iterator &it,
                      const std::vector<Token>::const_iterator &end);
   const SExpr *parseSexprs(std::vector<Token>::const_iterator &it,
