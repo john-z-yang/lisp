@@ -41,7 +41,7 @@ std::ostream &operator<<(std::ostream &o, const RuntimeError &re) {
     idx += 1;
     auto it = sExprSyms.find(sexpr);
     if (it != sExprSyms.end()) {
-      o << " (" << it->second << ")";
+      o << " (" << *it->second << ")";
     }
   }
   return o << std::endl << re.what();
