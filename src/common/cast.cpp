@@ -35,7 +35,7 @@ template <typename To, typename From> const To *cast(const From *f) {
     return static_cast<const To *>(f);
   }
   std::stringstream ss;
-  ss << "Mismatched types. Expected " << To::typeName << ", but got " << f
+  ss << "Mismatched types. Expected " << To::typeName << ", but got " << *f
      << ".";
   throw TypeError(ss.str(), To::typeName, f);
 }
