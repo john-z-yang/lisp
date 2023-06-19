@@ -20,6 +20,7 @@ enum OpCode : uint8_t {
   JUMP,
   POP_JUMP_IF_FALSE,
   MAKE_LIST,
+  MAKE_NIL,
 };
 
 #endif
