@@ -284,7 +284,7 @@ void Compiler::compileSym(const SymAtom *sym) {
 
   if (const auto idx = resolveLocal(sym); idx != -1) {
     code.pushCode(OpCode::LOAD_STACK, lineNum);
-    code.pushCode((uint8_t)idx, lineNum);
+    code.pushCode((uint8_t)locals[idx].stackOffset, lineNum);
     return;
   }
   if (const auto idx = resolveUpvalue(*this, sym); idx != -1) {
@@ -367,7 +367,7 @@ void Compiler::compileSet(const SExpr *sExpr) {
 
     if (const auto idx = resolveLocal(sym); idx != -1) {
       code.pushCode(OpCode::SET_STACK, lineNum);
-      code.pushCode(idx, lineNum);
+      code.pushCode(locals[idx].stackOffset, lineNum);
       return;
     }
     if (const auto idx = resolveUpvalue(*this, sym); idx != -1) {
@@ -478,14 +478,14 @@ int Compiler::resolveLocal(const SymAtom *sym) {
   if (it == locals.rend()) {
     return -1;
   }
-  return it->stackOffset;
+  return std::distance(begin(locals), it.base()) - 1;
 }
 
 int Compiler::resolveUpvalue(Compiler &caller, const SymAtom *sym) {
   if (enclosing) {
     if (auto idx = enclosing->resolveLocal(sym); idx != -1) {
-      enclosing->locals[idx - 1].isCaptured = true;
-      return caller.addUpvalue(idx, true);
+      enclosing->locals[idx].isCaptured = true;
+      return caller.addUpvalue(enclosing->locals[idx].stackOffset, true);
     }
     if (auto idx = enclosing->resolveUpvalue(*enclosing, sym); idx != -1) {
       return caller.addUpvalue(idx, false);

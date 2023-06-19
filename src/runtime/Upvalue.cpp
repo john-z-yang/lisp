@@ -18,6 +18,7 @@ const SExpr *Upvalue::get() const {
 void Upvalue::set(const SExpr *sexpr) {
   if (isOpen()) {
     stack[stackPos] = sexpr;
+    return;
   }
   value = sexpr;
 }
