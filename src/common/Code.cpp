@@ -156,6 +156,10 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
       DIS_NO_OPRAND_OP(MAKE_LIST);
       break;
     }
+    case OpCode::MAKE_NIL: {
+      DIS_NO_OPRAND_OP(MAKE_NIL);
+      break;
+    }
     default:
       break;
     }
