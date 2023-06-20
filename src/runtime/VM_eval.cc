@@ -42,11 +42,6 @@ const SExpr *VM::exec(const Fn *main) {
 
 #define DISPATCH() goto *dispatchTable[READ_BYTE()]
 
-#define GC_ATOMIC(stmts)                                                       \
-  do {                                                                         \
-                                                                               \
-  } while (false)
-
   static void *dispatchTable[] = {
       &&MAKE_CLOSURE, &&CALL,       &&RETURN,    &&POP_TOP, &&CLOSE_UPVALUE,
       &&LOAD_CONST,   &&LOAD_SYM,   &&DEF_SYM,   &&SET_SYM, &&LOAD_UPVALUE,
