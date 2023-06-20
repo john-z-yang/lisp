@@ -1,5 +1,8 @@
 #include "Upvalue.hpp"
 
+using namespace sexpr;
+using namespace runtime;
+
 Upvalue::Upvalue(const std::vector<const SExpr *>::size_type stackPos,
                  std::vector<const SExpr *> &stack)
     : stackPos(stackPos), stack(stack), value(nullptr) {}
@@ -23,6 +26,6 @@ void Upvalue::set(const SExpr *sexpr) {
   value = sexpr;
 }
 
-bool operator==(const Upvalue &lhs, const Upvalue &rhs) {
+bool runtime::operator==(const Upvalue &lhs, const Upvalue &rhs) {
   return *lhs.get() == *rhs.get();
 }

@@ -1,29 +1,33 @@
-#ifndef LISP_SRC_VM_UPVALUE_HPP_
-#define LISP_SRC_VM_UPVALUE_HPP_
+#ifndef LISP_SRC_RUNTIME_UPVALUE_HPP_
+#define LISP_SRC_RUNTIME_UPVALUE_HPP_
 
-#include "../common/sexpr/SExpr.hpp"
+#include "../sexpr/SExpr.hpp"
 #include <memory>
 #include <vector>
+
+namespace runtime {
 
 class Upvalue {
   friend bool operator==(const Upvalue &lhs, const Upvalue &rhs);
 
 private:
-  const std::vector<const SExpr *>::size_type stackPos;
-  std::vector<const SExpr *> &stack;
+  const std::vector<const sexpr::SExpr *>::size_type stackPos;
+  std::vector<const sexpr::SExpr *> &stack;
 
-  const SExpr *value;
+  const sexpr::SExpr *value;
 
   bool isOpen() const;
 
 public:
-  Upvalue(const std::vector<const SExpr *>::size_type stackPos,
-          std::vector<const SExpr *> &stack);
+  Upvalue(const std::vector<const sexpr::SExpr *>::size_type stackPos,
+          std::vector<const sexpr::SExpr *> &stack);
 
   void close();
 
-  const SExpr *get() const;
-  void set(const SExpr *sexpr);
+  const sexpr::SExpr *get() const;
+  void set(const sexpr::SExpr *sexpr);
 };
+
+} // namespace runtime
 
 #endif

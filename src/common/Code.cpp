@@ -1,9 +1,11 @@
 #include "Code.hpp"
+#include "../sexpr/Fn.hpp"
+#include "../sexpr/cast.cpp"
 #include "OpCode.hpp"
-#include "cast.cpp"
-#include "sexpr/FnAtom.hpp"
 #include <cstdint>
 #include <iomanip>
+
+using namespace sexpr;
 
 uint8_t Code::pushCode(const uint8_t code) { return pushCode(code, 0); }
 
@@ -85,7 +87,7 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
 
     switch (byte) {
     case OpCode::MAKE_CLOSURE: {
-      const auto fn = cast<FnAtom>(code.consts[READ_BYTE()]);
+      const auto fn = cast<Fn>(code.consts[READ_BYTE()]);
       o << "MAKE_CLOSURE" << *fn;
       for (unsigned int i{0}; i < fn->numUpvals; i++) {
         const auto isLocal = unsigned(READ_BYTE());

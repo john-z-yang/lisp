@@ -4,8 +4,12 @@
 #include <memory>
 #include <string>
 
+namespace repl {
+
 int repl();
 
 int repl(const std::string fileName);
+
+} // namespace repl
 
 #endif

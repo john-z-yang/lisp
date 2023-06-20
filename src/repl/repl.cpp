@@ -1,7 +1,7 @@
 #include "repl.hpp"
 #include "../compile/Compiler.hpp"
-#include "../compile/SyntaxError.hpp"
-#include "../runtime/RuntimeError.hpp"
+#include "../error/RuntimeError.hpp"
+#include "../error/SyntaxError.hpp"
 #include "../runtime/VM.hpp"
 #include <cstdlib>
 #include <cstring>
@@ -14,6 +14,10 @@
 #include <regex>
 #include <set>
 #include <string>
+
+using namespace repl;
+using namespace compile;
+using namespace runtime;
 
 bool getConsoleInput(std::vector<std::string> &lines, std::string prompt,
                      std::string wrap) {
@@ -77,11 +81,11 @@ int execFile(const std::string filePath, VM &vm) {
       } else {
         break;
       }
-    } catch (SyntaxError &se) {
+    } catch (error::SyntaxError &se) {
       std::cerr << "In line " << lines.size() << " of \"" << filePath << "\""
                 << std::endl
                 << se;
-    } catch (RuntimeError &re) {
+    } catch (error::RuntimeError &re) {
       std::cerr << "In line " << lines.size() << " of \"" << filePath << "\""
                 << std::endl
                 << re;
@@ -117,7 +121,7 @@ void printInfo() {
             << std::endl;
 }
 
-int repl() {
+int repl::repl() {
   printInfo();
 
   VM vm;
@@ -135,16 +139,16 @@ int repl() {
         std::cout << std::endl << "Farewell." << std::endl;
         return EXIT_SUCCESS;
       }
-    } catch (SyntaxError &se) {
+    } catch (error::SyntaxError &se) {
       std::cerr << "In <std::cin>" << std::endl << se << std::endl;
-    } catch (RuntimeError &re) {
+    } catch (error::RuntimeError &re) {
       std::cerr << "In <std::cin>" << std::endl << re << std::endl;
     }
   }
   return EXIT_FAILURE;
 }
 
-int repl(const std::string filePath) {
+int repl::repl(const std::string filePath) {
   VM vm;
   loadLib(vm);
   return execFile(filePath, vm);
