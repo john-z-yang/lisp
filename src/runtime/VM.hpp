@@ -1,16 +1,16 @@
-#ifndef LISP_SRC_VM_VM_HPP_
-#define LISP_SRC_VM_VM_HPP_
+#ifndef LISP_SRC_RUNTIME_VM_HPP_
+#define LISP_SRC_RUNTIME_VM_HPP_
 
 #define LISP_GC_HEAP_GROWTH_FACTOR 2
 #define LISP_GC_INIT_HEAP_SIZE 4096
 #define LISP_INT_CACHE_MAX 256.0
 #define LISP_INT_CACHE_MIN -16.0
 
-#include "../common/sexpr/BoolAtom.hpp"
-#include "../common/sexpr/ClosureAtom.hpp"
-#include "../common/sexpr/NilAtom.hpp"
-#include "../common/sexpr/NumAtom.hpp"
-#include "../common/sexpr/SExpr.hpp"
+#include "../sexpr/Bool.hpp"
+#include "../sexpr/Nil.hpp"
+#include "../sexpr/Num.hpp"
+#include "../sexpr/SExpr.hpp"
+#include "CallFrame.hpp"
 #include "Env.hpp"
 #include "Upvalue.hpp"
 #include <cmath>
@@ -19,63 +19,58 @@
 #include <unordered_set>
 #include <vector>
 
+namespace runtime {
+
 class VM {
   friend class RuntimeError;
 
 private:
-  struct CallFrame {
-    const ClosureAtom *closure;
-    std::vector<uint8_t>::size_type ip;
-    std::vector<const SExpr *>::size_type bp;
-  };
-
   Env globals;
 
-  std::vector<const SExpr *> stack;
+  std::vector<const sexpr::SExpr *> stack;
   std::vector<CallFrame> callFrames;
-  std::unordered_map<std::vector<const SExpr *>::size_type,
+  std::unordered_map<std::vector<const sexpr::SExpr *>::size_type,
                      std::shared_ptr<Upvalue>>
       openUpvalues;
 
   bool enableGC;
   size_t gcHeapSize;
 
-  std::vector<std::unique_ptr<const SExpr>> heap;
+  std::vector<std::unique_ptr<const sexpr::SExpr>> heap;
 
-  std::unordered_set<const SExpr *> black;
-  std::unordered_set<const SExpr *> grey;
-  std::vector<std::unique_ptr<const NumAtom>> intCache;
+  std::unordered_set<const sexpr::SExpr *> black;
+  std::unordered_set<const sexpr::SExpr *> grey;
+  std::vector<std::unique_ptr<const sexpr::Num>> intCache;
 
-  const SExpr *eval(const FnAtom *main, bool withGC);
-  const SExpr *exec(const FnAtom *main);
-
+  // Eval
+  const sexpr::SExpr *eval(const sexpr::Fn *main, bool withGC);
+  const sexpr::SExpr *exec(const sexpr::Fn *main);
   void call(const uint8_t argc);
-
   std::shared_ptr<Upvalue>
-  captureUpvalue(std::vector<const SExpr *>::size_type pos);
-  const SExpr *peak(std::vector<const SExpr *>::size_type distance);
-  const SExpr *makeList(std::vector<const SExpr *>::size_type size);
+  captureUpvalue(std::vector<const sexpr::SExpr *>::size_type pos);
+  const sexpr::SExpr *
+  peak(std::vector<const sexpr::SExpr *>::size_type distance);
+  const sexpr::SExpr *
+  makeList(std::vector<const sexpr::SExpr *>::size_type size);
+  void reset();
 
+  // Mem
   void gc();
-
-  void mark(const SExpr *sexpr);
-  void trace(const SExpr *sexpr);
-
+  void mark(const sexpr::SExpr *sexpr);
+  void trace(const sexpr::SExpr *sexpr);
   void markGlobals();
   void markStack();
   void markCallFrames();
   void markOpenUpvalues();
 
-  void reset();
-
 public:
   VM();
 
-  const SExpr *evalWithGC(const FnAtom *main);
-  const SExpr *eval(const FnAtom *main);
+  const sexpr::SExpr *evalWithGC(const sexpr::Fn *main);
+  const sexpr::SExpr *eval(const sexpr::Fn *main);
 
-  void defMacro(const SymAtom *sym);
-  bool isMacro(const SymAtom *sym);
+  void defMacro(const sexpr::Sym *sym);
+  bool isMacro(const sexpr::Sym *sym);
 
   template <typename T, typename... Args> const T *alloc(Args &&...args) {
     if (enableGC && heap.size() > gcHeapSize) {
@@ -89,22 +84,26 @@ public:
   }
 };
 
-template <> inline const NilAtom *VM::alloc() { return NilAtom::getInstance(); }
-template <> inline const BoolAtom *VM::alloc(bool &&val) {
-  return BoolAtom::getInstance(val);
+template <> inline const sexpr::Nil *VM::alloc() {
+  return sexpr::Nil::getInstance();
 }
-template <> inline const NumAtom *VM::alloc(double &val) {
+template <> inline const sexpr::Bool *VM::alloc(bool &&val) {
+  return sexpr::Bool::getInstance(val);
+}
+template <> inline const sexpr::Num *VM::alloc(double &val) {
   if (val >= LISP_INT_CACHE_MIN && val <= LISP_INT_CACHE_MAX &&
       floor(val) == val) {
     return intCache.at(val - LISP_INT_CACHE_MIN).get();
   }
-  auto unique = std::make_unique<const NumAtom>(val);
+  auto unique = std::make_unique<const sexpr::Num>(val);
   const auto ptr = unique.get();
   heap.emplace_back(std::move(unique));
   return ptr;
 }
-template <> inline const NumAtom *VM::alloc(double &&val) {
-  return alloc<NumAtom>(val);
+template <> inline const sexpr::Num *VM::alloc(double &&val) {
+  return alloc<sexpr::Num>(val);
 }
+
+} // namespace runtime
 
 #endif

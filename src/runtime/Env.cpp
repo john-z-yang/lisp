@@ -1,10 +1,13 @@
 #include "Env.hpp"
-#include "../common/sexpr/SExpr.hpp"
+#include "../sexpr/SExpr.hpp"
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 
-void Env::def(const SymAtom *sym, const SExpr *val) {
+using namespace runtime;
+using namespace sexpr;
+
+void Env::def(const Sym *sym, const SExpr *val) {
   auto it = symTable.find(sym);
   if (it != symTable.end()) {
     throw std::invalid_argument("Symbol \"" + sym->val +
@@ -13,7 +16,7 @@ void Env::def(const SymAtom *sym, const SExpr *val) {
   symTable.insert({sym, val});
 }
 
-void Env::set(const SymAtom *sym, const SExpr *val) {
+void Env::set(const Sym *sym, const SExpr *val) {
   auto it = symTable.find(sym);
   if (it == symTable.end()) {
     throw std::invalid_argument("Symbol \"" + sym->val + "\" is not defined.");
@@ -21,7 +24,7 @@ void Env::set(const SymAtom *sym, const SExpr *val) {
   symTable[sym] = val;
 }
 
-const SExpr *Env::find(const SymAtom *sym) {
+const SExpr *Env::find(const Sym *sym) {
   auto it = symTable.find(sym);
   if (it == symTable.end()) {
     throw std::invalid_argument("Symbol \"" + sym->val + "\" is not defined.");
@@ -31,8 +34,6 @@ const SExpr *Env::find(const SymAtom *sym) {
 
 const Env::SymVals &Env::getSymTable() const { return symTable; }
 
-void Env::defMacro(const SymAtom *sym) { macros.insert(sym); }
+void Env::defMacro(const Sym *sym) { macros.insert(sym); }
 
-bool Env::isMacro(const SymAtom *sym) {
-  return macros.find(sym) != macros.end();
-}
+bool Env::isMacro(const Sym *sym) { return macros.find(sym) != macros.end(); }

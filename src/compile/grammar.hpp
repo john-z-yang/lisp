@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <string>
 
+namespace compile {
+
 const auto quoteGrammar = "(quote datum)";
 const auto quoteArgPos = 1;
 const auto quoteNilPos = 2;
@@ -56,5 +58,7 @@ const auto ifAltPos = 3;
 const auto ifNilPos = 4;
 
 const auto dotGrammer = "(datum* . datum)";
+
+} // namespace compile
 
 #endif

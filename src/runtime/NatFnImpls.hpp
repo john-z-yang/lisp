@@ -1,13 +1,16 @@
-#ifndef LISP_SRC_VM_NATIVEFNS_HPP_
-#define LISP_SRC_VM_NATIVEFNS_HPP_
+#ifndef LISP_SRC_RUNTIME_NATFNIMPLS_HPP_
+#define LISP_SRC_RUNTIME_NATFNIMPLS_HPP_
 
-#include "../common/sexpr/SExpr.hpp"
 #include "../runtime/VM.hpp"
+#include "../sexpr/SExpr.hpp"
 #include <memory>
 #include <vector>
 
-typedef const SExpr *(NativeFn)(std::vector<const SExpr *>::iterator params,
-                                const uint8_t argc, VM &vm);
+namespace runtime {
+
+typedef const sexpr::SExpr *(
+    NativeFn)(std::vector<const sexpr::SExpr *>::iterator params,
+              const uint8_t argc, VM &vm);
 
 NativeFn lispIsSym;
 NativeFn lispGenSym;
@@ -48,5 +51,7 @@ NativeFn lispEq;
 NativeFn lispEqv;
 
 NativeFn lispIsProc;
+
+} // namespace runtime
 
 #endif

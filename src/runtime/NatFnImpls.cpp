@@ -1,31 +1,34 @@
 #include "NatFnImpls.hpp"
-#include "../common/cast.cpp"
-#include "../common/sexpr/BoolAtom.hpp"
-#include "../common/sexpr/ClosureAtom.hpp"
-#include "../common/sexpr/NatFnAtom.hpp"
-#include "../common/sexpr/NilAtom.hpp"
-#include "../common/sexpr/NumAtom.hpp"
-#include "../common/sexpr/SExprs.hpp"
-#include "../common/sexpr/StringAtom.hpp"
-#include "../common/sexpr/SymAtom.hpp"
+#include "../sexpr/Bool.hpp"
+#include "../sexpr/Closure.hpp"
+#include "../sexpr/NatFn.hpp"
+#include "../sexpr/Nil.hpp"
+#include "../sexpr/Num.hpp"
+#include "../sexpr/SExprs.hpp"
+#include "../sexpr/String.hpp"
+#include "../sexpr/Sym.hpp"
+#include "../sexpr/cast.cpp"
 #include <cmath>
 #include <cstdlib>
 #include <exception>
 #include <memory>
 #include <stdexcept>
 
+using namespace sexpr;
+using namespace runtime;
+
 #define MATH_CMP_OP(name, op)                                                  \
   const SExpr *name(std::vector<const SExpr *>::iterator params,               \
                     const uint8_t argc, VM &vm) {                              \
-    const auto prev = cast<NumAtom>(*params)->val;                             \
+    const auto prev = cast<Num>(*params)->val;                                 \
     ++params;                                                                  \
     for (uint8_t i{1}; i < argc; ++i) {                                        \
-      if (!(prev op cast<NumAtom>(*params)->val)) {                            \
-        return vm.alloc<BoolAtom>(false);                                      \
+      if (!(prev op cast<Num>(*params)->val)) {                                \
+        return vm.alloc<Bool>(false);                                          \
       }                                                                        \
       ++params;                                                                \
     }                                                                          \
-    return vm.alloc<BoolAtom>(true);                                           \
+    return vm.alloc<Bool>(true);                                               \
   }
 
 #define MATH_CUM_OP(name, op, init)                                            \
@@ -33,76 +36,76 @@
                     const uint8_t argc, VM &vm) {                              \
     auto res = init;                                                           \
     for (uint8_t i{0}; i < argc; ++i) {                                        \
-      res op cast<NumAtom>(*params)->val;                                      \
+      res op cast<Num>(*params)->val;                                          \
       ++params;                                                                \
     }                                                                          \
-    return vm.alloc<NumAtom>(res);                                             \
+    return vm.alloc<Num>(res);                                                 \
   }
 
 #define MATH_DIM_OP(name, op, unaryOp)                                         \
   const SExpr *name(std::vector<const SExpr *>::iterator params,               \
                     const uint8_t argc, VM &vm) {                              \
     if (argc == 1) {                                                           \
-      return vm.alloc<NumAtom>(unaryOp cast<NumAtom>(*params)->val);           \
+      return vm.alloc<Num>(unaryOp cast<Num>(*params)->val);                   \
     }                                                                          \
-    auto res = cast<NumAtom>(*params)->val;                                    \
+    auto res = cast<Num>(*params)->val;                                        \
     ++params;                                                                  \
     for (uint8_t i{1}; i < argc; ++i) {                                        \
-      res op cast<NumAtom>(*params)->val;                                      \
+      res op cast<Num>(*params)->val;                                          \
       ++params;                                                                \
     }                                                                          \
-    return vm.alloc<NumAtom>(res);                                             \
+    return vm.alloc<Num>(res);                                                 \
   }
 
 #define PRED_OP(name, cond)                                                    \
   const SExpr *name(std::vector<const SExpr *>::iterator params,               \
                     const uint8_t argc, VM &vm) {                              \
-    return vm.alloc<BoolAtom>(cond);                                           \
+    return vm.alloc<Bool>(cond);                                               \
   }
 
-PRED_OP(lispIsSym, isa<SymAtom>(*params));
+PRED_OP(runtime::lispIsSym, isa<Sym>(*params));
 
 long genSymCnt = 0;
-const SExpr *lispGenSym(std::vector<const SExpr *>::iterator params,
-                        const uint8_t argc, VM &vm) {
+const SExpr *runtime::lispGenSym(std::vector<const SExpr *>::iterator params,
+                                 const uint8_t argc, VM &vm) {
   std::stringstream ss;
   ss << ";gensym-" << genSymCnt;
   genSymCnt += 1;
-  return vm.alloc<SymAtom>(ss.str());
+  return vm.alloc<Sym>(ss.str());
 }
 
-PRED_OP(lispIsNum, isa<NumAtom>(*params));
-MATH_CMP_OP(lispNumEq, ==);
-MATH_CMP_OP(lispGt, >);
-MATH_CMP_OP(lispGteq, >=);
-MATH_CMP_OP(lispLt, <);
-MATH_CMP_OP(lispLteq, <=);
-MATH_CUM_OP(lispAdd, +=, 0.0);
-MATH_CUM_OP(lispMult, *=, 1.0);
-MATH_DIM_OP(lispSub, -=, 0.0 -);
-MATH_DIM_OP(lispDiv, /=, 1.0 /);
-const SExpr *lispAbs(std::vector<const SExpr *>::iterator params,
-                     const uint8_t argc, VM &vm) {
-  return vm.alloc<NumAtom>(abs(cast<NumAtom>(*params)->val));
+PRED_OP(runtime::lispIsNum, isa<Num>(*params));
+MATH_CMP_OP(runtime::lispNumEq, ==);
+MATH_CMP_OP(runtime::lispGt, >);
+MATH_CMP_OP(runtime::lispGteq, >=);
+MATH_CMP_OP(runtime::lispLt, <);
+MATH_CMP_OP(runtime::lispLteq, <=);
+MATH_CUM_OP(runtime::lispAdd, +=, 0.0);
+MATH_CUM_OP(runtime::lispMult, *=, 1.0);
+MATH_DIM_OP(runtime::lispSub, -=, 0.0 -);
+MATH_DIM_OP(runtime::lispDiv, /=, 1.0 /);
+const SExpr *runtime::lispAbs(std::vector<const SExpr *>::iterator params,
+                              const uint8_t argc, VM &vm) {
+  return vm.alloc<Num>(abs(cast<Num>(*params)->val));
 }
-const SExpr *lispMod(std::vector<const SExpr *>::iterator params,
-                     const uint8_t argc, VM &vm) {
-  const auto lhs = cast<NumAtom>(*params)->val;
+const SExpr *runtime::lispMod(std::vector<const SExpr *>::iterator params,
+                              const uint8_t argc, VM &vm) {
+  const auto lhs = cast<Num>(*params)->val;
   ++params;
-  const auto rhs = cast<NumAtom>(*params)->val;
-  return vm.alloc<NumAtom>(std::fmod(lhs, rhs));
+  const auto rhs = cast<Num>(*params)->val;
+  return vm.alloc<Num>(std::fmod(lhs, rhs));
 }
 
-PRED_OP(lispIsStr, isa<StringAtom>(*params));
-const SExpr *lispStrLen(std::vector<const SExpr *>::iterator params,
-                        const uint8_t argc, VM &vm) {
-  return vm.alloc<NumAtom>(cast<StringAtom>(*params)->unescaped.size());
+PRED_OP(runtime::lispIsStr, isa<String>(*params));
+const SExpr *runtime::lispStrLen(std::vector<const SExpr *>::iterator params,
+                                 const uint8_t argc, VM &vm) {
+  return vm.alloc<Num>(cast<String>(*params)->unescaped.size());
 }
-const SExpr *lispStrSub(std::vector<const SExpr *>::iterator params,
-                        const uint8_t argc, VM &vm) {
-  auto str = cast<StringAtom>(*params);
-  auto pos = cast<NumAtom>(*(params + 1))->val;
-  auto len = cast<NumAtom>(*(params + 2))->val;
+const SExpr *runtime::lispStrSub(std::vector<const SExpr *>::iterator params,
+                                 const uint8_t argc, VM &vm) {
+  auto str = cast<String>(*params);
+  auto pos = cast<Num>(*(params + 1))->val;
+  auto len = cast<Num>(*(params + 2))->val;
   std::stringstream ss;
   try {
     ss << "\"" << str->unescaped.substr(pos, len) << "\"";
@@ -112,22 +115,22 @@ const SExpr *lispStrSub(std::vector<const SExpr *>::iterator params,
         << ")";
     throw std::invalid_argument(ess.str());
   }
-  return vm.alloc<StringAtom>(ss.str());
+  return vm.alloc<String>(ss.str());
 }
-const SExpr *lispStrCon(std::vector<const SExpr *>::iterator params,
-                        const uint8_t argc, VM &vm) {
+const SExpr *runtime::lispStrCon(std::vector<const SExpr *>::iterator params,
+                                 const uint8_t argc, VM &vm) {
   std::stringstream ss;
   ss << "\"";
   for (uint8_t i{0}; i < argc; ++i) {
-    ss << cast<StringAtom>(*params)->unescaped;
+    ss << cast<String>(*params)->unescaped;
     ++params;
   }
   ss << "\"";
-  return vm.alloc<StringAtom>(ss.str());
+  return vm.alloc<String>(ss.str());
 }
-const SExpr *lispToStr(std::vector<const SExpr *>::iterator params,
-                       const uint8_t argc, VM &vm) {
-  if (isa<StringAtom>(*params)) {
+const SExpr *runtime::lispToStr(std::vector<const SExpr *>::iterator params,
+                                const uint8_t argc, VM &vm) {
+  if (isa<String>(*params)) {
     return *params;
   }
   std::stringstream ss;
@@ -137,64 +140,63 @@ const SExpr *lispToStr(std::vector<const SExpr *>::iterator params,
     ++params;
   }
   ss << "\"";
-  return vm.alloc<StringAtom>(ss.str());
+  return vm.alloc<String>(ss.str());
 }
 
-PRED_OP(lispIsNull, isa<NilAtom>(*params));
-PRED_OP(lispIsCons, isa<SExprs>(*params));
-const SExpr *lispCons(std::vector<const SExpr *>::iterator params,
-                      const uint8_t argc, VM &vm) {
+PRED_OP(runtime::lispIsNull, isa<Nil>(*params));
+PRED_OP(runtime::lispIsCons, isa<SExprs>(*params));
+const SExpr *runtime::lispCons(std::vector<const SExpr *>::iterator params,
+                               const uint8_t argc, VM &vm) {
   return vm.alloc<SExprs>(*params, *(params + 1));
 }
-const SExpr *lispCar(std::vector<const SExpr *>::iterator params,
-                     const uint8_t argc, VM &vm) {
+const SExpr *runtime::lispCar(std::vector<const SExpr *>::iterator params,
+                              const uint8_t argc, VM &vm) {
   return cast<SExprs>(*params)->first;
 }
-const SExpr *lispCdr(std::vector<const SExpr *>::iterator params,
-                     const uint8_t argc, VM &vm) {
+const SExpr *runtime::lispCdr(std::vector<const SExpr *>::iterator params,
+                              const uint8_t argc, VM &vm) {
   return cast<SExprs>(*params)->rest;
 }
 
-const SExpr *lispDis(std::vector<const SExpr *>::iterator params,
-                     const uint8_t argc, VM &vm) {
-  cast<ClosureAtom>(*params)->dissassemble(std::cout);
-  return vm.alloc<NilAtom>();
+const SExpr *runtime::lispDis(std::vector<const SExpr *>::iterator params,
+                              const uint8_t argc, VM &vm) {
+  cast<Closure>(*params)->dissassemble(std::cout);
+  return vm.alloc<Nil>();
 }
-const SExpr *lispDisplay(std::vector<const SExpr *>::iterator params,
-                         const uint8_t argc, VM &vm) {
-  if (auto stringAtom = dynCast<StringAtom>(*params)) {
+const SExpr *runtime::lispDisplay(std::vector<const SExpr *>::iterator params,
+                                  const uint8_t argc, VM &vm) {
+  if (auto stringAtom = dynCast<String>(*params)) {
     std::cout << stringAtom->unescaped << std::endl;
   } else {
     std::cout << **params << std::endl;
   }
-  return vm.alloc<NilAtom>();
+  return vm.alloc<Nil>();
 }
 
-const SExpr *lispQuit(std::vector<const SExpr *>::iterator params,
-                      const uint8_t argc, VM &vm) {
+const SExpr *runtime::lispQuit(std::vector<const SExpr *>::iterator params,
+                               const uint8_t argc, VM &vm) {
   std::cout << "Farewell." << std::endl;
   exit(0);
 }
-const SExpr *lispError(std::vector<const SExpr *>::iterator params,
-                       const uint8_t argc, VM &vm) {
+const SExpr *runtime::lispError(std::vector<const SExpr *>::iterator params,
+                                const uint8_t argc, VM &vm) {
   std::stringstream ss;
   ss << **params;
   throw std::runtime_error(ss.str());
 }
 
-const SExpr *lispEq(std::vector<const SExpr *>::iterator params,
-                    const uint8_t argc, VM &vm) {
-  return vm.alloc<BoolAtom>((*params) == (*(params + 1)));
+const SExpr *runtime::lispEq(std::vector<const SExpr *>::iterator params,
+                             const uint8_t argc, VM &vm) {
+  return vm.alloc<Bool>((*params) == (*(params + 1)));
 }
-const SExpr *lispEqv(std::vector<const SExpr *>::iterator params,
-                     const uint8_t argc, VM &vm) {
-  return vm.alloc<BoolAtom>(**params == **(params + 1));
+const SExpr *runtime::lispEqv(std::vector<const SExpr *>::iterator params,
+                              const uint8_t argc, VM &vm) {
+  return vm.alloc<Bool>(**params == **(params + 1));
 }
 
-const SExpr *lispIsProc(std::vector<const SExpr *>::iterator params,
-                        const uint8_t argc, VM &vm) {
-  return vm.alloc<BoolAtom>(isa<ClosureAtom>(*params) ||
-                            isa<NatFnAtom>(*params));
+const SExpr *runtime::lispIsProc(std::vector<const SExpr *>::iterator params,
+                                 const uint8_t argc, VM &vm) {
+  return vm.alloc<Bool>(isa<Closure>(*params) || isa<NatFn>(*params));
 }
 
 #undef MATH_CMP_OP

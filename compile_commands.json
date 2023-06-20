@@ -12,252 +12,12 @@
       "-Wno-unused-parameter",
       "-c",
       "-o",
-      "bin/common_sexpr_Atom.o",
-      "src/common/sexpr/Atom.cpp"
-    ],
-    "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/common/sexpr/Atom.cpp",
-    "output": "/Users/john/workspace/lisp/bin/common_sexpr_Atom.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/g++",
-      "-std=c++20",
-      "-fsanitize=address,undefined",
-      "-g",
-      "-pedantic",
-      "-Wall",
-      "-Wextra",
-      "-Wno-gnu-label-as-value",
-      "-Wno-unused-parameter",
-      "-c",
-      "-o",
-      "bin/common_sexpr_BoolAtom.o",
-      "src/common/sexpr/BoolAtom.cpp"
-    ],
-    "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/common/sexpr/BoolAtom.cpp",
-    "output": "/Users/john/workspace/lisp/bin/common_sexpr_BoolAtom.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/g++",
-      "-std=c++20",
-      "-fsanitize=address,undefined",
-      "-g",
-      "-pedantic",
-      "-Wall",
-      "-Wextra",
-      "-Wno-gnu-label-as-value",
-      "-Wno-unused-parameter",
-      "-c",
-      "-o",
-      "bin/common_sexpr_ClosureAtom.o",
-      "src/common/sexpr/ClosureAtom.cpp"
-    ],
-    "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/common/sexpr/ClosureAtom.cpp",
-    "output": "/Users/john/workspace/lisp/bin/common_sexpr_ClosureAtom.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/g++",
-      "-std=c++20",
-      "-fsanitize=address,undefined",
-      "-g",
-      "-pedantic",
-      "-Wall",
-      "-Wextra",
-      "-Wno-gnu-label-as-value",
-      "-Wno-unused-parameter",
-      "-c",
-      "-o",
-      "bin/common_sexpr_FnAtom.o",
-      "src/common/sexpr/FnAtom.cpp"
-    ],
-    "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/common/sexpr/FnAtom.cpp",
-    "output": "/Users/john/workspace/lisp/bin/common_sexpr_FnAtom.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/g++",
-      "-std=c++20",
-      "-fsanitize=address,undefined",
-      "-g",
-      "-pedantic",
-      "-Wall",
-      "-Wextra",
-      "-Wno-gnu-label-as-value",
-      "-Wno-unused-parameter",
-      "-c",
-      "-o",
-      "bin/common_sexpr_NumAtom.o",
-      "src/common/sexpr/NumAtom.cpp"
-    ],
-    "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/common/sexpr/NumAtom.cpp",
-    "output": "/Users/john/workspace/lisp/bin/common_sexpr_NumAtom.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/g++",
-      "-std=c++20",
-      "-fsanitize=address,undefined",
-      "-g",
-      "-pedantic",
-      "-Wall",
-      "-Wextra",
-      "-Wno-gnu-label-as-value",
-      "-Wno-unused-parameter",
-      "-c",
-      "-o",
-      "bin/common_sexpr_NatFnAtom.o",
-      "src/common/sexpr/NatFnAtom.cpp"
-    ],
-    "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/common/sexpr/NatFnAtom.cpp",
-    "output": "/Users/john/workspace/lisp/bin/common_sexpr_NatFnAtom.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/g++",
-      "-std=c++20",
-      "-fsanitize=address,undefined",
-      "-g",
-      "-pedantic",
-      "-Wall",
-      "-Wextra",
-      "-Wno-gnu-label-as-value",
-      "-Wno-unused-parameter",
-      "-c",
-      "-o",
-      "bin/common_sexpr_NilAtom.o",
-      "src/common/sexpr/NilAtom.cpp"
-    ],
-    "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/common/sexpr/NilAtom.cpp",
-    "output": "/Users/john/workspace/lisp/bin/common_sexpr_NilAtom.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/g++",
-      "-std=c++20",
-      "-fsanitize=address,undefined",
-      "-g",
-      "-pedantic",
-      "-Wall",
-      "-Wextra",
-      "-Wno-gnu-label-as-value",
-      "-Wno-unused-parameter",
-      "-c",
-      "-o",
-      "bin/common_sexpr_SExpr.o",
-      "src/common/sexpr/SExpr.cpp"
-    ],
-    "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/common/sexpr/SExpr.cpp",
-    "output": "/Users/john/workspace/lisp/bin/common_sexpr_SExpr.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/g++",
-      "-std=c++20",
-      "-fsanitize=address,undefined",
-      "-g",
-      "-pedantic",
-      "-Wall",
-      "-Wextra",
-      "-Wno-gnu-label-as-value",
-      "-Wno-unused-parameter",
-      "-c",
-      "-o",
-      "bin/common_sexpr_SExprs.o",
-      "src/common/sexpr/SExprs.cpp"
-    ],
-    "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/common/sexpr/SExprs.cpp",
-    "output": "/Users/john/workspace/lisp/bin/common_sexpr_SExprs.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/g++",
-      "-std=c++20",
-      "-fsanitize=address,undefined",
-      "-g",
-      "-pedantic",
-      "-Wall",
-      "-Wextra",
-      "-Wno-gnu-label-as-value",
-      "-Wno-unused-parameter",
-      "-c",
-      "-o",
-      "bin/common_sexpr_StringAtom.o",
-      "src/common/sexpr/StringAtom.cpp"
-    ],
-    "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/common/sexpr/StringAtom.cpp",
-    "output": "/Users/john/workspace/lisp/bin/common_sexpr_StringAtom.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/g++",
-      "-std=c++20",
-      "-fsanitize=address,undefined",
-      "-g",
-      "-pedantic",
-      "-Wall",
-      "-Wextra",
-      "-Wno-gnu-label-as-value",
-      "-Wno-unused-parameter",
-      "-c",
-      "-o",
-      "bin/common_sexpr_SymAtom.o",
-      "src/common/sexpr/SymAtom.cpp"
-    ],
-    "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/common/sexpr/SymAtom.cpp",
-    "output": "/Users/john/workspace/lisp/bin/common_sexpr_SymAtom.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/g++",
-      "-std=c++20",
-      "-fsanitize=address,undefined",
-      "-g",
-      "-pedantic",
-      "-Wall",
-      "-Wextra",
-      "-Wno-gnu-label-as-value",
-      "-Wno-unused-parameter",
-      "-c",
-      "-o",
       "bin/common_Code.o",
       "src/common/Code.cpp"
     ],
     "directory": "/Users/john/workspace/lisp",
     "file": "/Users/john/workspace/lisp/src/common/Code.cpp",
     "output": "/Users/john/workspace/lisp/bin/common_Code.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/g++",
-      "-std=c++20",
-      "-fsanitize=address,undefined",
-      "-g",
-      "-pedantic",
-      "-Wall",
-      "-Wextra",
-      "-Wno-gnu-label-as-value",
-      "-Wno-unused-parameter",
-      "-c",
-      "-o",
-      "bin/common_TypeError.o",
-      "src/common/TypeError.cpp"
-    ],
-    "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/common/TypeError.cpp",
-    "output": "/Users/john/workspace/lisp/bin/common_TypeError.o"
   },
   {
     "arguments": [
@@ -292,12 +52,52 @@
       "-Wno-unused-parameter",
       "-c",
       "-o",
-      "bin/compile_SyntaxError.o",
-      "src/compile/SyntaxError.cpp"
+      "bin/error_RuntimeError.o",
+      "src/error/RuntimeError.cpp"
     ],
     "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/compile/SyntaxError.cpp",
-    "output": "/Users/john/workspace/lisp/bin/compile_SyntaxError.o"
+    "file": "/Users/john/workspace/lisp/src/error/RuntimeError.cpp",
+    "output": "/Users/john/workspace/lisp/bin/error_RuntimeError.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++20",
+      "-fsanitize=address,undefined",
+      "-g",
+      "-pedantic",
+      "-Wall",
+      "-Wextra",
+      "-Wno-gnu-label-as-value",
+      "-Wno-unused-parameter",
+      "-c",
+      "-o",
+      "bin/error_SyntaxError.o",
+      "src/error/SyntaxError.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/error/SyntaxError.cpp",
+    "output": "/Users/john/workspace/lisp/bin/error_SyntaxError.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++20",
+      "-fsanitize=address,undefined",
+      "-g",
+      "-pedantic",
+      "-Wall",
+      "-Wextra",
+      "-Wno-gnu-label-as-value",
+      "-Wno-unused-parameter",
+      "-c",
+      "-o",
+      "bin/error_TypeError.o",
+      "src/error/TypeError.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/error/TypeError.cpp",
+    "output": "/Users/john/workspace/lisp/bin/error_TypeError.o"
   },
   {
     "arguments": [
@@ -372,26 +172,6 @@
       "-Wno-unused-parameter",
       "-c",
       "-o",
-      "bin/runtime_RuntimeError.o",
-      "src/runtime/RuntimeError.cpp"
-    ],
-    "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/runtime/RuntimeError.cpp",
-    "output": "/Users/john/workspace/lisp/bin/runtime_RuntimeError.o"
-  },
-  {
-    "arguments": [
-      "/usr/bin/g++",
-      "-std=c++20",
-      "-fsanitize=address,undefined",
-      "-g",
-      "-pedantic",
-      "-Wall",
-      "-Wextra",
-      "-Wno-gnu-label-as-value",
-      "-Wno-unused-parameter",
-      "-c",
-      "-o",
       "bin/runtime_Upvalue.o",
       "src/runtime/Upvalue.cpp"
     ],
@@ -418,6 +198,226 @@
     "directory": "/Users/john/workspace/lisp",
     "file": "/Users/john/workspace/lisp/src/runtime/VM.cpp",
     "output": "/Users/john/workspace/lisp/bin/runtime_VM.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++20",
+      "-fsanitize=address,undefined",
+      "-g",
+      "-pedantic",
+      "-Wall",
+      "-Wextra",
+      "-Wno-gnu-label-as-value",
+      "-Wno-unused-parameter",
+      "-c",
+      "-o",
+      "bin/sexpr_Atom.o",
+      "src/sexpr/Atom.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/Atom.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_Atom.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++20",
+      "-fsanitize=address,undefined",
+      "-g",
+      "-pedantic",
+      "-Wall",
+      "-Wextra",
+      "-Wno-gnu-label-as-value",
+      "-Wno-unused-parameter",
+      "-c",
+      "-o",
+      "bin/sexpr_Bool.o",
+      "src/sexpr/Bool.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/Bool.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_Bool.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++20",
+      "-fsanitize=address,undefined",
+      "-g",
+      "-pedantic",
+      "-Wall",
+      "-Wextra",
+      "-Wno-gnu-label-as-value",
+      "-Wno-unused-parameter",
+      "-c",
+      "-o",
+      "bin/sexpr_Closure.o",
+      "src/sexpr/Closure.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/Closure.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_Closure.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++20",
+      "-fsanitize=address,undefined",
+      "-g",
+      "-pedantic",
+      "-Wall",
+      "-Wextra",
+      "-Wno-gnu-label-as-value",
+      "-Wno-unused-parameter",
+      "-c",
+      "-o",
+      "bin/sexpr_Fn.o",
+      "src/sexpr/Fn.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/Fn.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_Fn.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++20",
+      "-fsanitize=address,undefined",
+      "-g",
+      "-pedantic",
+      "-Wall",
+      "-Wextra",
+      "-Wno-gnu-label-as-value",
+      "-Wno-unused-parameter",
+      "-c",
+      "-o",
+      "bin/sexpr_Num.o",
+      "src/sexpr/Num.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/Num.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_Num.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++20",
+      "-fsanitize=address,undefined",
+      "-g",
+      "-pedantic",
+      "-Wall",
+      "-Wextra",
+      "-Wno-gnu-label-as-value",
+      "-Wno-unused-parameter",
+      "-c",
+      "-o",
+      "bin/sexpr_NatFn.o",
+      "src/sexpr/NatFn.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/NatFn.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_NatFn.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++20",
+      "-fsanitize=address,undefined",
+      "-g",
+      "-pedantic",
+      "-Wall",
+      "-Wextra",
+      "-Wno-gnu-label-as-value",
+      "-Wno-unused-parameter",
+      "-c",
+      "-o",
+      "bin/sexpr_Nil.o",
+      "src/sexpr/Nil.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/Nil.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_Nil.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++20",
+      "-fsanitize=address,undefined",
+      "-g",
+      "-pedantic",
+      "-Wall",
+      "-Wextra",
+      "-Wno-gnu-label-as-value",
+      "-Wno-unused-parameter",
+      "-c",
+      "-o",
+      "bin/sexpr_SExpr.o",
+      "src/sexpr/SExpr.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/SExpr.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_SExpr.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++20",
+      "-fsanitize=address,undefined",
+      "-g",
+      "-pedantic",
+      "-Wall",
+      "-Wextra",
+      "-Wno-gnu-label-as-value",
+      "-Wno-unused-parameter",
+      "-c",
+      "-o",
+      "bin/sexpr_SExprs.o",
+      "src/sexpr/SExprs.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/SExprs.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_SExprs.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++20",
+      "-fsanitize=address,undefined",
+      "-g",
+      "-pedantic",
+      "-Wall",
+      "-Wextra",
+      "-Wno-gnu-label-as-value",
+      "-Wno-unused-parameter",
+      "-c",
+      "-o",
+      "bin/sexpr_String.o",
+      "src/sexpr/String.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/String.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_String.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++20",
+      "-fsanitize=address,undefined",
+      "-g",
+      "-pedantic",
+      "-Wall",
+      "-Wextra",
+      "-Wno-gnu-label-as-value",
+      "-Wno-unused-parameter",
+      "-c",
+      "-o",
+      "bin/sexpr_Sym.o",
+      "src/sexpr/Sym.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/Sym.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_Sym.o"
   },
   {
     "arguments": [
