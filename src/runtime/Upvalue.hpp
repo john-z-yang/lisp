@@ -28,6 +28,8 @@ public:
   void set(const sexpr::SExpr *sexpr);
 };
 
+bool operator==(const Upvalue &lhs, const Upvalue &rhs);
+
 } // namespace runtime
 
 #endif
