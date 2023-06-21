@@ -209,10 +209,12 @@ flowchart TB
 ├── docss              # Supporting documentation
 ├── lib                # Pre-defined functions
 ├── src/
-│   ├── common         # Source for shared data structures (Opcodes, S-expressions, etc.)
-│   ├── compile        # Source for compiler (grammer, parser, etc.)
+│   ├── common         # Source for shared data structures (Opcodes, Code class, etc.)
+│   ├── error          # Source for runtime/syntax errors
+│   ├── compile        # Source for compiler
 │   ├── repl           # Source for REPL
-│   └── runtime        # Source for rumtime (vm, runtime errors, etc.)
+│   ├── runtime        # Source for VM and native functions
+│   └── sexpr          # Source for s-expressions
 └── tests
 ```
 
@@ -235,7 +237,7 @@ flowchart TB
 | **SET_STACK** _idx_                | Set `upvalues[idx]` to **TOS**.                                                                                                                                                                       |
 | **JUMP** _offset_                  | Set `ip` of current frame to `offset`.                                                                                                                                                                |
 | **POP_JUMP_IF_FALSE** _offset_     | Set `ip` of current frame to `offset` if **TOS** is not _truthy_.                                                                                                                                     |
-| **MAKE_LIST** _argc_               | Pop `argc` elements from **TOS**, push those elements as cons list onto the stack.                                                                                                                    |
+| **MAKE_LIST**                      | Pop all elements from **BASE_PTR** **TOS**, push those elements as cons list onto the stack.                                                                                                          |
 | **MAKE_NIL**                       | Push `'()` onto the stack                                                                                                                                                                             |
 
 #### Example
@@ -249,32 +251,37 @@ lisp> (define fac
 <Closure at 0x600000980888>
 
 lisp> (dis fac)
-<Closure at 0x60000186c748>, instance of:
-    <Function at 0x600001f6c000, arity: 1, upvalues: 0>
+<Closure at 0x1036fcfd0>, instance of:
+    <Function at 0x106db2520, arity: 1, upvalues: 0>
 Constants:
     =, 0, 1, *, fac, -, 1
 Bytecodes (raw):
-    05 00 0a 01 04 01 01 02 0d 00 05 04 02 0c 00 12
-    05 03 0a 01 05 04 05 05 0a 01 04 06 01 02 01 01
-    01 02 02
+    10 06 00 0b 01 05 01 01 02 0e 00 05 05 02 0d 00
+    12 06 03 0b 01 06 04 06 05 0b 01 05 06 01 02 01
+    01 01 02 0c 00 03 03 03 02
 Bytecodes:
-    3                  0 LOAD_SYM                =
-    3                  2 LOAD_STACK              1
-    3                  4 LOAD_CONST              0
-    3                  6 CALL                    2
-    3                  8 POP_JUMP_IF_FALSE       5
-    4                 11 LOAD_CONST              1
-    4                 13 JUMP                    18
-    5                 16 LOAD_SYM                *
-    5                 18 LOAD_STACK              1
-    5                 20 LOAD_SYM                fac
-    5                 22 LOAD_SYM                -
-    5                 24 LOAD_STACK              1
-    5                 26 LOAD_CONST              1
-    5                 28 CALL                    2
-    5                 30 CALL                    1
-    5                 32 CALL                    2
-    ?                 34 RETURN
+    3                  0 MAKE_NIL
+    3                  1 LOAD_SYM                =
+    3                  3 LOAD_STACK              1
+    3                  5 LOAD_CONST              0
+    3                  7 CALL                    2
+    3                  9 POP_JUMP_IF_FALSE       5
+    4                 12 LOAD_CONST              1
+    4                 14 JUMP                    18
+    5                 17 LOAD_SYM                *
+    5                 19 LOAD_STACK              1
+    5                 21 LOAD_SYM                fac
+    5                 23 LOAD_SYM                -
+    5                 25 LOAD_STACK              1
+    4                 27 LOAD_CONST              1
+    5                 29 CALL                    2
+    5                 31 CALL                    1
+    5                 33 CALL                    2
+                      35 SET_STACK               0
+                      37 POP_TOP
+                      38 POP_TOP
+                      39 POP_TOP
+                      40 RETURN
 ```
 
 ## Running the tests
