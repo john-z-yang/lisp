@@ -62,19 +62,19 @@ const SExpr *Compiler::parse(std::vector<Token>::const_iterator &it,
   it += 1;
   if (token.str == "(") {
     auto sExprs = parseSexprs(it, end);
-    sourceLoc.insert({sExprs, {token.row, token.col}});
+    srcLoc.insert({sExprs, {token.row, token.col}});
     return sExprs;
   }
   if (token.str == "'" || token.str == "`" || token.str == "," ||
       token.str == ",@") {
     auto rest = vm.alloc<SExprs>(parse(it, end), vm.alloc<Nil>());
-    sourceLoc.insert({rest, {token.row, token.col}});
+    srcLoc.insert({rest, {token.row, token.col}});
     auto sExprs = vm.alloc<SExprs>(parseAtom(token), rest);
-    sourceLoc.insert({sExprs, {token.row, token.col}});
+    srcLoc.insert({sExprs, {token.row, token.col}});
     return sExprs;
   }
   auto atom = parseAtom(token);
-  sourceLoc.insert({atom, {token.row, token.col}});
+  srcLoc.insert({atom, {token.row, token.col}});
   return atom;
 }
 
@@ -85,14 +85,14 @@ Compiler::parseSexprs(std::vector<Token>::const_iterator &it,
   if (token.str == ")") {
     it += 1;
     auto nil = vm.alloc<Nil>();
-    sourceLoc.insert({nil, {token.row, token.col - 1}});
+    srcLoc.insert({nil, {token.row, token.col - 1}});
     return nil;
   } else if (token.str == "(") {
     it += 1;
     auto first = parseSexprs(it, end);
     auto rest = parseSexprs(it, end);
     auto sExprs = vm.alloc<SExprs>(first, rest);
-    sourceLoc.insert({sExprs, {token.row, token.col - 1}});
+    srcLoc.insert({sExprs, {token.row, token.col - 1}});
     return sExprs;
   }
   return parseList(it, end);
@@ -115,7 +115,7 @@ Compiler::parseList(std::vector<Token>::const_iterator &it,
     rest = parseSexprs(it, end);
   }
   auto sExprs = vm.alloc<SExprs>(first, rest);
-  sourceLoc.insert({sExprs, {token.row, token.col - 1}});
+  srcLoc.insert({sExprs, {token.row, token.col - 1}});
   return sExprs;
 }
 
@@ -154,10 +154,10 @@ void Compiler::handleUnexpectedToken(const Token &token,
   throw SyntaxError(ss.str(), line, token.row, token.col);
 }
 
-Compiler::Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
+Compiler::Compiler(const std::vector<std::string> source, SrcLoc sourceLoc,
                    const SExpr *param, const SExprs *body, Compiler *enclosing,
                    VM &vm)
-    : vm(vm), enclosing(enclosing), source(source), sourceLoc(sourceLoc),
+    : vm(vm), enclosing(enclosing), source(source), srcLoc(sourceLoc),
       params(param), body(body), stackOffset(1) {
   if (const auto argNames = dynCast<SExprs>(param)) {
     visitEach(argNames, [&](const SExpr *sExpr) {
@@ -217,9 +217,9 @@ int Compiler::countParams() {
   return visitEach(params, [](const SExpr *sExpr) {});
 }
 
-unsigned int Compiler::visitEach(const SExpr *sExprs, Visitor visitor) {
+unsigned int Compiler::visitEach(const SExpr *sExpr, Visitor visitor) {
   auto numVisited = 0U;
-  auto cur = sExprs;
+  auto cur = sExpr;
   while (isa<SExprs>(cur)) {
     auto sExprs = cast<SExprs>(cur);
     visitor(sExprs->first);
@@ -227,6 +227,14 @@ unsigned int Compiler::visitEach(const SExpr *sExprs, Visitor visitor) {
     numVisited += 1;
   }
   return numVisited;
+}
+
+void Compiler::traverse(const SExpr *sExpr, Visitor visitor) {
+  if (const auto sexprs = dynCast<SExprs>(sExpr)) {
+    traverse(sexprs->first, visitor);
+    traverse(sexprs->rest, visitor);
+  }
+  visitor(sExpr);
 }
 
 const SExpr *Compiler::at(const unsigned int n, const SExpr *sExpr) {
@@ -247,7 +255,7 @@ void Compiler::compileStmt(const SExpr *sExpr) {
         compileDefMacro(sExpr);
         return;
       } else if (sym->val == "begin") {
-        code.pushCode(OpCode::MAKE_NIL);
+        code.pushCode(OpCode::MAKE_NIL, std::get<0>(srcLoc[sym]));
         visitEach(sExprs->rest, [&](const SExpr *sExpr) {
           stackOffset += 1;
           this->compileStmt(sExpr);
@@ -270,9 +278,11 @@ void Compiler::compileExpr(const SExpr *sExpr) {
       compileExpr(expandMacro(sExpr));
       return;
     } else if (sym->val == "begin") {
-      code.pushCode(OpCode::MAKE_NIL);
+      const auto lineNum = std::get<0>(srcLoc[sExpr]);
+      code.pushCode(OpCode::MAKE_NIL, lineNum);
+
       visitEach(sExprs->rest, [&](const SExpr *sExpr) {
-        code.pushCode(OpCode::POP_TOP);
+        code.pushCode(OpCode::POP_TOP, lineNum);
         this->compileExpr(sExpr);
       });
       return;
@@ -289,7 +299,7 @@ void Compiler::compileExpr(const SExpr *sExpr) {
       compileLambda(sExpr);
       return;
     } else if (sym->val == "define" || sym->val == "defmacro") {
-      const auto [row, col] = sourceLoc[sExpr];
+      const auto [row, col] = srcLoc[sExpr];
       throw error::SyntaxError(
           "Invalid syntax for define: cannot use define as an expression",
           source[row - 1], row, col);
@@ -303,12 +313,13 @@ void Compiler::compileLambda(const SExpr *sExpr) {
     const auto argNames = cast<SExprs>(at(lambdaArgPos, sExpr))->first;
     const auto body = cast<SExprs>(at(lambdaBodyPos, sExpr));
 
-    Compiler compiler(source, sourceLoc, argNames, body, this, vm);
+    Compiler compiler(source, srcLoc, argNames, body, this, vm);
     const auto function = compiler.compile();
 
-    const auto lineNum = std::get<0>(sourceLoc[sExpr]);
+    const auto lineNum = std::get<0>(srcLoc[sExpr]);
     code.pushCode(OpCode::MAKE_CLOSURE, lineNum);
     code.pushCode(code.pushConst(function), lineNum);
+
     for (const auto &upValue : compiler.upValues) {
       code.pushCode(upValue.isLocal ? 1 : 0);
       code.pushCode(upValue.idx);
@@ -323,7 +334,7 @@ void Compiler::compileCall(const SExprs *sExprs) {
   const auto argc = visitEach(
       sExprs->rest, [&](const SExpr *sExpr) { this->compileExpr(sExpr); });
 
-  const auto lineNum = std::get<0>(sourceLoc[sExprs->first]);
+  const auto lineNum = std::get<0>(srcLoc[sExprs->first]);
   code.pushCode(OpCode::CALL, lineNum);
   code.pushCode(argc, lineNum);
 }
@@ -333,13 +344,13 @@ void Compiler::compileAtom(const Atom *atom) {
     compileSym(cast<Sym>(atom));
     return;
   }
-  const auto lineNum = std::get<0>(sourceLoc[atom]);
+  const auto lineNum = std::get<0>(srcLoc[atom]);
   code.pushCode(OpCode::LOAD_CONST, lineNum);
   code.pushCode(code.pushConst(atom), lineNum);
 }
 
 void Compiler::compileSym(const Sym *sym) {
-  const auto lineNum = std::get<0>(sourceLoc[sym]);
+  const auto lineNum = std::get<0>(srcLoc[sym]);
 
   if (const auto idx = resolveLocal(sym); idx != -1) {
     code.pushCode(OpCode::LOAD_STACK, lineNum);
@@ -359,7 +370,7 @@ void Compiler::compileQuote(const SExpr *sExpr) {
   const auto expr = cast<SExprs>(at(quoteArgPos, sExpr))->first;
   cast<Nil>(at(quoteNilPos, sExpr));
 
-  const auto lineNum = std::get<0>(sourceLoc[sExpr]);
+  const auto lineNum = std::get<0>(srcLoc[sExpr]);
   code.pushCode(OpCode::LOAD_CONST, lineNum);
   code.pushCode(code.pushConst(expr), lineNum);
 }
@@ -372,7 +383,7 @@ void Compiler::compileDef(const SExpr *sExpr) {
 
     compileExpr(expr);
 
-    const auto lineNum = std::get<0>(sourceLoc[sExpr]);
+    const auto lineNum = std::get<0>(srcLoc[sExpr]);
     if (enclosing == nullptr) {
       code.pushCode(OpCode::DEF_SYM, lineNum);
       code.pushCode(code.pushConst(sym), lineNum);
@@ -386,7 +397,7 @@ void Compiler::compileDef(const SExpr *sExpr) {
 
 void Compiler::compileDefMacro(const SExpr *sExpr) {
   if (enclosing) {
-    const auto [row, col] = sourceLoc[sExpr];
+    const auto [row, col] = srcLoc[sExpr];
     throw error::SyntaxError(
         "Invalid syntax for define-macro: must define macros in top level",
         source[row - 1], row, col);
@@ -396,10 +407,10 @@ void Compiler::compileDefMacro(const SExpr *sExpr) {
     const auto argNames = cast<SExprs>(at(defMacroArgPos, sExpr))->first;
     const auto body = cast<SExprs>(at(defMacroBodyPos, sExpr));
 
-    Compiler compiler(source, sourceLoc, argNames, body, this, vm);
+    Compiler compiler(source, srcLoc, argNames, body, this, vm);
     const auto function = compiler.compile();
 
-    const auto lineNum = std::get<0>(sourceLoc[sExpr]);
+    const auto lineNum = std::get<0>(srcLoc[sExpr]);
     code.pushCode(OpCode::MAKE_CLOSURE, lineNum);
     code.pushCode(code.pushConst(function), lineNum);
 
@@ -420,7 +431,7 @@ void Compiler::compileSet(const SExpr *sExpr) {
 
     compileExpr(expr);
 
-    const auto lineNum = std::get<0>(sourceLoc[sExpr]);
+    const auto lineNum = std::get<0>(srcLoc[sExpr]);
 
     if (const auto idx = resolveLocal(sym); idx != -1) {
       code.pushCode(OpCode::SET_STACK, lineNum);
@@ -448,14 +459,14 @@ void Compiler::compileIf(const SExpr *sExpr) {
 
     compileExpr(test);
 
-    const auto testLoc = std::get<0>(sourceLoc[test]);
+    const auto testLoc = std::get<0>(srcLoc[test]);
     const auto jifIdx = code.pushCode(OpCode::POP_JUMP_IF_FALSE, testLoc) + 1;
     code.pushCode(UINT8_MAX, testLoc);
     code.pushCode(UINT8_MAX, testLoc);
 
     compileExpr(conseq);
 
-    const auto conseqLoc = std::get<0>(sourceLoc[conseq]);
+    const auto conseqLoc = std::get<0>(srcLoc[conseq]);
     const auto jIdx = code.pushCode(OpCode::JUMP, conseqLoc) + 1;
     code.pushCode(UINT8_MAX, conseqLoc);
     code.pushCode(UINT8_MAX, conseqLoc);
@@ -476,8 +487,10 @@ void Compiler::compileRet() {
   auto local = locals.rbegin();
   for (auto curOffset{stackOffset}; curOffset > 0; --curOffset) {
     if (local != locals.rend() && local->stackOffset == curOffset) {
+      const auto lineNum = std::get<0>(srcLoc[local->symbol]);
+
       if (local->isCaptured) {
-        code.pushCode(OpCode::CLOSE_UPVALUE);
+        code.pushCode(OpCode::CLOSE_UPVALUE, lineNum);
       } else {
         code.pushCode(OpCode::POP_TOP);
       }
@@ -490,23 +503,32 @@ void Compiler::compileRet() {
 }
 
 const SExpr *Compiler::expandMacro(const SExpr *sExpr) {
-  Code macro;
+  Code fexpr;
 
   const auto sExprs = cast<SExprs>(sExpr);
 
-  macro.pushCode(OpCode::LOAD_SYM);
-  macro.pushCode(macro.pushConst(sExprs->first));
+  unsigned int lineNum, colNum;
+  std::tie(lineNum, colNum) = srcLoc[sExprs->first];
+
+  fexpr.pushCode(OpCode::LOAD_SYM, lineNum);
+  fexpr.pushCode(fexpr.pushConst(sExprs->first), lineNum);
 
   const auto argc = visitEach(sExprs->rest, [&](const SExpr *sExpr) {
-    macro.pushCode(OpCode::LOAD_CONST);
-    macro.pushCode(macro.pushConst(sExpr));
+    fexpr.pushCode(OpCode::LOAD_CONST, lineNum);
+    fexpr.pushCode(fexpr.pushConst(sExpr), lineNum);
   });
 
-  macro.pushCode(OpCode::CALL);
-  macro.pushCode(argc);
-  macro.pushCode(OpCode::RETURN);
+  fexpr.pushCode(OpCode::CALL, lineNum);
+  fexpr.pushCode(argc, lineNum);
+  fexpr.pushCode(OpCode::RETURN, lineNum);
 
-  return vm.eval(vm.alloc<Fn>(0, 0, macro));
+  const auto res = vm.eval(vm.alloc<Fn>(0, 0, fexpr));
+
+  traverse(res, [&](const SExpr *sExpr) {
+    srcLoc.insert({sExpr, {lineNum, colNum}});
+  });
+
+  return res;
 }
 
 void Compiler::handleSyntaxError(const std::string grammar,
@@ -515,7 +537,7 @@ void Compiler::handleSyntaxError(const std::string grammar,
   std::stringstream ss;
   ss << "Invalid syntax for " << grammar << "." << std::endl
      << "Expected " << expected << ", but got " << *actual << ".";
-  const auto [row, col] = sourceLoc[actual];
+  const auto [row, col] = srcLoc[actual];
   throw SyntaxError(ss.str(), source[row - 1], row, col);
 }
 
@@ -524,11 +546,13 @@ Compiler::Compiler(std::vector<std::string> source, VM &vm)
       body(parse()), stackOffset(1) {}
 
 const Fn *Compiler::compile() {
+  const auto lineNum = std::get<0>(srcLoc[body]);
+
   if (isVariadic()) {
-    code.pushCode(OpCode::MAKE_LIST);
+    code.pushCode(OpCode::MAKE_LIST, lineNum);
   }
 
-  code.pushCode(OpCode::MAKE_NIL);
+  code.pushCode(OpCode::MAKE_NIL, lineNum);
   visitEach(body, [&](const SExpr *sExpr) {
     stackOffset += 1;
     this->compileStmt(sExpr);

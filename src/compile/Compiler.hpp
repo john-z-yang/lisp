@@ -21,7 +21,7 @@ class Compiler {
 private:
   typedef std::unordered_map<const sexpr::SExpr *,
                              std::tuple<const unsigned int, const unsigned int>>
-      SourceLoc;
+      SrcLoc;
 
   typedef std::function<void(const sexpr::SExpr *)> Visitor;
 
@@ -30,7 +30,7 @@ private:
   Compiler *const enclosing;
 
   std::vector<std::string> source;
-  SourceLoc sourceLoc;
+  SrcLoc srcLoc;
 
   const sexpr::SExpr *const params;
   const sexpr::SExprs *const body;
@@ -58,7 +58,7 @@ private:
                                     const std::string &line);
 
   // Sema
-  Compiler(const std::vector<std::string> source, SourceLoc sourceLoc,
+  Compiler(const std::vector<std::string> source, SrcLoc sourceLoc,
            const sexpr::SExpr *param, const sexpr::SExprs *body,
            Compiler *enclosing, runtime::VM &vm);
   int resolveLocal(const sexpr::Sym *sym);
@@ -69,6 +69,7 @@ private:
 
   // Codegen
   unsigned int visitEach(const sexpr::SExpr *sExpr, Visitor visitor);
+  void traverse(const sexpr::SExpr *sExpr, Visitor visitor);
   const sexpr::SExpr *at(const unsigned int n, const sexpr::SExpr *sExpr);
   void compileStmt(const sexpr::SExpr *sExpr);
   void compileExpr(const sexpr::SExpr *sExpr);

@@ -79,7 +79,7 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
   while (true) {
     o << std::setw(PADDING_WIDTH) << "" << std::setw(LINE_NUM_WIDTH)
       << std::left
-      << (code.lineNums[ip] > 0 ? std::to_string(code.lineNums[ip]) : "?")
+      << (code.lineNums[ip] > 0 ? std::to_string(code.lineNums[ip]) : "")
       << std::setw(IP_WIDTH) << std::right << ip << " " << std::setw(OP_WIDTH)
       << std::left;
 
