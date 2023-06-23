@@ -14,6 +14,7 @@
 #include "Env.hpp"
 #include "Upvalue.hpp"
 #include <cmath>
+#include <deque>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
@@ -38,7 +39,7 @@ private:
   std::vector<std::unique_ptr<const sexpr::Num>> intCache;
 
   std::unordered_set<const sexpr::SExpr *> black;
-  std::unordered_set<const sexpr::SExpr *> grey;
+  std::deque<const sexpr::SExpr *> grey;
 
   const sexpr::SExpr *eval(const sexpr::Fn *main, bool withGC);
   const sexpr::SExpr *exec(const sexpr::Fn *main);

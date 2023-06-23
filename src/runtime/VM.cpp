@@ -233,9 +233,9 @@ void VM::gc() {
   markOpenUpvalues();
 
   while (grey.size() > 0) {
-    const auto sexpr = *grey.begin();
+    const auto sexpr = grey.front();
     black.emplace(sexpr);
-    grey.erase(grey.begin());
+    grey.pop_front();
     trace(sexpr);
   }
   std::erase_if(
@@ -243,7 +243,7 @@ void VM::gc() {
 }
 void VM::mark(const SExpr *sexpr) {
   if (!black.contains(sexpr)) {
-    grey.emplace(sexpr);
+    grey.push_back(sexpr);
   }
 }
 void VM::trace(const SExpr *sexpr) {
@@ -267,23 +267,23 @@ void VM::trace(const SExpr *sexpr) {
 }
 void VM::markGlobals() {
   for (const auto &[sym, sexpr] : globals.getSymTable()) {
-    grey.emplace(sym);
-    grey.emplace(sexpr);
+    grey.push_back(sym);
+    grey.push_back(sexpr);
   }
 }
 void VM::markStack() {
   for (const auto &sexpr : stack) {
-    grey.emplace(sexpr);
+    grey.push_back(sexpr);
   }
 }
 void VM::markCallFrames() {
   for (const auto &callFrame : callFrames) {
-    grey.emplace(callFrame.closure);
+    grey.push_back(callFrame.closure);
   }
 }
 void VM::markOpenUpvalues() {
   for (const auto &[_, openUpvalue] : openUpvals) {
-    grey.emplace(openUpvalue->get());
+    grey.push_back(openUpvalue->get());
   }
 }
 
