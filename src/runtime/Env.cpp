@@ -32,7 +32,7 @@ const SExpr *Env::find(const Sym *sym) {
   return it->second;
 }
 
-const Env::SymVals &Env::getSymTable() const { return symTable; }
+const Env::SymTable &Env::getSymTable() const { return symTable; }
 
 void Env::defMacro(const Sym *sym) { macros.insert(sym); }
 

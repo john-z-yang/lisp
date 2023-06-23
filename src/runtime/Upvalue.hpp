@@ -2,6 +2,7 @@
 #define LISP_SRC_RUNTIME_UPVALUE_HPP_
 
 #include "../sexpr/SExpr.hpp"
+#include "StackPtr.hpp"
 #include <memory>
 #include <vector>
 
@@ -11,7 +12,7 @@ class Upvalue {
   friend bool operator==(const Upvalue &lhs, const Upvalue &rhs);
 
 private:
-  const std::vector<const sexpr::SExpr *>::size_type stackPos;
+  const StackPtr stackPos;
   std::vector<const sexpr::SExpr *> &stack;
 
   const sexpr::SExpr *value;
@@ -19,8 +20,7 @@ private:
   bool isOpen() const;
 
 public:
-  Upvalue(const std::vector<const sexpr::SExpr *>::size_type stackPos,
-          std::vector<const sexpr::SExpr *> &stack);
+  Upvalue(const StackPtr stackPos, std::vector<const sexpr::SExpr *> &stack);
 
   void close();
 

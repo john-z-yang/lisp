@@ -2,13 +2,14 @@
 #define LISP_SRC_RUNTIME_CALLFRAME_HPP_
 
 #include "../sexpr/Closure.hpp"
+#include "StackPtr.hpp"
 
 namespace runtime {
 
 struct CallFrame {
   const sexpr::Closure *closure;
-  std::vector<uint8_t>::size_type ip;
-  std::vector<const sexpr::SExpr *>::size_type bp;
+  code::Code::InstrPtr ip;
+  runtime::StackPtr bp;
 };
 
 } // namespace runtime

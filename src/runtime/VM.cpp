@@ -3,6 +3,8 @@
 #include "../sexpr/NatFn.hpp"
 #include "../sexpr/SExprs.hpp"
 #include "../sexpr/cast.cpp"
+#include "CppFnImpls.hpp"
+#include "StackPtr.hpp"
 #include <algorithm>
 #include <exception>
 #include <iomanip>
@@ -90,10 +92,10 @@ POP_TOP : {
   DISPATCH();
 }
 CLOSE_UPVALUE : {
-  auto it = openUpvalues.find(stack.size() - 1);
-  if (it != openUpvalues.end()) {
+  auto it = openUpvals.find(stack.size() - 1);
+  if (it != openUpvals.end()) {
     it->second->close();
-    openUpvalues.erase(it);
+    openUpvals.erase(it);
   }
   stack.pop_back();
 }
@@ -188,21 +190,18 @@ void VM::call(const uint8_t argc) {
   return;
 }
 
-std::shared_ptr<Upvalue>
-VM::captureUpvalue(std::vector<const SExpr *>::size_type pos) {
-  auto it = openUpvalues.find(pos);
-  if (it != openUpvalues.end()) {
+std::shared_ptr<Upvalue> VM::captureUpvalue(StackPtr pos) {
+  auto it = openUpvals.find(pos);
+  if (it != openUpvals.end()) {
     return it->second;
   }
-  openUpvalues.insert({pos, std::make_shared<Upvalue>(pos, stack)});
-  return openUpvalues[pos];
+  openUpvals.insert({pos, std::make_shared<Upvalue>(pos, stack)});
+  return openUpvals[pos];
 }
 
-const SExpr *VM::peak(std::vector<const SExpr *>::size_type distance) {
-  return stack.rbegin()[distance];
-}
+const SExpr *VM::peak(StackPtr distance) { return stack.rbegin()[distance]; }
 
-const SExpr *VM::makeList(const std::vector<const SExpr *>::size_type n) {
+const SExpr *VM::makeList(StackPtr n) {
   if (n == 0) {
     return alloc<Nil>();
   }
@@ -283,7 +282,7 @@ void VM::markCallFrames() {
   }
 }
 void VM::markOpenUpvalues() {
-  for (const auto &[_, openUpvalue] : openUpvalues) {
+  for (const auto &[_, openUpvalue] : openUpvals) {
     grey.emplace(openUpvalue->get());
   }
 }

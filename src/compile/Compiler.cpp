@@ -1,5 +1,5 @@
 #include "Compiler.hpp"
-#include "../common/OpCode.hpp"
+#include "../code/OpCode.hpp"
 #include "../error/SyntaxError.hpp"
 #include "../runtime/VM.hpp"
 #include "../sexpr/String.hpp"
@@ -8,6 +8,7 @@
 #include <regex>
 #include <sstream>
 
+using namespace code;
 using namespace sexpr;
 using namespace compile;
 using namespace runtime;
@@ -32,7 +33,11 @@ std::vector<Token> Compiler::tokenize(std::string line,
   auto end = std::sregex_iterator();
   for (std::sregex_iterator i = begin; i != end; ++i) {
     std::smatch match = *i;
-    tokens.push_back({row, (unsigned int)match.position(), match.str()});
+    tokens.push_back(Token{match.str(),
+                           {
+                               row,
+                               (unsigned int)match.position(),
+                           }});
   }
   return tokens;
 }
@@ -51,56 +56,51 @@ const SExprs *Compiler::parse() {
   std::vector<Token>::const_iterator it = tokens.begin();
   const auto res = parse(it, tokens.end());
   if (it != tokens.end()) {
-    handleUnexpectedToken(*it, source[it->row - 1]);
+    handleUnexpectedToken(*it, source[it->srcLoc.row - 1]);
   }
   return vm.alloc<SExprs>(res, vm.alloc<Nil>());
 }
 
-const SExpr *Compiler::parse(std::vector<Token>::const_iterator &it,
-                             const std::vector<Token>::const_iterator &end) {
+const SExpr *Compiler::parse(TokenIter &it, const TokenIter &end) {
   auto token = *it;
   it += 1;
   if (token.str == "(") {
     auto sExprs = parseSexprs(it, end);
-    srcLoc.insert({sExprs, {token.row, token.col}});
+    srcMap.insert({sExprs, {token.srcLoc.row, token.srcLoc.col}});
     return sExprs;
   }
   if (token.str == "'" || token.str == "`" || token.str == "," ||
       token.str == ",@") {
     auto rest = vm.alloc<SExprs>(parse(it, end), vm.alloc<Nil>());
-    srcLoc.insert({rest, {token.row, token.col}});
+    srcMap.insert({rest, {token.srcLoc.row, token.srcLoc.col}});
     auto sExprs = vm.alloc<SExprs>(parseAtom(token), rest);
-    srcLoc.insert({sExprs, {token.row, token.col}});
+    srcMap.insert({sExprs, {token.srcLoc.row, token.srcLoc.col}});
     return sExprs;
   }
   auto atom = parseAtom(token);
-  srcLoc.insert({atom, {token.row, token.col}});
+  srcMap.insert({atom, {token.srcLoc.row, token.srcLoc.col}});
   return atom;
 }
 
-const SExpr *
-Compiler::parseSexprs(std::vector<Token>::const_iterator &it,
-                      const std::vector<Token>::const_iterator &end) {
+const SExpr *Compiler::parseSexprs(TokenIter &it, const TokenIter &end) {
   auto token = *it;
   if (token.str == ")") {
     it += 1;
     auto nil = vm.alloc<Nil>();
-    srcLoc.insert({nil, {token.row, token.col - 1}});
+    srcMap.insert({nil, {token.srcLoc.row, token.srcLoc.col - 1}});
     return nil;
   } else if (token.str == "(") {
     it += 1;
     auto first = parseSexprs(it, end);
     auto rest = parseSexprs(it, end);
     auto sExprs = vm.alloc<SExprs>(first, rest);
-    srcLoc.insert({sExprs, {token.row, token.col - 1}});
+    srcMap.insert({sExprs, {token.srcLoc.row, token.srcLoc.col - 1}});
     return sExprs;
   }
   return parseList(it, end);
 }
 
-const SExpr *
-Compiler::parseList(std::vector<Token>::const_iterator &it,
-                    const std::vector<Token>::const_iterator &end) {
+const SExpr *Compiler::parseList(TokenIter &it, const TokenIter &end) {
   auto token = *it;
   auto first = parse(it, end);
   const SExpr *rest = nullptr;
@@ -115,7 +115,7 @@ Compiler::parseList(std::vector<Token>::const_iterator &it,
     rest = parseSexprs(it, end);
   }
   auto sExprs = vm.alloc<SExprs>(first, rest);
-  srcLoc.insert({sExprs, {token.row, token.col - 1}});
+  srcMap.insert({sExprs, {token.srcLoc.row, token.srcLoc.col - 1}});
   return sExprs;
 }
 
@@ -151,13 +151,13 @@ void Compiler::handleUnexpectedToken(const Token &token,
                                      const std::string &line) {
   std::stringstream ss;
   ss << "Unexpected \"" << token.str << "\".";
-  throw SyntaxError(ss.str(), line, token.row, token.col);
+  throw SyntaxError(ss.str(), line, token.srcLoc.row, token.srcLoc.col);
 }
 
-Compiler::Compiler(const std::vector<std::string> source, SrcLoc sourceLoc,
+Compiler::Compiler(const std::vector<std::string> source, SrcMap sourceLoc,
                    const SExpr *param, const SExprs *body, Compiler *enclosing,
                    VM &vm)
-    : vm(vm), enclosing(enclosing), source(source), srcLoc(sourceLoc),
+    : vm(vm), enclosing(enclosing), source(source), srcMap(sourceLoc),
       params(param), body(body), stackOffset(1) {
   if (const auto argNames = dynCast<SExprs>(param)) {
     visitEach(argNames, [&](const SExpr *sExpr) {
@@ -255,7 +255,7 @@ void Compiler::compileStmt(const SExpr *sExpr) {
         compileDefMacro(sExpr);
         return;
       } else if (sym->val == "begin") {
-        code.pushCode(OpCode::MAKE_NIL, std::get<0>(srcLoc[sym]));
+        code.pushCode(OpCode::MAKE_NIL, srcMap[sym].row);
         visitEach(sExprs->rest, [&](const SExpr *sExpr) {
           stackOffset += 1;
           this->compileStmt(sExpr);
@@ -278,7 +278,7 @@ void Compiler::compileExpr(const SExpr *sExpr) {
       compileExpr(expandMacro(sExpr));
       return;
     } else if (sym->val == "begin") {
-      const auto lineNum = std::get<0>(srcLoc[sExpr]);
+      const auto lineNum = srcMap[sExpr].row;
       code.pushCode(OpCode::MAKE_NIL, lineNum);
 
       visitEach(sExprs->rest, [&](const SExpr *sExpr) {
@@ -299,7 +299,7 @@ void Compiler::compileExpr(const SExpr *sExpr) {
       compileLambda(sExpr);
       return;
     } else if (sym->val == "define" || sym->val == "defmacro") {
-      const auto [row, col] = srcLoc[sExpr];
+      const auto [row, col] = srcMap[sExpr];
       throw error::SyntaxError(
           "Invalid syntax for define: cannot use define as an expression",
           source[row - 1], row, col);
@@ -313,10 +313,10 @@ void Compiler::compileLambda(const SExpr *sExpr) {
     const auto argNames = cast<SExprs>(at(lambdaArgPos, sExpr))->first;
     const auto body = cast<SExprs>(at(lambdaBodyPos, sExpr));
 
-    Compiler compiler(source, srcLoc, argNames, body, this, vm);
+    Compiler compiler(source, srcMap, argNames, body, this, vm);
     const auto function = compiler.compile();
 
-    const auto lineNum = std::get<0>(srcLoc[sExpr]);
+    const auto lineNum = srcMap[sExpr].row;
     code.pushCode(OpCode::MAKE_CLOSURE, lineNum);
     code.pushCode(code.pushConst(function), lineNum);
 
@@ -334,7 +334,7 @@ void Compiler::compileCall(const SExprs *sExprs) {
   const auto argc = visitEach(
       sExprs->rest, [&](const SExpr *sExpr) { this->compileExpr(sExpr); });
 
-  const auto lineNum = std::get<0>(srcLoc[sExprs->first]);
+  const auto lineNum = srcMap[sExprs->first].row;
   code.pushCode(OpCode::CALL, lineNum);
   code.pushCode(argc, lineNum);
 }
@@ -344,13 +344,13 @@ void Compiler::compileAtom(const Atom *atom) {
     compileSym(cast<Sym>(atom));
     return;
   }
-  const auto lineNum = std::get<0>(srcLoc[atom]);
+  const auto lineNum = srcMap[atom].row;
   code.pushCode(OpCode::LOAD_CONST, lineNum);
   code.pushCode(code.pushConst(atom), lineNum);
 }
 
 void Compiler::compileSym(const Sym *sym) {
-  const auto lineNum = std::get<0>(srcLoc[sym]);
+  const auto lineNum = srcMap[sym].row;
 
   if (const auto idx = resolveLocal(sym); idx != -1) {
     code.pushCode(OpCode::LOAD_STACK, lineNum);
@@ -370,7 +370,7 @@ void Compiler::compileQuote(const SExpr *sExpr) {
   const auto expr = cast<SExprs>(at(quoteArgPos, sExpr))->first;
   cast<Nil>(at(quoteNilPos, sExpr));
 
-  const auto lineNum = std::get<0>(srcLoc[sExpr]);
+  const auto lineNum = srcMap[sExpr].row;
   code.pushCode(OpCode::LOAD_CONST, lineNum);
   code.pushCode(code.pushConst(expr), lineNum);
 }
@@ -383,7 +383,7 @@ void Compiler::compileDef(const SExpr *sExpr) {
 
     compileExpr(expr);
 
-    const auto lineNum = std::get<0>(srcLoc[sExpr]);
+    const auto lineNum = srcMap[sExpr].row;
     if (enclosing == nullptr) {
       code.pushCode(OpCode::DEF_SYM, lineNum);
       code.pushCode(code.pushConst(sym), lineNum);
@@ -397,7 +397,7 @@ void Compiler::compileDef(const SExpr *sExpr) {
 
 void Compiler::compileDefMacro(const SExpr *sExpr) {
   if (enclosing) {
-    const auto [row, col] = srcLoc[sExpr];
+    const auto [row, col] = srcMap[sExpr];
     throw error::SyntaxError(
         "Invalid syntax for define-macro: must define macros in top level",
         source[row - 1], row, col);
@@ -407,10 +407,10 @@ void Compiler::compileDefMacro(const SExpr *sExpr) {
     const auto argNames = cast<SExprs>(at(defMacroArgPos, sExpr))->first;
     const auto body = cast<SExprs>(at(defMacroBodyPos, sExpr));
 
-    Compiler compiler(source, srcLoc, argNames, body, this, vm);
+    Compiler compiler(source, srcMap, argNames, body, this, vm);
     const auto function = compiler.compile();
 
-    const auto lineNum = std::get<0>(srcLoc[sExpr]);
+    const auto lineNum = srcMap[sExpr].row;
     code.pushCode(OpCode::MAKE_CLOSURE, lineNum);
     code.pushCode(code.pushConst(function), lineNum);
 
@@ -431,7 +431,7 @@ void Compiler::compileSet(const SExpr *sExpr) {
 
     compileExpr(expr);
 
-    const auto lineNum = std::get<0>(srcLoc[sExpr]);
+    const auto lineNum = srcMap[sExpr].row;
 
     if (const auto idx = resolveLocal(sym); idx != -1) {
       code.pushCode(OpCode::SET_STACK, lineNum);
@@ -459,14 +459,14 @@ void Compiler::compileIf(const SExpr *sExpr) {
 
     compileExpr(test);
 
-    const auto testLoc = std::get<0>(srcLoc[test]);
+    const auto testLoc = srcMap[test].row;
     const auto jifIdx = code.pushCode(OpCode::POP_JUMP_IF_FALSE, testLoc) + 1;
     code.pushCode(UINT8_MAX, testLoc);
     code.pushCode(UINT8_MAX, testLoc);
 
     compileExpr(conseq);
 
-    const auto conseqLoc = std::get<0>(srcLoc[conseq]);
+    const auto conseqLoc = srcMap[conseq].row;
     const auto jIdx = code.pushCode(OpCode::JUMP, conseqLoc) + 1;
     code.pushCode(UINT8_MAX, conseqLoc);
     code.pushCode(UINT8_MAX, conseqLoc);
@@ -487,7 +487,7 @@ void Compiler::compileRet() {
   auto local = locals.rbegin();
   for (auto curOffset{stackOffset}; curOffset > 0; --curOffset) {
     if (local != locals.rend() && local->stackOffset == curOffset) {
-      const auto lineNum = std::get<0>(srcLoc[local->symbol]);
+      const auto lineNum = srcMap[local->symbol].row;
 
       if (local->isCaptured) {
         code.pushCode(OpCode::CLOSE_UPVALUE, lineNum);
@@ -507,8 +507,8 @@ const SExpr *Compiler::expandMacro(const SExpr *sExpr) {
 
   const auto sExprs = cast<SExprs>(sExpr);
 
-  unsigned int lineNum, colNum;
-  std::tie(lineNum, colNum) = srcLoc[sExprs->first];
+  const auto lineNum = srcMap[sExprs->first].row;
+  const auto colNum = srcMap[sExprs->first].col;
 
   fexpr.pushCode(OpCode::LOAD_SYM, lineNum);
   fexpr.pushCode(fexpr.pushConst(sExprs->first), lineNum);
@@ -525,7 +525,7 @@ const SExpr *Compiler::expandMacro(const SExpr *sExpr) {
   const auto res = vm.eval(vm.alloc<Fn>(0, 0, fexpr));
 
   traverse(res, [&](const SExpr *sExpr) {
-    srcLoc.insert({sExpr, {lineNum, colNum}});
+    srcMap.insert({sExpr, {lineNum, colNum}});
   });
 
   return res;
@@ -537,7 +537,7 @@ void Compiler::handleSyntaxError(const std::string grammar,
   std::stringstream ss;
   ss << "Invalid syntax for " << grammar << "." << std::endl
      << "Expected " << expected << ", but got " << *actual << ".";
-  const auto [row, col] = srcLoc[actual];
+  const auto [row, col] = srcMap[actual];
   throw SyntaxError(ss.str(), source[row - 1], row, col);
 }
 
@@ -546,7 +546,7 @@ Compiler::Compiler(std::vector<std::string> source, VM &vm)
       body(parse()), stackOffset(1) {}
 
 const Fn *Compiler::compile() {
-  const auto lineNum = std::get<0>(srcLoc[body]);
+  const auto lineNum = srcMap[body].row;
 
   if (isVariadic()) {
     code.pushCode(OpCode::MAKE_LIST, lineNum);
@@ -563,7 +563,7 @@ const Fn *Compiler::compile() {
 }
 
 void Compiler::verifyLex(std::string &line, const unsigned int lineNum,
-                         uint32_t &openParen, uint32_t &closedParen) {
+                         unsigned int &openParen, unsigned int &closedParen) {
   auto tokens = tokenize(line, lineNum);
   for (auto it = tokens.begin(); it != tokens.end(); ++it) {
     if ((openParen == closedParen && openParen > 0) ||

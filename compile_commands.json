@@ -12,12 +12,12 @@
       "-Wno-unused-parameter",
       "-c",
       "-o",
-      "bin/common_Code.o",
-      "src/common/Code.cpp"
+      "bin/code_Code.o",
+      "src/code/Code.cpp"
     ],
     "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/common/Code.cpp",
-    "output": "/Users/john/workspace/lisp/bin/common_Code.o"
+    "file": "/Users/john/workspace/lisp/src/code/Code.cpp",
+    "output": "/Users/john/workspace/lisp/bin/code_Code.o"
   },
   {
     "arguments": [
@@ -152,12 +152,12 @@
       "-Wno-unused-parameter",
       "-c",
       "-o",
-      "bin/runtime_NatFnImpls.o",
-      "src/runtime/NatFnImpls.cpp"
+      "bin/runtime_CppFnImpls.o",
+      "src/runtime/CppFnImpls.cpp"
     ],
     "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/runtime/NatFnImpls.cpp",
-    "output": "/Users/john/workspace/lisp/bin/runtime_NatFnImpls.o"
+    "file": "/Users/john/workspace/lisp/src/runtime/CppFnImpls.cpp",
+    "output": "/Users/john/workspace/lisp/bin/runtime_CppFnImpls.o"
   },
   {
     "arguments": [

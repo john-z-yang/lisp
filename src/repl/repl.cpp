@@ -21,8 +21,8 @@ using namespace runtime;
 
 bool getConsoleInput(std::vector<std::string> &lines, std::string prompt,
                      std::string wrap) {
-  uint32_t openParen = 0;
-  uint32_t closedParen = 0;
+  auto openParen = 0U;
+  auto closedParen = 0U;
   std::string line;
   while (auto buf = readline(lines.empty() ? prompt.c_str() : wrap.c_str())) {
     line = std::string(buf);
@@ -43,8 +43,8 @@ bool getConsoleInput(std::vector<std::string> &lines, std::string prompt,
 }
 
 std::istream &getFileInput(std::istream &in, std::vector<std::string> &lines) {
-  uint32_t openParen = 0;
-  uint32_t closedParen = 0;
+  auto openParen = 0U;
+  auto closedParen = 0U;
   std::string line;
   while (getline(in, line)) {
     line = std::regex_replace(

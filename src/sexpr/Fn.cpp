@@ -5,7 +5,7 @@
 
 using namespace sexpr;
 
-Fn::Fn(const int8_t arity, const unsigned int numUpvals, const Code code)
+Fn::Fn(const int8_t arity, const unsigned int numUpvals, const code::Code code)
     : Atom(SExpr::Type::FUNCTION), arity(arity), numUpvals(numUpvals),
       code(code) {}
 

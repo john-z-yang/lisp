@@ -1,10 +1,10 @@
 #include "Upvalue.hpp"
+#include "StackPtr.hpp"
 
 using namespace sexpr;
 using namespace runtime;
 
-Upvalue::Upvalue(const std::vector<const SExpr *>::size_type stackPos,
-                 std::vector<const SExpr *> &stack)
+Upvalue::Upvalue(runtime::StackPtr stackPos, std::vector<const SExpr *> &stack)
     : stackPos(stackPos), stack(stack), value(nullptr) {}
 
 bool Upvalue::isOpen() const { return value == nullptr; }

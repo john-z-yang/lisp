@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <iomanip>
 
+using namespace code;
 using namespace sexpr;
 
 uint8_t Code::pushCode(const uint8_t code) { return pushCode(code, 0); }
@@ -20,13 +21,13 @@ uint8_t Code::pushConst(const SExpr *sExpr) {
   return consts.size() - 1;
 }
 
-void Code::patchJump(const std::vector<uint8_t>::size_type idx) {
+void Code::patchJump(const InstrPtr idx) {
   const uint16_t offset = byteCodes.size() - idx - 2;
   byteCodes[idx] = (offset >> 8) & 0xFF;
   byteCodes[idx + 1] = offset & 0xFF;
 }
 
-std::ostream &operator<<(std::ostream &o, const Code &code) {
+std::ostream &code::operator<<(std::ostream &o, const Code &code) {
 #define READ_BYTE() ((uint8_t)code.byteCodes[ip++])
 #define READ_SHORT()                                                           \
   (ip += 2, (uint16_t)((code.byteCodes[ip - 2] << 8 | code.byteCodes[ip - 1])))
@@ -74,7 +75,7 @@ std::ostream &operator<<(std::ostream &o, const Code &code) {
   const unsigned int IP_WIDTH = 16;
   const unsigned int OP_WIDTH = 24;
 
-  std::vector<uint8_t>::size_type ip = 0;
+  Code::InstrPtr ip = 0;
 
   while (true) {
     o << std::setw(PADDING_WIDTH) << "" << std::setw(LINE_NUM_WIDTH)

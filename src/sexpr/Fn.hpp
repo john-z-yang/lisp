@@ -1,7 +1,7 @@
 #ifndef LISP_SRC_SEXPR_FN_HPP_
 #define LISP_SRC_SEXPR_FN_HPP_
 
-#include "../common/Code.hpp"
+#include "../code/Code.hpp"
 #include "Atom.hpp"
 
 namespace sexpr {
@@ -12,11 +12,11 @@ protected:
   bool equals(const SExpr &other) const;
 
 public:
-  Fn(const int8_t arity, const unsigned int numUpvals, const Code code);
+  Fn(const int8_t arity, const unsigned int numUpvals, const code::Code code);
 
   const int8_t arity;
   const unsigned int numUpvals;
-  const Code code;
+  const code::Code code;
 
   std::ostream &dissassemble(std::ostream &o) const;
 

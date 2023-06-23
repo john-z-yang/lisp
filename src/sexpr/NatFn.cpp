@@ -8,7 +8,7 @@
 using namespace sexpr;
 using namespace runtime;
 
-NatFn::NatFn(NativeFn fn, const int argc)
+NatFn::NatFn(CppFn fn, const int argc)
     : Atom(SExpr::Type::NATIVE_FN), fn(fn), argc(argc) {}
 
 const SExpr *NatFn::invoke(std::vector<const SExpr *>::iterator params,

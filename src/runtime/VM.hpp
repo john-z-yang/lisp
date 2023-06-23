@@ -29,32 +29,26 @@ private:
 
   std::vector<const sexpr::SExpr *> stack;
   std::vector<CallFrame> callFrames;
-  std::unordered_map<std::vector<const sexpr::SExpr *>::size_type,
-                     std::shared_ptr<Upvalue>>
-      openUpvalues;
+  std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> openUpvals;
 
   bool enableGC;
   size_t gcHeapSize;
 
   std::vector<std::unique_ptr<const sexpr::SExpr>> heap;
+  std::vector<std::unique_ptr<const sexpr::Num>> intCache;
 
   std::unordered_set<const sexpr::SExpr *> black;
   std::unordered_set<const sexpr::SExpr *> grey;
-  std::vector<std::unique_ptr<const sexpr::Num>> intCache;
 
-  // Eval
   const sexpr::SExpr *eval(const sexpr::Fn *main, bool withGC);
   const sexpr::SExpr *exec(const sexpr::Fn *main);
+
   void call(const uint8_t argc);
-  std::shared_ptr<Upvalue>
-  captureUpvalue(std::vector<const sexpr::SExpr *>::size_type pos);
-  const sexpr::SExpr *
-  peak(std::vector<const sexpr::SExpr *>::size_type distance);
-  const sexpr::SExpr *
-  makeList(std::vector<const sexpr::SExpr *>::size_type size);
+  std::shared_ptr<Upvalue> captureUpvalue(StackPtr pos);
+  const sexpr::SExpr *peak(StackPtr distance);
+  const sexpr::SExpr *makeList(StackPtr size);
   void reset();
 
-  // Mem
   void gc();
   void mark(const sexpr::SExpr *sexpr);
   void trace(const sexpr::SExpr *sexpr);

@@ -10,17 +10,16 @@
 namespace runtime {
 
 class Env {
-  typedef std::unordered_map<const sexpr::Sym *, const sexpr::SExpr *,
-                             sexpr::Sym::HashFunction,
-                             sexpr::Sym::EqualFunction>
-      SymVals;
+  using SymTable =
+      std::unordered_map<const sexpr::Sym *, const sexpr::SExpr *,
+                         sexpr::Sym::HashFunction, sexpr::Sym::EqualFunction>;
 
-  typedef std::unordered_set<const sexpr::Sym *, sexpr::Sym::HashFunction,
-                             sexpr::Sym::EqualFunction>
-      Macros;
+  using Macros =
+      std::unordered_set<const sexpr::Sym *, sexpr::Sym::HashFunction,
+                         sexpr::Sym::EqualFunction>;
 
 private:
-  SymVals symTable;
+  SymTable symTable;
   Macros macros;
 
 public:
@@ -28,7 +27,7 @@ public:
 
   void set(const sexpr::Sym *sym, const sexpr::SExpr *val);
 
-  const SymVals &getSymTable() const;
+  const SymTable &getSymTable() const;
 
   const sexpr::SExpr *find(const sexpr::Sym *sym);
 

@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+namespace code {
+
 enum OpCode : uint8_t {
   MAKE_CLOSURE,
   CALL,
@@ -22,5 +24,7 @@ enum OpCode : uint8_t {
   MAKE_LIST,
   MAKE_NIL,
 };
+
+} // namespace code
 
 #endif
