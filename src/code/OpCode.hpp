@@ -1,5 +1,5 @@
-#ifndef LISP_SRC_COMMON_OPCODE_HPP_
-#define LISP_SRC_COMMON_OPCODE_HPP_
+#ifndef LISP_SRC_CODE_OPCODE_HPP_
+#define LISP_SRC_CODE_OPCODE_HPP_
 
 #include <cstdint>
 

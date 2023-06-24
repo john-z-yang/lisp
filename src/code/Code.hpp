@@ -1,7 +1,8 @@
-#ifndef LISP_SRC_COMMON_CODE_HPP_
-#define LISP_SRC_COMMON_CODE_HPP_
+#ifndef LISP_SRC_CODE_CODE_HPP_
+#define LISP_SRC_CODE_CODE_HPP_
 
 #include "../sexpr/SExpr.hpp"
+#include "InstrPtr.hpp"
 #include <cstdint>
 #include <iostream>
 #include <memory>
@@ -12,8 +13,6 @@ class Code {
   friend std::ostream &operator<<(std::ostream &o, const sexpr::SExpr &sExpr);
 
 public:
-  using InstrPtr = std::vector<uint8_t>::size_type;
-
   std::vector<uint8_t> byteCodes;
   std::vector<const sexpr::SExpr *> consts;
 

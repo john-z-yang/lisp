@@ -1,5 +1,5 @@
-#ifndef LISP_SRC_RUNTIME_COMMON_HPP_
-#define LISP_SRC_RUNTIME_COMMON_HPP_
+#ifndef LISP_SRC_RUNTIME_STACKPTR_HPP_
+#define LISP_SRC_RUNTIME_STACKPTR_HPP_
 
 #include "../sexpr/SExpr.hpp"
 #include <vector>

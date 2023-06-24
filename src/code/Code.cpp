@@ -75,7 +75,7 @@ std::ostream &code::operator<<(std::ostream &o, const Code &code) {
   const unsigned int IP_WIDTH = 16;
   const unsigned int OP_WIDTH = 24;
 
-  Code::InstrPtr ip = 0;
+  code::InstrPtr ip = 0;
 
   while (true) {
     o << std::setw(PADDING_WIDTH) << "" << std::setw(LINE_NUM_WIDTH)

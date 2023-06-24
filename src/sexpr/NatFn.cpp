@@ -8,15 +8,20 @@
 using namespace sexpr;
 using namespace runtime;
 
-NatFn::NatFn(CppFn fn, const int argc)
-    : Atom(SExpr::Type::NATIVE_FN), fn(fn), argc(argc) {}
+NatFn::NatFn(CppFn fn, const uint8_t argc, const bool isVariadic)
+    : Atom(SExpr::Type::NATIVE_FN), fn(fn), argc(argc), isVariadic(isVariadic) {
+}
 
-const SExpr *NatFn::invoke(std::vector<const SExpr *>::iterator params,
-                           const unsigned int incomingArgc, VM &vm) const {
-  if (argc != -1 && incomingArgc != (unsigned int)argc) {
+const SExpr *NatFn::invoke(StackIter params, const uint8_t incomingArgc,
+                           VM &vm) const {
+  if ((!isVariadic && incomingArgc != argc) ||
+      (isVariadic && incomingArgc < argc)) {
     std::stringstream ss;
-    ss << "Invalid number of arguments. Expected " << argc
-       << " arguments, but got " << incomingArgc << ".";
+    ss << "Invalid number of arguments. Expected " << unsigned(argc);
+    if (isVariadic) {
+      ss << " or more";
+    }
+    ss << " arguments, but got " << unsigned(incomingArgc) << ".";
     throw std::invalid_argument(ss.str());
   }
   return fn(params, incomingArgc, vm);
