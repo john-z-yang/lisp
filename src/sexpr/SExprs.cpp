@@ -11,8 +11,6 @@ using namespace sexpr;
 SExprs::SExprs(const SExpr *first, const SExpr *rest)
     : SExpr(SExpr::Type::SEXPRS), first(first), rest(rest) {}
 
-SExprs::SExprs() : SExpr(SExpr::Type::SEXPRS), first(nullptr), rest(nullptr) {}
-
 std::string SExprs::toString() const {
   std::string str = "";
   str += isa<SExprs>(first) ? "(" : "";

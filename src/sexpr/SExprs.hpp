@@ -17,7 +17,6 @@ public:
   const SExpr *rest;
 
   SExprs(const SExpr *first, const SExpr *rest);
-  SExprs();
 
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;
