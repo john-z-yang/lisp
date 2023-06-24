@@ -160,7 +160,7 @@ Compiler::Compiler(const std::vector<std::string> source, SrcMap sourceLoc,
     : vm(vm), enclosing(enclosing), source(source), srcMap(sourceLoc),
       params(param), body(body), stackOffset(1) {
   if (const auto argNames = dynCast<SExprs>(param)) {
-    visitEach(argNames, [&](const SExpr *sExpr) {
+    visitEach(argNames, [&](const auto sExpr) {
       auto sym = cast<Sym>(sExpr);
       locals.push_back({sym, stackOffset, false});
       stackOffset += 1;
@@ -174,8 +174,9 @@ Compiler::Compiler(const std::vector<std::string> source, SrcMap sourceLoc,
 }
 
 int Compiler::resolveLocal(const Sym *sym) {
-  auto it = std::find_if(locals.rbegin(), locals.rend(),
-                         [&sym](Local local) { return *local.symbol == *sym; });
+  auto it = std::find_if(locals.rbegin(), locals.rend(), [&](const auto local) {
+    return *local.symbol == *sym;
+  });
   if (it == locals.rend()) {
     return -1;
   }
@@ -197,7 +198,7 @@ int Compiler::resolveUpvalue(Compiler &caller, const Sym *sym) {
 
 int Compiler::addUpvalue(int idx, bool isLocal) {
   if (auto it = std::find_if(upValues.begin(), upValues.end(),
-                             [=](Upvalue upValue) {
+                             [=](const auto upValue) {
                                return upValue.idx == idx &&
                                       upValue.isLocal == isLocal;
                              });
@@ -214,7 +215,7 @@ int Compiler::countParams() {
   if (isVariadic()) {
     return -1;
   }
-  return visitEach(params, [](const SExpr *sExpr) {});
+  return visitEach(params, [](const auto sExpr) {});
 }
 
 unsigned int Compiler::visitEach(const SExpr *sExpr, Visitor visitor) {
@@ -256,7 +257,7 @@ void Compiler::compileStmt(const SExpr *sExpr) {
         return;
       } else if (sym->val == "begin") {
         code.pushCode(OpCode::MAKE_NIL, srcMap[sym].row);
-        visitEach(sExprs->rest, [&](const SExpr *sExpr) {
+        visitEach(sExprs->rest, [&](const auto sExpr) {
           stackOffset += 1;
           this->compileStmt(sExpr);
         });
@@ -281,7 +282,7 @@ void Compiler::compileExpr(const SExpr *sExpr) {
       const auto lineNum = srcMap[sExpr].row;
       code.pushCode(OpCode::MAKE_NIL, lineNum);
 
-      visitEach(sExprs->rest, [&](const SExpr *sExpr) {
+      visitEach(sExprs->rest, [&](const auto sExpr) {
         code.pushCode(OpCode::POP_TOP, lineNum);
         this->compileExpr(sExpr);
       });
@@ -332,7 +333,7 @@ void Compiler::compileLambda(const SExpr *sExpr) {
 void Compiler::compileCall(const SExprs *sExprs) {
   compileExpr(sExprs->first);
   const auto argc = visitEach(
-      sExprs->rest, [&](const SExpr *sExpr) { this->compileExpr(sExpr); });
+      sExprs->rest, [&](const auto sExpr) { this->compileExpr(sExpr); });
 
   const auto lineNum = srcMap[sExprs->first].row;
   code.pushCode(OpCode::CALL, lineNum);
@@ -513,7 +514,7 @@ const SExpr *Compiler::expandMacro(const SExpr *sExpr) {
   fexpr.pushCode(OpCode::LOAD_SYM, lineNum);
   fexpr.pushCode(fexpr.pushConst(sExprs->first), lineNum);
 
-  const auto argc = visitEach(sExprs->rest, [&](const SExpr *sExpr) {
+  const auto argc = visitEach(sExprs->rest, [&](const auto sExpr) {
     fexpr.pushCode(OpCode::LOAD_CONST, lineNum);
     fexpr.pushCode(fexpr.pushConst(sExpr), lineNum);
   });
@@ -524,7 +525,7 @@ const SExpr *Compiler::expandMacro(const SExpr *sExpr) {
 
   const auto res = vm.eval(vm.alloc<Fn>(0, 0, fexpr));
 
-  traverse(res, [&](const SExpr *sExpr) {
+  traverse(res, [&](const auto sExpr) {
     srcMap.insert({sExpr, {lineNum, colNum}});
   });
 
@@ -553,7 +554,7 @@ const Fn *Compiler::compile() {
   }
 
   code.pushCode(OpCode::MAKE_NIL, lineNum);
-  visitEach(body, [&](const SExpr *sExpr) {
+  visitEach(body, [&](const auto sExpr) {
     stackOffset += 1;
     this->compileStmt(sExpr);
   });

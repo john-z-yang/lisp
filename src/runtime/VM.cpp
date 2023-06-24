@@ -254,14 +254,13 @@ void VM::trace(const SExpr *sexpr) {
   }
   if (const auto fnAtom = dynCast<Fn>(sexpr)) {
     std::for_each(fnAtom->code.consts.begin(), fnAtom->code.consts.end(),
-                  [&](const SExpr *sexpr) { mark(sexpr); });
+                  [&](const auto &sexpr) { mark(sexpr); });
     return;
   }
   if (const auto closureAtom = dynCast<Closure>(sexpr)) {
     mark(closureAtom->fnAtom);
-    std::for_each(
-        closureAtom->upvalues.begin(), closureAtom->upvalues.end(),
-        [&](const std::shared_ptr<Upvalue> upvalue) { mark(upvalue->get()); });
+    std::for_each(closureAtom->upvalues.begin(), closureAtom->upvalues.end(),
+                  [&](const auto &upvalue) { mark(upvalue->get()); });
     return;
   }
 }

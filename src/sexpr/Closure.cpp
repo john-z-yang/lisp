@@ -53,9 +53,7 @@ bool Closure::equals(const SExpr &other) const {
     return std::equal(
         upvalues.begin(), upvalues.end(), closure.upvalues.begin(),
         closure.upvalues.end(),
-        [](std::shared_ptr<Upvalue> self, std::shared_ptr<Upvalue> other) {
-          return *self == *other;
-        });
+        [](const auto &self, const auto &other) { return *self == *other; });
   }
   return false;
 }
