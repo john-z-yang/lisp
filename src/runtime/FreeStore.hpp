@@ -10,6 +10,7 @@
 #include "GCGuard.hpp"
 #include "StackPtr.hpp"
 #include "Upvalue.hpp"
+#include <cmath>
 #include <deque>
 #include <unordered_set>
 

@@ -11,7 +11,6 @@
 #include "Env.hpp"
 #include "FreeStore.hpp"
 #include "Upvalue.hpp"
-#include <cmath>
 #include <deque>
 #include <memory>
 #include <unordered_map>
