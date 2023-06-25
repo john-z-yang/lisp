@@ -24,7 +24,7 @@ public:
   static Bool &getInstance(const bool val);
   static bool toBool(const SExpr &sExpr);
   static bool classOf(const SExpr &sExpr);
-  static constexpr std::string getTypeName() { return "<Boolean>"; }
+  static std::string getTypeName();
 };
 
 } // namespace sexpr

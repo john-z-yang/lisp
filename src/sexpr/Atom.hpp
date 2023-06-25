@@ -10,7 +10,7 @@ public:
   explicit Atom(SExpr::Type type);
 
   static bool classOf(const SExpr &sExpr);
-  static constexpr std::string getTypeName() { return "<Atom>"; }
+  static std::string getTypeName();
 };
 
 } // namespace sexpr

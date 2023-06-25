@@ -18,7 +18,7 @@ protected:
 public:
   static Nil &getInstance();
   static bool classOf(const SExpr &sExpr);
-  static constexpr std::string getTypeName() { return "()"; }
+  static std::string getTypeName();
 };
 
 } // namespace sexpr

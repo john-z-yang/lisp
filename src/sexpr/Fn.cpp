@@ -33,3 +33,5 @@ std::ostream &Fn::dissassemble(std::ostream &o) const {
 bool Fn::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::FUNCTION;
 }
+
+std::string Fn::getTypeName() { return "<Function>"; }

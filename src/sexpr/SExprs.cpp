@@ -36,3 +36,5 @@ SExprs::SExprs(const SExpr &first, const SExpr &rest)
 bool SExprs::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::SEXPRS;
 }
+
+std::string SExprs::getTypeName() { return "<S-expressions>"; }

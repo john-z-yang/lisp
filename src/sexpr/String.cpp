@@ -27,3 +27,5 @@ String::String(const std::string literal)
 bool String::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::STR;
 }
+
+std::string String::getTypeName() { return "<String>"; }

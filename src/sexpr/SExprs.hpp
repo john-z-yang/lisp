@@ -19,7 +19,7 @@ public:
   SExprs(const SExpr &first, const SExpr &rest);
 
   static bool classOf(const SExpr &sExpr);
-  static constexpr std::string getTypeName() { return "<S-expressions>"; }
+  static std::string getTypeName();
 };
 
 } // namespace sexpr

@@ -22,7 +22,7 @@ public:
   const std::string unescaped;
 
   static bool classOf(const SExpr &sExpr);
-  static constexpr std::string getTypeName() { return "<String>"; }
+  static std::string getTypeName();
 };
 
 } // namespace sexpr

@@ -17,3 +17,5 @@ Nil Nil::instance;
 Nil &Nil::getInstance() { return instance; }
 
 bool Nil::classOf(const SExpr &sExpr) { return sExpr.type == SExpr::Type::NIL; }
+
+std::string Nil::getTypeName() { return "()"; }

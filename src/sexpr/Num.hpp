@@ -18,7 +18,7 @@ public:
   const double val;
 
   static bool classOf(const SExpr &sExpr);
-  static constexpr std::string getTypeName() { return "<Number>"; }
+  static std::string getTypeName();
 };
 
 } // namespace sexpr

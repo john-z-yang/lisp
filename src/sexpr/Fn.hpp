@@ -21,7 +21,7 @@ public:
   std::ostream &dissassemble(std::ostream &o) const;
 
   static bool classOf(const SExpr &sExpr);
-  static constexpr std::string getTypeName() { return "<Function>"; }
+  static std::string getTypeName();
 };
 
 } // namespace sexpr

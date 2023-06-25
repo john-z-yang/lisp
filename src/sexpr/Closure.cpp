@@ -55,3 +55,5 @@ std::ostream &Closure::dissassemble(std::ostream &o) const {
 bool Closure::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::CLOSURE;
 }
+
+std::string Closure::getTypeName() { return "<Closure>"; }

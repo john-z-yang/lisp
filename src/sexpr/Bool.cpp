@@ -36,3 +36,5 @@ bool Bool::toBool(const SExpr &sExpr) {
 bool Bool::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::BOOL;
 }
+
+std::string Bool::getTypeName() { return "<Boolean>"; }

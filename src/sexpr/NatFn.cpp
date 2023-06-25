@@ -34,3 +34,5 @@ const SExpr &NatFn::invoke(StackIter params, const uint8_t incomingArgc,
 bool NatFn::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::NATIVE_FN;
 }
+
+std::string NatFn::getTypeName() { return "<Native function>"; }

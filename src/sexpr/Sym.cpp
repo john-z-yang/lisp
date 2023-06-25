@@ -24,3 +24,5 @@ Sym::Sym(std::string val)
     : Atom(SExpr::Type::SYM), val(val), hash(std::hash<std::string>()(val)) {}
 
 bool Sym::classOf(const SExpr &sExpr) { return sExpr.type == SExpr::Type::SYM; }
+
+std::string Sym::getTypeName() { return "<Symbol>"; }

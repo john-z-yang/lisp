@@ -29,7 +29,7 @@ public:
   explicit Sym(std::string val);
 
   static bool classOf(const SExpr &sExpr);
-  static constexpr std::string getTypeName() { return "<Symbol>"; }
+  static std::string getTypeName();
 };
 
 } // namespace sexpr

@@ -26,7 +26,7 @@ public:
                       runtime::VM &vm) const;
 
   static bool classOf(const SExpr &sExpr);
-  static constexpr std::string getTypeName() { return "<Native function>"; }
+  static std::string getTypeName();
 };
 
 } // namespace sexpr
