@@ -14,10 +14,10 @@
 #include <deque>
 #include <unordered_set>
 
-#define LISP_GC_HEAP_GROWTH_FACTOR 2
-#define LISP_GC_INIT_HEAP_SIZE 4096
-#define LISP_INT_CACHE_MAX 256.0
-#define LISP_INT_CACHE_MIN -16.0
+#define FREESTORE_HEAP_GROWTH_FACTOR 2
+#define FREESTORE_INIT_HEAP_SIZE 512
+#define FREESTORE_INT_CACHE_MAX 256.0
+#define FREESTORE_INT_CACHE_MIN -16.0
 
 namespace runtime {
 
@@ -70,9 +70,9 @@ template <> inline const sexpr::Bool &FreeStore::alloc(bool &&val) {
   return sexpr::Bool::getInstance(val);
 }
 template <> inline const sexpr::Num &FreeStore::alloc(double &val) {
-  if (val >= LISP_INT_CACHE_MIN && val <= LISP_INT_CACHE_MAX &&
+  if (val >= FREESTORE_INT_CACHE_MIN && val <= FREESTORE_INT_CACHE_MAX &&
       floor(val) == val) {
-    return *intCache.at(val - LISP_INT_CACHE_MIN).get();
+    return *intCache.at(val - FREESTORE_INT_CACHE_MIN).get();
   }
   gc();
   auto unique = std::make_unique<const sexpr::Num>(val);

@@ -29,7 +29,7 @@ void FreeStore::gc() {
   std::erase_if(
       heap, [&](const auto &unique) { return !black.contains(unique.get()); });
 
-  gcHeapSize = heap.size() * LISP_GC_HEAP_GROWTH_FACTOR;
+  gcHeapSize = heap.size() * FREESTORE_HEAP_GROWTH_FACTOR;
 }
 
 void FreeStore::mark(const SExpr &sexpr) {
@@ -91,8 +91,9 @@ FreeStore::FreeStore(
     std::vector<CallFrame> &callFrames,
     std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> &openUpvals)
     : globals(globals), stack(stack), callFrames(callFrames),
-      openUpvals(openUpvals), enableGC(false) {
-  for (double i{LISP_INT_CACHE_MIN}; i <= LISP_INT_CACHE_MAX; i++) {
+      openUpvals(openUpvals), enableGC(false),
+      gcHeapSize(FREESTORE_INIT_HEAP_SIZE) {
+  for (double i{FREESTORE_INT_CACHE_MIN}; i <= FREESTORE_INT_CACHE_MAX; i++) {
     intCache.push_back(std::make_unique<Num>(i));
   }
 }
