@@ -76,7 +76,7 @@ int execFile(const std::string filePath, VM &vm) {
     try {
       if (getFileInput(fs, lines)) {
         Compiler compiler(lines, vm);
-        auto main = compiler.compile();
+        const auto &main = compiler.compile();
         vm.evalWithGC(main);
       } else {
         break;
@@ -132,7 +132,7 @@ int repl::repl() {
     try {
       if (getConsoleInput(lines, "lisp> ", "  ... ")) {
         Compiler compiler(lines, vm);
-        auto main = compiler.compile();
+        const auto &main = compiler.compile();
         const auto &res = vm.evalWithGC(main);
         std::cout << res << std::endl;
       } else {

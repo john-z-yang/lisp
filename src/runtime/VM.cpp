@@ -4,6 +4,8 @@
 #include "../sexpr/SExprs.hpp"
 #include "../sexpr/cast.cpp"
 #include "CppFnImpls.hpp"
+#include "FreeStore.hpp"
+#include "GCGuard.hpp"
 #include "StackPtr.hpp"
 #include <algorithm>
 #include <exception>
@@ -17,11 +19,12 @@ using namespace runtime;
 using namespace sexpr;
 
 const SExpr &VM::eval(const Fn &main, bool withGC) {
+  stack.push_back(freeStore.alloc<Closure>(main));
   try {
-    stack.push_back(alloc<Closure>(main));
-
-    enableGC = withGC;
-
+    if (withGC) {
+      auto gcGuard = freeStore.startGC();
+      return exec(main);
+    }
     return exec(main);
   } catch (std::exception &e) {
     std::stringstream ss;
@@ -30,7 +33,7 @@ const SExpr &VM::eval(const Fn &main, bool withGC) {
     reset();
     throw re;
   }
-  return alloc<Nil>();
+  return freeStore.alloc<Nil>();
 }
 
 const SExpr &VM::exec(const Fn &main) {
@@ -71,7 +74,7 @@ MAKE_CLOSURE : {
       upvalues.push_back(CUR_CLOSURE().upvalues[idx]);
     }
   }
-  stack.push_back(alloc<Closure>(fnAtom, upvalues));
+  stack.push_back(freeStore.alloc<Closure>(fnAtom, upvalues));
 }
   DISPATCH();
 CALL : {
@@ -145,20 +148,19 @@ POP_JUMP_IF_FALSE : {
   DISPATCH();
 }
 MAKE_LIST : {
-  const auto gcSetting = enableGC;
-  enableGC = false;
+  {
+    auto gcGuard = freeStore.pauseGC();
 
-  const auto n = stack.size() - BASE_PTR() - 1;
+    const auto n = stack.size() - BASE_PTR() - 1;
+    const auto &list = makeList(n);
+    stack.erase(stack.end() - n, stack.end());
+    stack.push_back(list);
+  }
 
-  const auto &list = makeList(n);
-  stack.erase(stack.end() - n, stack.end());
-  stack.push_back(list);
-
-  enableGC = gcSetting;
   DISPATCH();
 }
 MAKE_NIL : {
-  stack.push_back(alloc<Nil>());
+  stack.push_back(freeStore.alloc<Nil>());
   DISPATCH();
 }
 
@@ -205,9 +207,9 @@ const SExpr &VM::peak(StackPtr distance) {
 
 const SExpr &VM::makeList(StackPtr n) {
   if (n == 0) {
-    return alloc<Nil>();
+    return freeStore.alloc<Nil>();
   }
-  return alloc<SExprs>(*(stack.end() - n), makeList(n - 1));
+  return freeStore.alloc<SExprs>(*(stack.end() - n), makeList(n - 1));
 }
 
 const SExpr &VM::eval(const Fn &main) {
@@ -223,82 +225,13 @@ const SExpr &VM::evalWithGC(const Fn &main) {
 void VM::reset() {
   stack.clear();
   callFrames.clear();
-  enableGC = false;
 }
 
-void VM::gc() {
-  black.clear();
-
-  markGlobals();
-  markStack();
-  markCallFrames();
-  markOpenUpvalues();
-
-  while (grey.size() > 0) {
-    const auto sexpr = grey.front();
-    black.emplace(sexpr);
-    grey.pop_front();
-    trace(*sexpr);
-  }
-  std::erase_if(
-      heap, [&](const auto &unique) { return !black.contains(unique.get()); });
-}
-void VM::mark(const SExpr &sexpr) {
-  if (!black.contains(&sexpr)) {
-    grey.push_back(&sexpr);
-  }
-}
-void VM::trace(const SExpr &sexpr) {
-  if (isa<SExprs>(sexpr)) {
-    const auto &sexprs = cast<SExprs>(sexpr);
-    mark(sexprs.first);
-    mark(sexprs.rest);
-    return;
-  }
-  if (isa<Fn>(sexpr)) {
-    const auto &fnAtom = cast<Fn>(sexpr);
-    std::for_each(fnAtom.code.consts.begin(), fnAtom.code.consts.end(),
-                  [&](const auto &sexpr) { mark(sexpr); });
-    return;
-  }
-  if (isa<Closure>(sexpr)) {
-    const auto &closureAtom = cast<Closure>(sexpr);
-    mark(closureAtom.fnAtom);
-    std::for_each(closureAtom.upvalues.begin(), closureAtom.upvalues.end(),
-                  [&](const auto &upvalue) { mark(upvalue->get()); });
-    return;
-  }
-}
-void VM::markGlobals() {
-  for (const auto &[sym, sexpr] : globals.getSymTable()) {
-    grey.push_back(&sym.get());
-    grey.push_back(&sexpr.get());
-  }
-}
-void VM::markStack() {
-  for (const auto &sexpr : stack) {
-    grey.push_back(&sexpr.get());
-  }
-}
-void VM::markCallFrames() {
-  for (const auto &callFrame : callFrames) {
-    grey.push_back(&callFrame.closure);
-  }
-}
-void VM::markOpenUpvalues() {
-  for (const auto &[_, openUpvalue] : openUpvals) {
-    grey.push_back(&openUpvalue->get());
-  }
-}
-
-VM::VM() : enableGC(false), gcHeapSize(LISP_GC_INIT_HEAP_SIZE) {
-  for (double i{LISP_INT_CACHE_MIN}; i <= LISP_INT_CACHE_MAX; i++) {
-    intCache.push_back(std::make_unique<Num>(i));
-  }
-
+VM::VM() : freeStore(globals, stack, callFrames, openUpvals) {
 #define BIND_NATIVE_FN(sym, func, argc, isVariadic)                            \
   do {                                                                         \
-    globals.def(alloc<Sym>(sym), alloc<NatFn>(&func, argc, isVariadic));       \
+    globals.def(freeStore.alloc<Sym>(sym),                                     \
+                freeStore.alloc<NatFn>(&func, argc, isVariadic));              \
   } while (false)
 
   BIND_NATIVE_FN("sym?", lispIsSym, 1, false);

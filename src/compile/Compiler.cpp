@@ -58,7 +58,7 @@ const SExprs &Compiler::parse() {
   if (it != tokens.end()) {
     handleUnexpectedToken(*it, source[it->srcLoc.row - 1]);
   }
-  return vm.alloc<SExprs>(res, vm.alloc<Nil>());
+  return vm.freeStore.alloc<SExprs>(res, vm.freeStore.alloc<Nil>());
 }
 
 const SExpr &Compiler::parse(TokenIter &it, const TokenIter &end) {
@@ -71,9 +71,10 @@ const SExpr &Compiler::parse(TokenIter &it, const TokenIter &end) {
   }
   if (token.str == "'" || token.str == "`" || token.str == "," ||
       token.str == ",@") {
-    const auto &rest = vm.alloc<SExprs>(parse(it, end), vm.alloc<Nil>());
+    const auto &rest =
+        vm.freeStore.alloc<SExprs>(parse(it, end), vm.freeStore.alloc<Nil>());
     srcMap.insert({&rest, {token.srcLoc.row, token.srcLoc.col}});
-    const auto &sExprs = vm.alloc<SExprs>(parseAtom(token), rest);
+    const auto &sExprs = vm.freeStore.alloc<SExprs>(parseAtom(token), rest);
     srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col}});
     return sExprs;
   }
@@ -86,14 +87,14 @@ const SExpr &Compiler::parseSexprs(TokenIter &it, const TokenIter &end) {
   auto token = *it;
   if (token.str == ")") {
     it += 1;
-    const auto &nil = vm.alloc<Nil>();
+    const auto &nil = vm.freeStore.alloc<Nil>();
     srcMap.insert({&nil, {token.srcLoc.row, token.srcLoc.col - 1}});
     return nil;
   } else if (token.str == "(") {
     it += 1;
     const auto &first = parseSexprs(it, end);
     const auto &rest = parseSexprs(it, end);
-    const auto &sExprs = vm.alloc<SExprs>(first, rest);
+    const auto &sExprs = vm.freeStore.alloc<SExprs>(first, rest);
     srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col - 1}});
     return sExprs;
   }
@@ -110,42 +111,42 @@ const SExpr &Compiler::parseList(TokenIter &it, const TokenIter &end) {
       handleSyntaxError(dotGrammer, "datum", rest);
     }
     it += 1;
-    const auto &sExprs = vm.alloc<SExprs>(first, rest);
+    const auto &sExprs = vm.freeStore.alloc<SExprs>(first, rest);
     srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col - 1}});
     return sExprs;
   }
   const auto &rest = parseSexprs(it, end);
-  const auto &sExprs = vm.alloc<SExprs>(first, rest);
+  const auto &sExprs = vm.freeStore.alloc<SExprs>(first, rest);
   srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col - 1}});
   return sExprs;
 }
 
 const SExpr &Compiler::parseAtom(Token token) {
   if (isNum(token.str)) {
-    return vm.alloc<Num>(std::stod(token.str));
+    return vm.freeStore.alloc<Num>(std::stod(token.str));
   }
   if (token.str.front() == '\"' && token.str.back() == '\"') {
-    return vm.alloc<String>(token.str);
+    return vm.freeStore.alloc<String>(token.str);
   }
   if (token.str == "#t") {
-    return vm.alloc<Bool>(true);
+    return vm.freeStore.alloc<Bool>(true);
   }
   if (token.str == "#f") {
-    return vm.alloc<Bool>(false);
+    return vm.freeStore.alloc<Bool>(false);
   }
   if (token.str == "'") {
-    return vm.alloc<Sym>("quote");
+    return vm.freeStore.alloc<Sym>("quote");
   }
   if (token.str == "`") {
-    return vm.alloc<Sym>("quasiquote");
+    return vm.freeStore.alloc<Sym>("quasiquote");
   }
   if (token.str == ",") {
-    return vm.alloc<Sym>("unquote");
+    return vm.freeStore.alloc<Sym>("unquote");
   }
   if (token.str == ",@") {
-    return vm.alloc<Sym>("unquote-splicing");
+    return vm.freeStore.alloc<Sym>("unquote-splicing");
   }
-  return vm.alloc<Sym>(token.str);
+  return vm.freeStore.alloc<Sym>(token.str);
 }
 
 void Compiler::handleUnexpectedToken(const Token &token,
@@ -526,7 +527,7 @@ const SExpr &Compiler::expandMacro(const SExpr &sExpr) {
   fexpr.pushCode(argc, lineNum);
   fexpr.pushCode(OpCode::RETURN, lineNum);
 
-  const auto &res = vm.eval(vm.alloc<Fn>(0, 0, fexpr));
+  const auto &res = vm.eval(vm.freeStore.alloc<Fn>(0, 0, fexpr));
 
   traverse(res, [&](const auto &sExpr) {
     srcMap.insert({&sExpr, {lineNum, colNum}});
@@ -546,8 +547,8 @@ void Compiler::handleSyntaxError(const std::string grammar,
 }
 
 Compiler::Compiler(std::vector<std::string> source, VM &vm)
-    : vm(vm), enclosing(nullptr), source(source), params(vm.alloc<Nil>()),
-      body(parse()), stackOffset(1) {}
+    : vm(vm), enclosing(nullptr), source(source),
+      params(vm.freeStore.alloc<Nil>()), body(parse()), stackOffset(1) {}
 
 const Fn &Compiler::compile() {
   const auto lineNum = srcMap[&body].row;
@@ -563,7 +564,7 @@ const Fn &Compiler::compile() {
   });
   compileRet();
 
-  return vm.alloc<Fn>(countParams(), upValues.size(), code);
+  return vm.freeStore.alloc<Fn>(countParams(), upValues.size(), code);
 }
 
 void Compiler::verifyLex(std::string &line, const unsigned int lineNum,

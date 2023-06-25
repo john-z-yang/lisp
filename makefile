@@ -26,7 +26,7 @@ _DEPS = code/Code.hpp \
     compile/Compiler.hpp \
 	error/RuntimeError.hpp error/SyntaxError.hpp error/TypeError.hpp \
 	repl/repl.hpp \
-	runtime/Env.hpp runtime/CppFnImpls.hpp runtime/Upvalue.hpp runtime/VM.hpp \
+	runtime/Env.hpp runtime/FreeStore.hpp runtime/GCGuard.hpp runtime/CppFnImpls.hpp runtime/Upvalue.hpp runtime/VM.hpp \
 	sexpr/Atom.hpp sexpr/Bool.hpp sexpr/Closure.hpp sexpr/Fn.hpp sexpr/Num.hpp \
 	sexpr/NatFn.hpp sexpr/Nil.hpp sexpr/SExpr.hpp sexpr/SExprs.hpp \
 	sexpr/String.hpp sexpr/Sym.hpp

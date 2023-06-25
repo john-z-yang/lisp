@@ -23,11 +23,11 @@ using namespace runtime;
     ++params;                                                                  \
     for (uint8_t i{1}; i < argc; ++i) {                                        \
       if (!(prev op cast<Num>(params->get()).val)) {                           \
-        return vm.alloc<Bool>(false);                                          \
+        return vm.freeStore.alloc<Bool>(false);                                \
       }                                                                        \
       ++params;                                                                \
     }                                                                          \
-    return vm.alloc<Bool>(true);                                               \
+    return vm.freeStore.alloc<Bool>(true);                                     \
   }
 
 #define MATH_CUM_OP(name, op, init)                                            \
@@ -37,13 +37,13 @@ using namespace runtime;
       res op cast<Num>(params->get()).val;                                     \
       ++params;                                                                \
     }                                                                          \
-    return vm.alloc<Num>(res);                                                 \
+    return vm.freeStore.alloc<Num>(res);                                       \
   }
 
 #define MATH_DIM_OP(name, op, unaryOp)                                         \
   const SExpr &name(StackIter params, const uint8_t argc, VM &vm) {            \
     if (argc == 1) {                                                           \
-      return vm.alloc<Num>(unaryOp cast<Num>(params->get()).val);              \
+      return vm.freeStore.alloc<Num>(unaryOp cast<Num>(params->get()).val);    \
     }                                                                          \
     auto res = cast<Num>(params->get()).val;                                   \
     ++params;                                                                  \
@@ -51,12 +51,12 @@ using namespace runtime;
       res op cast<Num>(params->get()).val;                                     \
       ++params;                                                                \
     }                                                                          \
-    return vm.alloc<Num>(res);                                                 \
+    return vm.freeStore.alloc<Num>(res);                                       \
   }
 
 #define PRED_OP(name, cond)                                                    \
   const SExpr &name(StackIter params, const uint8_t argc, VM &vm) {            \
-    return vm.alloc<Bool>(cond);                                               \
+    return vm.freeStore.alloc<Bool>(cond);                                     \
   }
 
 PRED_OP(runtime::lispIsSym, isa<Sym>(params->get()));
@@ -66,7 +66,7 @@ const SExpr &runtime::lispGenSym(StackIter params, const uint8_t argc, VM &vm) {
   std::stringstream ss;
   ss << ";gensym-" << genSymCnt;
   genSymCnt += 1;
-  return vm.alloc<Sym>(ss.str());
+  return vm.freeStore.alloc<Sym>(ss.str());
 }
 
 PRED_OP(runtime::lispIsNum, isa<Num>(params->get()));
@@ -80,18 +80,18 @@ MATH_CUM_OP(runtime::lispMult, *=, 1.0);
 MATH_DIM_OP(runtime::lispSub, -=, 0.0 -);
 MATH_DIM_OP(runtime::lispDiv, /=, 1.0 /);
 const SExpr &runtime::lispAbs(StackIter params, const uint8_t argc, VM &vm) {
-  return vm.alloc<Num>(abs(cast<Num>(params->get()).val));
+  return vm.freeStore.alloc<Num>(abs(cast<Num>(params->get()).val));
 }
 const SExpr &runtime::lispMod(StackIter params, const uint8_t argc, VM &vm) {
   const auto lhs = cast<Num>(params->get()).val;
   ++params;
   const auto rhs = cast<Num>(params->get()).val;
-  return vm.alloc<Num>(std::fmod(lhs, rhs));
+  return vm.freeStore.alloc<Num>(std::fmod(lhs, rhs));
 }
 
 PRED_OP(runtime::lispIsStr, isa<String>(params->get()));
 const SExpr &runtime::lispStrLen(StackIter params, const uint8_t argc, VM &vm) {
-  return vm.alloc<Num>(cast<String>(params->get()).unescaped.size());
+  return vm.freeStore.alloc<Num>(cast<String>(params->get()).unescaped.size());
 }
 const SExpr &runtime::lispStrSub(StackIter params, const uint8_t argc, VM &vm) {
   const auto &str = cast<String>(params->get());
@@ -106,7 +106,7 @@ const SExpr &runtime::lispStrSub(StackIter params, const uint8_t argc, VM &vm) {
         << ")";
     throw std::invalid_argument(ess.str());
   }
-  return vm.alloc<String>(ss.str());
+  return vm.freeStore.alloc<String>(ss.str());
 }
 const SExpr &runtime::lispStrCon(StackIter params, const uint8_t argc, VM &vm) {
   std::stringstream ss;
@@ -116,7 +116,7 @@ const SExpr &runtime::lispStrCon(StackIter params, const uint8_t argc, VM &vm) {
     ++params;
   }
   ss << "\"";
-  return vm.alloc<String>(ss.str());
+  return vm.freeStore.alloc<String>(ss.str());
 }
 const SExpr &runtime::lispToStr(StackIter params, const uint8_t argc, VM &vm) {
   if (isa<String>(params->get())) {
@@ -129,13 +129,13 @@ const SExpr &runtime::lispToStr(StackIter params, const uint8_t argc, VM &vm) {
     ++params;
   }
   ss << "\"";
-  return vm.alloc<String>(ss.str());
+  return vm.freeStore.alloc<String>(ss.str());
 }
 
 PRED_OP(runtime::lispIsNull, isa<Nil>(params->get()));
 PRED_OP(runtime::lispIsCons, isa<SExprs>(params->get()));
 const SExpr &runtime::lispCons(StackIter params, const uint8_t argc, VM &vm) {
-  return vm.alloc<SExprs>(params->get(), *(params + 1));
+  return vm.freeStore.alloc<SExprs>(params->get(), *(params + 1));
 }
 const SExpr &runtime::lispCar(StackIter params, const uint8_t argc, VM &vm) {
   return cast<SExprs>(params->get()).first;
@@ -146,7 +146,7 @@ const SExpr &runtime::lispCdr(StackIter params, const uint8_t argc, VM &vm) {
 
 const SExpr &runtime::lispDis(StackIter params, const uint8_t argc, VM &vm) {
   cast<Closure>(params->get()).dissassemble(std::cout);
-  return vm.alloc<Nil>();
+  return vm.freeStore.alloc<Nil>();
 }
 const SExpr &runtime::lispDisplay(StackIter params, const uint8_t argc,
                                   VM &vm) {
@@ -156,7 +156,7 @@ const SExpr &runtime::lispDisplay(StackIter params, const uint8_t argc,
   } else {
     std::cout << params->get() << std::endl;
   }
-  return vm.alloc<Nil>();
+  return vm.freeStore.alloc<Nil>();
 }
 
 const SExpr &runtime::lispQuit(StackIter params, const uint8_t argc, VM &vm) {
@@ -170,15 +170,15 @@ const SExpr &runtime::lispError(StackIter params, const uint8_t argc, VM &vm) {
 }
 
 const SExpr &runtime::lispEq(StackIter params, const uint8_t argc, VM &vm) {
-  return vm.alloc<Bool>(&params->get() == &(params + 1)->get());
+  return vm.freeStore.alloc<Bool>(&params->get() == &(params + 1)->get());
 }
 const SExpr &runtime::lispEqv(StackIter params, const uint8_t argc, VM &vm) {
-  return vm.alloc<Bool>(params->get() == *(params + 1));
+  return vm.freeStore.alloc<Bool>(params->get() == *(params + 1));
 }
 
 const SExpr &runtime::lispIsProc(StackIter params, const uint8_t argc, VM &vm) {
-  return vm.alloc<Bool>(isa<Closure>(params->get()) ||
-                        isa<NatFn>(params->get()));
+  return vm.freeStore.alloc<Bool>(isa<Closure>(params->get()) ||
+                                  isa<NatFn>(params->get()));
 }
 
 #undef MATH_CMP_OP
