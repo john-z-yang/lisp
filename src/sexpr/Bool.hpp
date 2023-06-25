@@ -15,8 +15,8 @@ protected:
   static Bool _true;
   static Bool _false;
 
-  std::string toString() const;
-  bool equals(const SExpr &other) const;
+  std::string toString() const override;
+  bool equals(const SExpr &other) const override;
 
 public:
   static Bool &getInstance(const bool val);

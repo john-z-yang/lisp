@@ -12,8 +12,8 @@ protected:
 
   static Nil instance;
 
-  std::string toString() const;
-  bool equals(const SExpr &other) const;
+  std::string toString() const override;
+  bool equals(const SExpr &other) const override;
 
 public:
   static Nil &getInstance();
