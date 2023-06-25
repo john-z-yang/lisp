@@ -10,7 +10,7 @@ namespace sexpr {
 
 class Bool final : public Atom {
 protected:
-  Bool(const bool val);
+  explicit Bool(const bool val);
 
   static Bool _true;
   static Bool _false;

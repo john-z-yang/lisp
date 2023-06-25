@@ -16,7 +16,7 @@ public:
   const std::string val;
   const size_t hash;
 
-  Sym(std::string val);
+  explicit Sym(std::string val);
 
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;

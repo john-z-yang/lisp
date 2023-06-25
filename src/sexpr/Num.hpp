@@ -15,7 +15,7 @@ protected:
 public:
   const double val;
 
-  Num(const double val);
+  explicit Num(const double val);
 
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;

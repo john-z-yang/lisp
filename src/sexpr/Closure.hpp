@@ -16,7 +16,7 @@ protected:
   bool equals(const SExpr &other) const;
 
 public:
-  Closure(const Fn &fnAtom);
+  explicit Closure(const Fn &fnAtom);
   Closure(const Fn &fnAtom,
           const std::vector<std::shared_ptr<runtime::Upvalue>> upvalues);
 

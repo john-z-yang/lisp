@@ -19,7 +19,7 @@ public:
   const std::string literal;
   const std::string unescaped;
 
-  String(const std::string literal);
+  explicit String(const std::string literal);
 
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;

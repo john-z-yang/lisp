@@ -7,7 +7,7 @@ namespace sexpr {
 
 class Atom : public SExpr {
 public:
-  Atom(SExpr::Type type);
+  explicit Atom(SExpr::Type type);
 
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;
