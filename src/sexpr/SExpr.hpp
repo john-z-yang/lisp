@@ -22,6 +22,10 @@ public:
 
   SExpr(SExpr::Type type);
   virtual ~SExpr();
+
+  SExpr(const SExpr &) = delete;
+  SExpr(const SExpr &&) = delete;
+  SExpr &operator=(const SExpr &) = delete;
 };
 
 std::ostream &operator<<(std::ostream &o, const SExpr &sExpr);

@@ -46,7 +46,7 @@ std::string Closure::toString() const {
 
 bool Closure::equals(const SExpr &other) const {
   if (isa<Closure>(other)) {
-    const auto closure = cast<Closure>(other);
+    const auto &closure = cast<Closure>(other);
     if (fnAtom != closure.fnAtom) {
       return false;
     }

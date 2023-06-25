@@ -26,9 +26,6 @@ public:
   static bool toBool(const SExpr &sExpr);
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;
-
-  Bool(Bool &other) = delete;
-  void operator=(const Bool &) = delete;
 };
 
 } // namespace sexpr

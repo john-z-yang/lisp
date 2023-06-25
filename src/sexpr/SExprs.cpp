@@ -27,7 +27,7 @@ std::string SExprs::toString() const {
 
 bool SExprs::equals(const SExpr &other) const {
   if (isa<SExprs>(other)) {
-    const auto sExprs = cast<SExprs>(other);
+    const auto &sExprs = cast<SExprs>(other);
     return first.equals(sExprs.first) && rest.equals(sExprs.rest);
   }
   return false;
