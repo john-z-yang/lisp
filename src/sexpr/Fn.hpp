@@ -14,14 +14,14 @@ protected:
 public:
   Fn(const int8_t arity, const unsigned int numUpvals, const code::Code code);
 
-  const int8_t arity;
   const unsigned int numUpvals;
+  const int8_t arity;
   const code::Code code;
 
   std::ostream &dissassemble(std::ostream &o) const;
 
   static bool classOf(const SExpr &sExpr);
-  static const std::string typeName;
+  static constexpr std::string getTypeName() { return "<Function>"; }
 };
 
 } // namespace sexpr

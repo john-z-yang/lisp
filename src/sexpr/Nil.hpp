@@ -10,16 +10,15 @@ class Nil final : public Atom {
 protected:
   Nil();
 
-  static Nil instance;
-
   std::string toString() const override;
   bool equals(const SExpr &other) const override;
 
+  static Nil instance;
+
 public:
   static Nil &getInstance();
-
   static bool classOf(const SExpr &sExpr);
-  static const std::string typeName;
+  static constexpr std::string getTypeName() { return "()"; }
 };
 
 } // namespace sexpr

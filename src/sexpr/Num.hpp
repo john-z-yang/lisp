@@ -13,12 +13,12 @@ protected:
   bool equals(const SExpr &other) const override;
 
 public:
-  const double val;
-
   explicit Num(const double val);
 
+  const double val;
+
   static bool classOf(const SExpr &sExpr);
-  static const std::string typeName;
+  static constexpr std::string getTypeName() { return "<Number>"; }
 };
 
 } // namespace sexpr

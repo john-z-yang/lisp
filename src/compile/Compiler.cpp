@@ -171,7 +171,7 @@ Compiler::Compiler(const std::vector<std::string> source, SrcMap sourceLoc,
     locals.push_back({cast<Sym>(param), stackOffset, false});
     stackOffset += 1;
   } else if (!isa<Nil>(param)) {
-    handleSyntaxError(lambdaGrammar, Nil::typeName, param);
+    handleSyntaxError(lambdaGrammar, Nil::getTypeName(), param);
   }
 }
 

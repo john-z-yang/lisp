@@ -12,10 +12,8 @@ std::string Nil::toString() const { return "()"; }
 
 bool Nil::equals(const SExpr &other) const { return isa<Nil>(other); }
 
+Nil Nil::instance;
+
 Nil &Nil::getInstance() { return instance; }
 
 bool Nil::classOf(const SExpr &sExpr) { return sExpr.type == SExpr::Type::NIL; }
-
-Nil Nil::instance;
-
-const std::string Nil::typeName = "()";

@@ -16,13 +16,13 @@ protected:
   bool equals(const SExpr &other) const override;
 
 public:
+  explicit String(const std::string literal);
+
   const std::string literal;
   const std::string unescaped;
 
-  explicit String(const std::string literal);
-
   static bool classOf(const SExpr &sExpr);
-  static const std::string typeName;
+  static constexpr std::string getTypeName() { return "<String>"; }
 };
 
 } // namespace sexpr

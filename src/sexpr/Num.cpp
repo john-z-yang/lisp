@@ -5,8 +5,6 @@
 
 using namespace sexpr;
 
-Num::Num(const double val) : Atom(SExpr::Type::NUM), val(val) {}
-
 std::string Num::toString() const {
   std::stringstream ss;
   ss << val;
@@ -20,6 +18,6 @@ bool Num::equals(const SExpr &other) const {
   return false;
 }
 
-bool Num::classOf(const SExpr &sExpr) { return sExpr.type == SExpr::Type::NUM; }
+Num::Num(const double val) : Atom(SExpr::Type::NUM), val(val) {}
 
-const std::string Num::typeName = "<Number>";
+bool Num::classOf(const SExpr &sExpr) { return sExpr.type == SExpr::Type::NUM; }

@@ -19,13 +19,12 @@ protected:
   bool equals(const SExpr &other) const override;
 
 public:
-  static Bool &getInstance(const bool val);
-
   const bool val;
 
+  static Bool &getInstance(const bool val);
   static bool toBool(const SExpr &sExpr);
   static bool classOf(const SExpr &sExpr);
-  static const std::string typeName;
+  static constexpr std::string getTypeName() { return "<Boolean>"; }
 };
 
 } // namespace sexpr

@@ -16,9 +16,9 @@ template <typename To, typename From> const To &cast(const From &f) {
     return static_cast<const To &>(f);
   }
   std::stringstream ss;
-  ss << "Mismatched types. Expected " << To::typeName << ", but got " << f
+  ss << "Mismatched types. Expected " << To::getTypeName() << ", but got " << f
      << ".";
-  throw error::TypeError(ss.str(), To::typeName, f);
+  throw error::TypeError(ss.str(), To::getTypeName(), f);
 }
 
 } // namespace sexpr

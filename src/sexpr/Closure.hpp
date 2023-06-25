@@ -20,15 +20,14 @@ public:
   Closure(const Fn &fnAtom,
           const std::vector<std::shared_ptr<runtime::Upvalue>> upvalues);
 
-  void assertArity(const uint8_t arity) const;
-
   const Fn &fnAtom;
   const std::vector<std::shared_ptr<runtime::Upvalue>> upvalues;
 
+  void assertArity(const uint8_t arity) const;
   std::ostream &dissassemble(std::ostream &o) const;
 
   static bool classOf(const SExpr &sExpr);
-  static const std::string typeName;
+  static constexpr std::string getTypeName() { return "<Closure>"; }
 };
 
 } // namespace sexpr

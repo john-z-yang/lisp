@@ -5,10 +5,6 @@
 
 using namespace sexpr;
 
-Fn::Fn(const int8_t arity, const unsigned int numUpvals, const code::Code code)
-    : Atom(SExpr::Type::FUNCTION), arity(arity), numUpvals(numUpvals),
-      code(code) {}
-
 std::string Fn::toString() const {
   std::stringstream ss;
   ss << "<Function at " << this << ">";
@@ -16,6 +12,10 @@ std::string Fn::toString() const {
 }
 
 bool Fn::equals(const SExpr &other) const { return this == &other; }
+
+Fn::Fn(const int8_t arity, const unsigned int numUpvals, const code::Code code)
+    : Atom(SExpr::Type::FUNCTION), numUpvals(numUpvals), arity(arity),
+      code(code) {}
 
 std::ostream &Fn::dissassemble(std::ostream &o) const {
   o << "<Function at " << this << ", arity: " << unsigned(arity)
@@ -33,5 +33,3 @@ std::ostream &Fn::dissassemble(std::ostream &o) const {
 bool Fn::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::FUNCTION;
 }
-
-const std::string Fn::typeName = "<Function>";

@@ -8,9 +8,6 @@
 
 using namespace sexpr;
 
-SExprs::SExprs(const SExpr &first, const SExpr &rest)
-    : SExpr(SExpr::Type::SEXPRS), first(first), rest(rest) {}
-
 std::string SExprs::toString() const {
   std::string str = "";
   str += isa<SExprs>(first) ? "(" : "";
@@ -33,8 +30,9 @@ bool SExprs::equals(const SExpr &other) const {
   return false;
 }
 
+SExprs::SExprs(const SExpr &first, const SExpr &rest)
+    : SExpr(SExpr::Type::SEXPRS), first(first), rest(rest) {}
+
 bool SExprs::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::SEXPRS;
 }
-
-const std::string SExprs::typeName = "<S-expressions>";

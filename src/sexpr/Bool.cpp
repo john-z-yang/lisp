@@ -7,6 +7,9 @@ using namespace sexpr;
 
 Bool::Bool(const bool val) : Atom(SExpr::Type::BOOL), val(val) {}
 
+Bool Bool::_true(true);
+Bool Bool::_false(false);
+
 std::string Bool::toString() const { return (val) ? "#t" : "#f"; }
 
 bool Bool::equals(const SExpr &other) const {
@@ -33,8 +36,3 @@ bool Bool::toBool(const SExpr &sExpr) {
 bool Bool::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::BOOL;
 }
-
-Bool Bool::_true(true);
-Bool Bool::_false(false);
-
-const std::string Bool::typeName = "<Boolean>";

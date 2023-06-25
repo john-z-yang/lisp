@@ -8,6 +8,26 @@
 using namespace sexpr;
 using namespace runtime;
 
+std::string Closure::toString() const {
+  std::stringstream ss;
+  ss << "<Closure at " << this << ">";
+  return ss.str();
+}
+
+bool Closure::equals(const SExpr &other) const {
+  if (isa<Closure>(other)) {
+    const auto &closure = cast<Closure>(other);
+    if (fnAtom != closure.fnAtom) {
+      return false;
+    }
+    return std::equal(
+        upvalues.begin(), upvalues.end(), closure.upvalues.begin(),
+        closure.upvalues.end(),
+        [](const auto &self, const auto &other) { return *self == *other; });
+  }
+  return false;
+}
+
 Closure::Closure(const Fn &fnAtom)
     : Atom(SExpr::Type::CLOSURE), fnAtom(fnAtom) {}
 
@@ -34,26 +54,4 @@ std::ostream &Closure::dissassemble(std::ostream &o) const {
 
 bool Closure::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::CLOSURE;
-}
-
-const std::string Closure::typeName = "<Closure>";
-
-std::string Closure::toString() const {
-  std::stringstream ss;
-  ss << "<Closure at " << this << ">";
-  return ss.str();
-}
-
-bool Closure::equals(const SExpr &other) const {
-  if (isa<Closure>(other)) {
-    const auto &closure = cast<Closure>(other);
-    if (fnAtom != closure.fnAtom) {
-      return false;
-    }
-    return std::equal(
-        upvalues.begin(), upvalues.end(), closure.upvalues.begin(),
-        closure.upvalues.end(),
-        [](const auto &self, const auto &other) { return *self == *other; });
-  }
-  return false;
 }
