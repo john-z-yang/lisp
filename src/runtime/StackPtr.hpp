@@ -2,11 +2,13 @@
 #define LISP_SRC_RUNTIME_STACKPTR_HPP_
 
 #include "../sexpr/SExpr.hpp"
+#include <functional>
 #include <vector>
 
 namespace runtime {
 
-using StackPtr = std::vector<const sexpr::SExpr *>::size_type;
+using StackPtr =
+    std::vector<std::reference_wrapper<const sexpr::SExpr>>::size_type;
 
 } // namespace runtime
 

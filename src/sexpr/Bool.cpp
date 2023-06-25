@@ -16,15 +16,15 @@ bool Bool::equals(const SExpr &other) const {
   return false;
 }
 
-Bool *Bool::getInstance(const bool val) {
+Bool &Bool::getInstance(const bool val) {
   if (val) {
-    return &Bool::_true;
+    return Bool::_true;
   }
-  return &Bool::_false;
+  return Bool::_false;
 }
 
-bool Bool::toBool(const SExpr *sExpr) {
-  if (sExpr == &_false) {
+bool Bool::toBool(const SExpr &sExpr) {
+  if (&sExpr == &_false) {
     return false;
   }
   return true;

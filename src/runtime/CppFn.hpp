@@ -7,7 +7,7 @@
 
 namespace runtime {
 
-using CppFn = const sexpr::SExpr *(StackIter params, const uint8_t argc,
+using CppFn = const sexpr::SExpr &(StackIter params, const uint8_t argc,
                                    VM &vm);
 
 } // namespace runtime

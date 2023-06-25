@@ -13,10 +13,10 @@ protected:
   bool equals(const SExpr &other) const;
 
 public:
-  const SExpr *first;
-  const SExpr *rest;
+  const SExpr &first;
+  const SExpr &rest;
 
-  SExprs(const SExpr *first, const SExpr *rest);
+  SExprs(const SExpr &first, const SExpr &rest);
 
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;

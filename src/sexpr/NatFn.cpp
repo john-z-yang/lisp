@@ -12,7 +12,7 @@ NatFn::NatFn(CppFn fn, const uint8_t argc, const bool isVariadic)
     : Atom(SExpr::Type::NATIVE_FN), fn(fn), argc(argc), isVariadic(isVariadic) {
 }
 
-const SExpr *NatFn::invoke(StackIter params, const uint8_t incomingArgc,
+const SExpr &NatFn::invoke(StackIter params, const uint8_t incomingArgc,
                            VM &vm) const {
   if ((!isVariadic && incomingArgc != argc) ||
       (isVariadic && incomingArgc < argc)) {

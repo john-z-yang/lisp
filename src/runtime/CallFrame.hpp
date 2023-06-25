@@ -8,7 +8,7 @@
 namespace runtime {
 
 struct CallFrame {
-  const sexpr::Closure *closure;
+  const sexpr::Closure &closure;
   code::InstrPtr ip;
   runtime::StackPtr bp;
 };

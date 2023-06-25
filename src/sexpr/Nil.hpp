@@ -16,7 +16,7 @@ protected:
   bool equals(const SExpr &other) const;
 
 public:
-  static Nil *getInstance();
+  static Nil &getInstance();
 
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;

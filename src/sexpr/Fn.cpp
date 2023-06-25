@@ -22,8 +22,9 @@ std::ostream &Fn::dissassemble(std::ostream &o) const {
     << ", upvalues: " << numUpvals << ">" << std::endl
     << code << std::endl;
   for (auto i = code.consts.begin(); i != code.consts.end(); ++i) {
-    if (const auto fnAtom = dynCast<Fn>(*i)) {
-      fnAtom->dissassemble(o);
+    if (isa<Fn>(i->get())) {
+      const auto fnAtom = cast<Fn>(i->get());
+      fnAtom.dissassemble(o);
     }
   }
   return o;

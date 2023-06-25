@@ -21,8 +21,8 @@ bool Sym::classOf(const SExpr &sExpr) { return sExpr.type == SExpr::Type::SYM; }
 
 const std::string Sym::typeName = "<Symbol>";
 
-size_t Sym::HashFunction::operator()(const Sym *sym) const { return sym->hash; }
+size_t Sym::HashFunction::operator()(const Sym &sym) const { return sym.hash; }
 
-bool Sym::EqualFunction::operator()(const Sym *lhs, const Sym *rhs) const {
-  return lhs->hash == rhs->hash;
+bool Sym::EqualFunction::operator()(const Sym &lhs, const Sym &rhs) const {
+  return lhs.hash == rhs.hash;
 }

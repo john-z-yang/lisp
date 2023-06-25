@@ -16,13 +16,13 @@ protected:
   bool equals(const SExpr &other) const;
 
 public:
-  Closure(const Fn *fnAtom);
-  Closure(const Fn *fnAtom,
+  Closure(const Fn &fnAtom);
+  Closure(const Fn &fnAtom,
           const std::vector<std::shared_ptr<runtime::Upvalue>> upvalues);
 
   void assertArity(const uint8_t arity) const;
 
-  const Fn *const fnAtom;
+  const Fn &fnAtom;
   const std::vector<std::shared_ptr<runtime::Upvalue>> upvalues;
 
   std::ostream &dissassemble(std::ostream &o) const;

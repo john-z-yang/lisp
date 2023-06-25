@@ -133,8 +133,8 @@ int repl::repl() {
       if (getConsoleInput(lines, "lisp> ", "  ... ")) {
         Compiler compiler(lines, vm);
         auto main = compiler.compile();
-        const auto res = vm.evalWithGC(main);
-        std::cout << *res << std::endl;
+        const auto &res = vm.evalWithGC(main);
+        std::cout << res << std::endl;
       } else {
         std::cout << std::endl << "Farewell." << std::endl;
         return EXIT_SUCCESS;

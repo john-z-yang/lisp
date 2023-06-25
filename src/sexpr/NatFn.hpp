@@ -22,7 +22,7 @@ public:
 
   NatFn(runtime::CppFn fn, const uint8_t argc, const bool isVariadic);
 
-  const SExpr *invoke(runtime::StackIter params, const uint8_t incomingArgc,
+  const SExpr &invoke(runtime::StackIter params, const uint8_t incomingArgc,
                       runtime::VM &vm) const;
   static bool classOf(const SExpr &sExpr);
   static const std::string typeName;

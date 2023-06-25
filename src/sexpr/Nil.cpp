@@ -12,7 +12,7 @@ std::string Nil::toString() const { return "()"; }
 
 bool Nil::equals(const SExpr &other) const { return isa<Nil>(other); }
 
-Nil *Nil::getInstance() { return &instance; }
+Nil &Nil::getInstance() { return instance; }
 
 bool Nil::classOf(const SExpr &sExpr) { return sExpr.type == SExpr::Type::NIL; }
 

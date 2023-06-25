@@ -28,7 +28,7 @@ class VM {
 private:
   Env globals;
 
-  std::vector<const sexpr::SExpr *> stack;
+  std::vector<std::reference_wrapper<const sexpr::SExpr>> stack;
   std::vector<CallFrame> callFrames;
   std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> openUpvals;
 
@@ -41,18 +41,18 @@ private:
   std::unordered_set<const sexpr::SExpr *> black;
   std::deque<const sexpr::SExpr *> grey;
 
-  const sexpr::SExpr *eval(const sexpr::Fn *main, bool withGC);
-  const sexpr::SExpr *exec(const sexpr::Fn *main);
+  const sexpr::SExpr &eval(const sexpr::Fn &main, bool withGC);
+  const sexpr::SExpr &exec(const sexpr::Fn &main);
 
   void call(const uint8_t argc);
   std::shared_ptr<Upvalue> captureUpvalue(StackPtr pos);
-  const sexpr::SExpr *peak(StackPtr distance);
-  const sexpr::SExpr *makeList(StackPtr size);
+  const sexpr::SExpr &peak(StackPtr distance);
+  const sexpr::SExpr &makeList(StackPtr size);
   void reset();
 
   void gc();
-  void mark(const sexpr::SExpr *sexpr);
-  void trace(const sexpr::SExpr *sexpr);
+  void mark(const sexpr::SExpr &sexpr);
+  void trace(const sexpr::SExpr &sexpr);
   void markGlobals();
   void markStack();
   void markCallFrames();
@@ -61,41 +61,41 @@ private:
 public:
   VM();
 
-  const sexpr::SExpr *evalWithGC(const sexpr::Fn *main);
-  const sexpr::SExpr *eval(const sexpr::Fn *main);
+  const sexpr::SExpr &evalWithGC(const sexpr::Fn &main);
+  const sexpr::SExpr &eval(const sexpr::Fn &main);
 
-  void defMacro(const sexpr::Sym *sym);
-  bool isMacro(const sexpr::Sym *sym);
+  void defMacro(const sexpr::Sym &sym);
+  bool isMacro(const sexpr::Sym &sym);
 
-  template <typename T, typename... Args> const T *alloc(Args &&...args) {
+  template <typename T, typename... Args> const T &alloc(Args &&...args) {
     if (enableGC && heap.size() > gcHeapSize) {
       gc();
       gcHeapSize = heap.size() * LISP_GC_HEAP_GROWTH_FACTOR;
     }
     auto unique = std::make_unique<const T>(std::forward<Args>(args)...);
-    const auto ptr = unique.get();
+    const auto &ref = *unique.get();
     heap.emplace_back(std::move(unique));
-    return ptr;
+    return ref;
   }
 };
 
-template <> inline const sexpr::Nil *VM::alloc() {
+template <> inline const sexpr::Nil &VM::alloc() {
   return sexpr::Nil::getInstance();
 }
-template <> inline const sexpr::Bool *VM::alloc(bool &&val) {
+template <> inline const sexpr::Bool &VM::alloc(bool &&val) {
   return sexpr::Bool::getInstance(val);
 }
-template <> inline const sexpr::Num *VM::alloc(double &val) {
+template <> inline const sexpr::Num &VM::alloc(double &val) {
   if (val >= LISP_INT_CACHE_MIN && val <= LISP_INT_CACHE_MAX &&
       floor(val) == val) {
-    return intCache.at(val - LISP_INT_CACHE_MIN).get();
+    return *intCache.at(val - LISP_INT_CACHE_MIN).get();
   }
   auto unique = std::make_unique<const sexpr::Num>(val);
-  const auto ptr = unique.get();
+  const auto &ref = *unique;
   heap.emplace_back(std::move(unique));
-  return ptr;
+  return ref;
 }
-template <> inline const sexpr::Num *VM::alloc(double &&val) {
+template <> inline const sexpr::Num &VM::alloc(double &&val) {
   return alloc<sexpr::Num>(val);
 }
 
