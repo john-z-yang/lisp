@@ -10,9 +10,15 @@ using namespace sexpr;
 using namespace runtime;
 
 void FreeStore::gc() {
-  if (!enableGC || heap.size() < gcHeapSize) {
+  if (!enableGC) {
     return;
   }
+#ifndef GC_STRESS_TEST
+  if (heap.size() < gcHeapSize) {
+    return;
+  }
+#endif
+
   black.clear();
 
   markGlobals();
