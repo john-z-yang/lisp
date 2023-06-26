@@ -4,6 +4,7 @@
 #include "CallFrame.hpp"
 #include "Env.hpp"
 #include "GCGuard.hpp"
+#include <algorithm>
 
 using namespace sexpr;
 using namespace runtime;
@@ -47,42 +48,43 @@ void FreeStore::trace(const SExpr &sexpr) {
   }
   if (isa<Fn>(sexpr)) {
     const auto &fnAtom = cast<Fn>(sexpr);
-    std::for_each(fnAtom.code.consts.begin(), fnAtom.code.consts.end(),
+    std::for_each(fnAtom.code.consts.cbegin(), fnAtom.code.consts.cend(),
                   [&](const auto &sexpr) { mark(sexpr); });
     return;
   }
   if (isa<Closure>(sexpr)) {
     const auto &closureAtom = cast<Closure>(sexpr);
     mark(closureAtom.fnAtom);
-    std::for_each(closureAtom.upvalues.begin(), closureAtom.upvalues.end(),
+    std::for_each(closureAtom.upvalues.cbegin(), closureAtom.upvalues.cend(),
                   [&](const auto &upvalue) { mark(upvalue->get()); });
     return;
   }
 }
 
 void FreeStore::markGlobals() {
-  for (const auto &[sym, sexpr] : globals.getSymTable()) {
-    grey.push_back(&sym.get());
-    grey.push_back(&sexpr.get());
-  }
+  std::for_each(globals.getSymTable().cbegin(), globals.getSymTable().cend(),
+                [&](const auto &it) {
+                  const auto &[sym, sexpr] = it;
+                  grey.push_back(&sym.get());
+                  grey.push_back(&sexpr.get());
+                });
 }
 
 void FreeStore::markStack() {
-  for (const auto &sexpr : stack) {
-    grey.push_back(&sexpr.get());
-  }
+  std::transform(stack.cbegin(), stack.cend(), std::back_inserter(grey),
+                 [](const auto &sexpr) { return &sexpr.get(); });
 }
 
 void FreeStore::markCallFrames() {
-  for (const auto &callFrame : callFrames) {
-    grey.push_back(&callFrame.closure);
-  }
+  std::transform(callFrames.cbegin(), callFrames.cend(),
+                 std::back_inserter(grey),
+                 [](const auto &callFrame) { return &callFrame.closure; });
 }
 
 void FreeStore::markOpenUpvalues() {
-  for (const auto &[_, openUpvalue] : openUpvals) {
-    grey.push_back(&openUpvalue->get());
-  }
+  std::transform(openUpvals.cbegin(), openUpvals.cend(),
+                 std::back_inserter(grey),
+                 [](const auto &it) { return &it.second->get(); });
 }
 
 FreeStore::FreeStore(

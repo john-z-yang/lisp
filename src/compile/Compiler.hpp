@@ -30,7 +30,7 @@ private:
   std::vector<std::string> source;
   SrcMap srcMap;
 
-  const sexpr::SExpr &params;
+  const sexpr::SExpr &argNames;
   const sexpr::SExprs &body;
 
   std::vector<Local> locals;
@@ -84,10 +84,10 @@ private:
 public:
   Compiler(std::vector<std::string> source, runtime::VM &vm);
 
-  static void verifyLex(std::string &line, const unsigned int lineNum,
-                        unsigned int &openParen, unsigned int &closedParen);
-
   const sexpr::Fn &compile();
+
+  static void verifyLex(const std::string &line, const unsigned int lineNum,
+                        unsigned int &openParen, unsigned int &closedParen);
 };
 
 } // namespace compile

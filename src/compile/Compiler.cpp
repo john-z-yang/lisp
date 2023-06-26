@@ -160,7 +160,7 @@ Compiler::Compiler(const std::vector<std::string> source, SrcMap sourceLoc,
                    const SExpr &param, const SExprs &body, Compiler &enclosing,
                    VM &vm)
     : vm(vm), enclosing(enclosing), source(source), srcMap(sourceLoc),
-      params(param), body(body), stackOffset(1) {
+      argNames(param), body(body), stackOffset(1) {
   if (isa<SExprs>(param)) {
     visitEach(cast<SExprs>(param), [&](const auto &sExpr) {
       const auto &sym = cast<Sym>(sExpr);
@@ -212,13 +212,13 @@ int Compiler::addUpvalue(int idx, bool isLocal) {
   return upValues.size() - 1;
 }
 
-bool Compiler::isVariadic() { return isa<Sym>(params); }
+bool Compiler::isVariadic() { return isa<Sym>(argNames); }
 
 int Compiler::countParams() {
   if (isVariadic()) {
     return -1;
   }
-  return visitEach(params, [](const auto &sExpr) {});
+  return visitEach(argNames, [](const auto &sExpr) {});
 }
 
 unsigned int Compiler::visitEach(const SExpr &sExpr, Visitor visitor) {
@@ -316,10 +316,10 @@ void Compiler::compileExpr(const SExpr &sExpr) {
 
 void Compiler::compileLambda(const SExpr &sExpr) {
   try {
-    const auto &argNames = cast<SExprs>(at(lambdaArgPos, sExpr)).first;
-    const auto &body = cast<SExprs>(at(lambdaBodyPos, sExpr));
+    const auto &lamArgNames = cast<SExprs>(at(lambdaArgPos, sExpr)).first;
+    const auto &lamBody = cast<SExprs>(at(lambdaBodyPos, sExpr));
 
-    Compiler compiler(source, srcMap, argNames, body, *this, vm);
+    Compiler compiler(source, srcMap, lamArgNames, lamBody, *this, vm);
     const auto &function = compiler.compile();
 
     const auto &lineNum = srcMap[&sExpr].row;
@@ -548,8 +548,8 @@ void Compiler::handleSyntaxError(const std::string grammar,
 }
 
 Compiler::Compiler(std::vector<std::string> source, VM &vm)
-    : vm(vm), source(source), params(vm.freeStore.alloc<Nil>()), body(parse()),
-      stackOffset(1) {}
+    : vm(vm), source(source), argNames(vm.freeStore.alloc<Nil>()),
+      body(parse()), stackOffset(1) {}
 
 const Fn &Compiler::compile() {
   const auto lineNum = srcMap[&body].row;
@@ -568,7 +568,7 @@ const Fn &Compiler::compile() {
   return vm.freeStore.alloc<Fn>(countParams(), upValues.size(), code);
 }
 
-void Compiler::verifyLex(std::string &line, const unsigned int lineNum,
+void Compiler::verifyLex(const std::string &line, const unsigned int lineNum,
                          unsigned int &openParen, unsigned int &closedParen) {
   auto tokens = tokenize(line, lineNum);
   for (auto it = tokens.begin(); it != tokens.end(); ++it) {

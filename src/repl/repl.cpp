@@ -139,9 +139,9 @@ int repl::repl() {
         std::cout << std::endl << "Farewell." << std::endl;
         return EXIT_SUCCESS;
       }
-    } catch (error::SyntaxError &se) {
+    } catch (const error::SyntaxError &se) {
       std::cerr << "In <std::cin>" << std::endl << se << std::endl;
-    } catch (error::RuntimeError &re) {
+    } catch (const error::RuntimeError &re) {
       std::cerr << "In <std::cin>" << std::endl << re << std::endl;
     }
   }
