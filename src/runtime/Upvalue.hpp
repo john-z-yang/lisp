@@ -5,6 +5,7 @@
 #include "StackPtr.hpp"
 #include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace runtime {
