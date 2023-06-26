@@ -9,7 +9,7 @@ on:
       - '**'
 
 jobs:
-  build-and-test:
+  test:
 
     runs-on: ubuntu-latest
 
@@ -22,7 +22,7 @@ jobs:
     - name: make test
       run: make test
 
-  build-and-stress-test-gc:
+  gc-stress-test:
 
     runs-on: ubuntu-latest
 
