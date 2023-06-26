@@ -12,6 +12,7 @@
 #include "Upvalue.hpp"
 #include <functional>
 #include <memory>
+#include <optional>
 #include <unordered_map>
 #include <vector>
 
@@ -24,7 +25,7 @@ private:
   using Visitor = std::function<void(const sexpr::SExpr &)>;
 
   runtime::VM &vm;
-  Compiler *const enclosing;
+  std::optional<std::reference_wrapper<Compiler>> enclosing;
 
   std::vector<std::string> source;
   SrcMap srcMap;
@@ -53,7 +54,7 @@ private:
 
   Compiler(const std::vector<std::string> source, SrcMap sourceLoc,
            const sexpr::SExpr &param, const sexpr::SExprs &body,
-           Compiler *enclosing, runtime::VM &vm);
+           Compiler &enclosing, runtime::VM &vm);
   int resolveLocal(const sexpr::Sym &sym);
   int resolveUpvalue(Compiler &caller, const sexpr::Sym &sym);
   int addUpvalue(int idx, bool isLocal);

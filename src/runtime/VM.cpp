@@ -231,7 +231,7 @@ VM::VM() : freeStore(globals, stack, callFrames, openUpvals) {
 #define BIND_NATIVE_FN(sym, func, argc, isVariadic)                            \
   do {                                                                         \
     globals.def(freeStore.alloc<Sym>(sym),                                     \
-                freeStore.alloc<NatFn>(&func, argc, isVariadic));              \
+                freeStore.alloc<NatFn>(func, argc, isVariadic));               \
   } while (false)
 
   BIND_NATIVE_FN("sym?", lispIsSym, 1, false);

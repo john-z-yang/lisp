@@ -3,6 +3,7 @@
 
 #include "../sexpr/SExpr.hpp"
 #include "StackPtr.hpp"
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -15,7 +16,7 @@ private:
   const StackPtr stackPos;
   std::vector<std::reference_wrapper<const sexpr::SExpr>> &stack;
 
-  const sexpr::SExpr *value;
+  std::optional<std::reference_wrapper<const sexpr::SExpr>> ref;
 
   bool isOpen() const;
 

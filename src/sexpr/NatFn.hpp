@@ -16,9 +16,9 @@ protected:
   bool equals(const SExpr &other) const override;
 
 public:
-  NatFn(runtime::CppFn fn, const uint8_t argc, const bool isVariadic);
+  NatFn(runtime::CppFn &fn, const uint8_t argc, const bool isVariadic);
 
-  runtime::CppFn *fn;
+  runtime::CppFn &fn;
   const uint8_t argc;
   const bool isVariadic;
 

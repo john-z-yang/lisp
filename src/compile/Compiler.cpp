@@ -157,7 +157,7 @@ void Compiler::handleUnexpectedToken(const Token &token,
 }
 
 Compiler::Compiler(const std::vector<std::string> source, SrcMap sourceLoc,
-                   const SExpr &param, const SExprs &body, Compiler *enclosing,
+                   const SExpr &param, const SExprs &body, Compiler &enclosing,
                    VM &vm)
     : vm(vm), enclosing(enclosing), source(source), srcMap(sourceLoc),
       params(param), body(body), stackOffset(1) {
@@ -186,12 +186,13 @@ int Compiler::resolveLocal(const Sym &sym) {
 }
 
 int Compiler::resolveUpvalue(Compiler &caller, const Sym &sym) {
-  if (enclosing) {
-    if (auto idx = enclosing->resolveLocal(sym); idx != -1) {
-      enclosing->locals[idx].isCaptured = true;
-      return caller.addUpvalue(enclosing->locals[idx].stackOffset, true);
+  if (enclosing.has_value()) {
+    if (auto idx = enclosing->get().resolveLocal(sym); idx != -1) {
+      enclosing->get().locals[idx].isCaptured = true;
+      return caller.addUpvalue(enclosing->get().locals[idx].stackOffset, true);
     }
-    if (auto idx = enclosing->resolveUpvalue(*enclosing, sym); idx != -1) {
+    if (auto idx = enclosing->get().resolveUpvalue(*enclosing, sym);
+        idx != -1) {
       return caller.addUpvalue(idx, false);
     }
   }
@@ -318,7 +319,7 @@ void Compiler::compileLambda(const SExpr &sExpr) {
     const auto &argNames = cast<SExprs>(at(lambdaArgPos, sExpr)).first;
     const auto &body = cast<SExprs>(at(lambdaBodyPos, sExpr));
 
-    Compiler compiler(source, srcMap, argNames, body, this, vm);
+    Compiler compiler(source, srcMap, argNames, body, *this, vm);
     const auto &function = compiler.compile();
 
     const auto &lineNum = srcMap[&sExpr].row;
@@ -389,11 +390,11 @@ void Compiler::compileDef(const SExpr &sExpr) {
     compileExpr(expr);
 
     const auto lineNum = srcMap[&sExpr].row;
-    if (enclosing == nullptr) {
+    if (enclosing.has_value()) {
+      locals.push_back({sym, stackOffset, false});
+    } else {
       code.pushCode(OpCode::DEF_SYM, lineNum);
       code.pushCode(code.pushConst(sym), lineNum);
-    } else {
-      locals.push_back({sym, stackOffset, false});
     }
   } catch (error::TypeError &te) {
     handleSyntaxError(defGrammar, te.expected, te.actual);
@@ -401,7 +402,7 @@ void Compiler::compileDef(const SExpr &sExpr) {
 }
 
 void Compiler::compileDefMacro(const SExpr &sExpr) {
-  if (enclosing) {
+  if (enclosing.has_value()) {
     const auto [row, col] = srcMap[&sExpr];
     throw error::SyntaxError(
         "Invalid syntax for define-macro: must define macros in top level",
@@ -412,7 +413,7 @@ void Compiler::compileDefMacro(const SExpr &sExpr) {
     const auto &argNames = cast<SExprs>(at(defMacroArgPos, sExpr)).first;
     const auto &body = cast<SExprs>(at(defMacroBodyPos, sExpr));
 
-    Compiler compiler(source, srcMap, argNames, body, this, vm);
+    Compiler compiler(source, srcMap, argNames, body, *this, vm);
     const auto &function = compiler.compile();
 
     const auto lineNum = srcMap[&sExpr].row;
@@ -547,8 +548,8 @@ void Compiler::handleSyntaxError(const std::string grammar,
 }
 
 Compiler::Compiler(std::vector<std::string> source, VM &vm)
-    : vm(vm), enclosing(nullptr), source(source),
-      params(vm.freeStore.alloc<Nil>()), body(parse()), stackOffset(1) {}
+    : vm(vm), source(source), params(vm.freeStore.alloc<Nil>()), body(parse()),
+      stackOffset(1) {}
 
 const Fn &Compiler::compile() {
   const auto lineNum = srcMap[&body].row;
