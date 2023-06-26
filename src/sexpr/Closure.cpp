@@ -21,8 +21,8 @@ bool Closure::equals(const SExpr &other) const {
       return false;
     }
     return std::equal(
-        upvalues.begin(), upvalues.end(), closure.upvalues.begin(),
-        closure.upvalues.end(),
+        upvalues.cbegin(), upvalues.cend(), closure.upvalues.cbegin(),
+        closure.upvalues.cend(),
         [](const auto &self, const auto &other) { return *self == *other; });
   }
   return false;

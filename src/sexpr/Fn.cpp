@@ -21,7 +21,7 @@ std::ostream &Fn::dissassemble(std::ostream &o) const {
   o << "<Function at " << this << ", arity: " << unsigned(arity)
     << ", upvalues: " << numUpvals << ">" << std::endl
     << code << std::endl;
-  for (auto i = code.consts.begin(); i != code.consts.end(); ++i) {
+  for (auto i = code.consts.cbegin(); i != code.consts.end(); ++i) {
     if (isa<Fn>(i->get())) {
       const auto &fnAtom = cast<Fn>(i->get());
       fnAtom.dissassemble(o);

@@ -18,7 +18,7 @@ std::vector<Token> Compiler::tokenize(std::vector<std::string> lines) {
   std::vector<Token> tokens;
   for (unsigned int row{1}; const auto &line : lines) {
     auto newTokens = tokenize(line, row);
-    tokens.insert(tokens.end(), newTokens.begin(), newTokens.end());
+    tokens.insert(tokens.cend(), newTokens.cbegin(), newTokens.cend());
     ++row;
   }
   return tokens;
@@ -29,7 +29,7 @@ std::vector<Token> Compiler::tokenize(std::string line,
   std::vector<Token> tokens;
   std::regex rgx(
       "\\\"(?:[^\"\\\\]*(?:\\\\.)?)*\\\"|;|\\(|\\)|,@|,|`|'|[^\\s(),@,`']+");
-  auto begin = std::sregex_iterator(line.begin(), line.end(), rgx);
+  auto begin = std::sregex_iterator(line.cbegin(), line.cend(), rgx);
   auto end = std::sregex_iterator();
   for (std::sregex_iterator i = begin; i != end; ++i) {
     std::smatch match = *i;
@@ -53,7 +53,7 @@ bool Compiler::isNum(const std::string s) {
 
 const SExprs &Compiler::parse() {
   auto tokens = tokenize(source);
-  std::vector<Token>::const_iterator it = tokens.begin();
+  auto it = tokens.cbegin();
   const auto &res = parse(it, tokens.end());
   if (it != tokens.end()) {
     handleUnexpectedToken(*it, source[it->srcLoc.row - 1]);
@@ -200,13 +200,13 @@ int Compiler::resolveUpvalue(Compiler &caller, const Sym &sym) {
 }
 
 int Compiler::addUpvalue(int idx, bool isLocal) {
-  if (auto it = std::find_if(upValues.begin(), upValues.end(),
+  if (auto it = std::find_if(upValues.cbegin(), upValues.cend(),
                              [=](const auto upValue) {
                                return upValue.idx == idx &&
                                       upValue.isLocal == isLocal;
                              });
       it != upValues.end()) {
-    return std::distance(upValues.begin(), it);
+    return std::distance(upValues.cbegin(), it);
   }
   upValues.push_back({idx, isLocal});
   return upValues.size() - 1;
@@ -571,7 +571,7 @@ const Fn &Compiler::compile() {
 void Compiler::verifyLex(const std::string &line, const unsigned int lineNum,
                          unsigned int &openParen, unsigned int &closedParen) {
   auto tokens = tokenize(line, lineNum);
-  for (auto it = tokens.begin(); it != tokens.end(); ++it) {
+  for (auto it = tokens.cbegin(); it != tokens.cend(); ++it) {
     if ((openParen == closedParen && openParen > 0) ||
         (openParen == closedParen && it->str == ")")) {
       handleUnexpectedToken(*it, line);
