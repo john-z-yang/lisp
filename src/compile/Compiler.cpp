@@ -2,9 +2,9 @@
 #include "../code/OpCode.hpp"
 #include "../error/SyntaxError.hpp"
 #include "../runtime/VM.hpp"
+#include "../sexpr/Cast.cpp"
 #include "../sexpr/String.hpp"
-#include "../sexpr/cast.cpp"
-#include "grammar.hpp"
+#include "Grammar.hpp"
 #include <regex>
 #include <sstream>
 

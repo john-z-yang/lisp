@@ -1,7 +1,7 @@
 #ifndef LISP_SRC_SEXPR_NATFN_HPP_
 #define LISP_SRC_SEXPR_NATFN_HPP_
 
-#include "../runtime/CppFn.hpp"
+#include "../runtime/CPPFn.hpp"
 #include "../runtime/StackIter.hpp"
 #include "Atom.hpp"
 #include <functional>
@@ -16,9 +16,9 @@ protected:
   bool equals(const SExpr &other) const override;
 
 public:
-  NatFn(runtime::CppFn &fn, const uint8_t argc, const bool isVariadic);
+  NatFn(runtime::CPPFn &fn, const uint8_t argc, const bool isVariadic);
 
-  runtime::CppFn &fn;
+  runtime::CPPFn &fn;
   const uint8_t argc;
   const bool isVariadic;
 

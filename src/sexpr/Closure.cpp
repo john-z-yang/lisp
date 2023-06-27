@@ -1,7 +1,7 @@
 #include "Closure.hpp"
+#include "Cast.cpp"
 #include "Fn.hpp"
 #include "SExpr.hpp"
-#include "cast.cpp"
 #include <iomanip>
 #include <sstream>
 

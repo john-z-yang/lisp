@@ -1,5 +1,5 @@
 #include "String.hpp"
-#include "cast.cpp"
+#include "Cast.cpp"
 #include <regex>
 #include <string>
 

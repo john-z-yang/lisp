@@ -1,5 +1,6 @@
-#include "CppFnImpls.hpp"
+#include "CPPFnImpls.hpp"
 #include "../sexpr/Bool.hpp"
+#include "../sexpr/Cast.cpp"
 #include "../sexpr/Closure.hpp"
 #include "../sexpr/NatFn.hpp"
 #include "../sexpr/Nil.hpp"
@@ -7,7 +8,6 @@
 #include "../sexpr/SExprs.hpp"
 #include "../sexpr/String.hpp"
 #include "../sexpr/Sym.hpp"
-#include "../sexpr/cast.cpp"
 #include <cmath>
 #include <cstdlib>
 #include <exception>

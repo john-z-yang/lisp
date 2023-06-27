@@ -12,7 +12,7 @@ std::string NatFn::toString() const { return "<Native function>"; }
 
 bool NatFn::equals(const SExpr &other) const { return this == &other; }
 
-NatFn::NatFn(CppFn &fn, const uint8_t argc, const bool isVariadic)
+NatFn::NatFn(CPPFn &fn, const uint8_t argc, const bool isVariadic)
     : Atom(SExpr::Type::NATIVE_FN), fn(fn), argc(argc), isVariadic(isVariadic) {
 }
 
