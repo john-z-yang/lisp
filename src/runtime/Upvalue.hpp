@@ -3,7 +3,9 @@
 
 #include "../sexpr/SExpr.hpp"
 #include "StackPtr.hpp"
+#include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace runtime {
@@ -13,19 +15,20 @@ class Upvalue {
 
 private:
   const StackPtr stackPos;
-  std::vector<const sexpr::SExpr *> &stack;
+  std::vector<std::reference_wrapper<const sexpr::SExpr>> &stack;
 
-  const sexpr::SExpr *value;
+  std::optional<std::reference_wrapper<const sexpr::SExpr>> ref;
 
   bool isOpen() const;
 
 public:
-  Upvalue(const StackPtr stackPos, std::vector<const sexpr::SExpr *> &stack);
+  Upvalue(const StackPtr stackPos,
+          std::vector<std::reference_wrapper<const sexpr::SExpr>> &stack);
 
   void close();
 
-  const sexpr::SExpr *get() const;
-  void set(const sexpr::SExpr *sexpr);
+  const sexpr::SExpr &get() const;
+  void set(const sexpr::SExpr &sexpr);
 };
 
 bool operator==(const Upvalue &lhs, const Upvalue &rhs);

@@ -1,11 +1,9 @@
 #include "Num.hpp"
-#include "cast.cpp"
+#include "Cast.cpp"
 #include <sstream>
 #include <string>
 
 using namespace sexpr;
-
-Num::Num(const double val) : Atom(SExpr::Type::NUM), val(val) {}
 
 std::string Num::toString() const {
   std::stringstream ss;
@@ -20,6 +18,8 @@ bool Num::equals(const SExpr &other) const {
   return false;
 }
 
+Num::Num(const double val) : Atom(SExpr::Type::NUM), val(val) {}
+
 bool Num::classOf(const SExpr &sExpr) { return sExpr.type == SExpr::Type::NUM; }
 
-const std::string Num::typeName = "<Number>";
+std::string Num::getTypeName() { return "<Number>"; }

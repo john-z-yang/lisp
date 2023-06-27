@@ -1,6 +1,6 @@
 #include "SExpr.hpp"
+#include "Cast.cpp"
 #include "SExprs.hpp"
-#include "cast.cpp"
 #include <iostream>
 
 using namespace sexpr;

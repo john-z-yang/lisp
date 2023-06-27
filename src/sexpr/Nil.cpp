@@ -1,5 +1,5 @@
 #include "Nil.hpp"
-#include "cast.cpp"
+#include "Cast.cpp"
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -12,10 +12,10 @@ std::string Nil::toString() const { return "()"; }
 
 bool Nil::equals(const SExpr &other) const { return isa<Nil>(other); }
 
-Nil *Nil::getInstance() { return &instance; }
+Nil Nil::instance;
+
+Nil &Nil::getInstance() { return instance; }
 
 bool Nil::classOf(const SExpr &sExpr) { return sExpr.type == SExpr::Type::NIL; }
 
-Nil Nil::instance;
-
-const std::string Nil::typeName = "()";
+std::string Nil::getTypeName() { return "()"; }

@@ -152,12 +152,52 @@
       "-Wno-unused-parameter",
       "-c",
       "-o",
-      "bin/runtime_CppFnImpls.o",
-      "src/runtime/CppFnImpls.cpp"
+      "bin/runtime_FreeStore.o",
+      "src/runtime/FreeStore.cpp"
     ],
     "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/runtime/CppFnImpls.cpp",
-    "output": "/Users/john/workspace/lisp/bin/runtime_CppFnImpls.o"
+    "file": "/Users/john/workspace/lisp/src/runtime/FreeStore.cpp",
+    "output": "/Users/john/workspace/lisp/bin/runtime_FreeStore.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++20",
+      "-fsanitize=address,undefined",
+      "-g",
+      "-pedantic",
+      "-Wall",
+      "-Wextra",
+      "-Wno-gnu-label-as-value",
+      "-Wno-unused-parameter",
+      "-c",
+      "-o",
+      "bin/runtime_GCGuard.o",
+      "src/runtime/GCGuard.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/runtime/GCGuard.cpp",
+    "output": "/Users/john/workspace/lisp/bin/runtime_GCGuard.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++20",
+      "-fsanitize=address,undefined",
+      "-g",
+      "-pedantic",
+      "-Wall",
+      "-Wextra",
+      "-Wno-gnu-label-as-value",
+      "-Wno-unused-parameter",
+      "-c",
+      "-o",
+      "bin/runtime_CPPFnImpls.o",
+      "src/runtime/CPPFnImpls.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/runtime/CPPFnImpls.cpp",
+    "output": "/Users/john/workspace/lisp/bin/runtime_CPPFnImpls.o"
   },
   {
     "arguments": [

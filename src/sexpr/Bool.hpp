@@ -10,25 +10,21 @@ namespace sexpr {
 
 class Bool final : public Atom {
 protected:
-  Bool(const bool val);
+  explicit Bool(const bool val);
 
   static Bool _true;
   static Bool _false;
 
-  std::string toString() const;
-  bool equals(const SExpr &other) const;
+  std::string toString() const override;
+  bool equals(const SExpr &other) const override;
 
 public:
-  static Bool *getInstance(const bool val);
-
   const bool val;
 
-  static bool toBool(const SExpr *const sExpr);
+  static Bool &getInstance(const bool val);
+  static bool toBool(const SExpr &sExpr);
   static bool classOf(const SExpr &sExpr);
-  static const std::string typeName;
-
-  Bool(Bool &other) = delete;
-  void operator=(const Bool &) = delete;
+  static std::string getTypeName();
 };
 
 } // namespace sexpr

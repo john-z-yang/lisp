@@ -1,6 +1,6 @@
 #include "Code.hpp"
+#include "../sexpr/Cast.cpp"
 #include "../sexpr/Fn.hpp"
-#include "../sexpr/cast.cpp"
 #include "OpCode.hpp"
 #include <cstdint>
 #include <iomanip>
@@ -16,7 +16,7 @@ uint8_t Code::pushCode(const uint8_t code, const unsigned int lineNum) {
   return byteCodes.size() - 1;
 }
 
-uint8_t Code::pushConst(const SExpr *sExpr) {
+uint8_t Code::pushConst(const SExpr &sExpr) {
   consts.push_back(sExpr);
   return consts.size() - 1;
 }
@@ -45,7 +45,7 @@ std::ostream &code::operator<<(std::ostream &o, const Code &code) {
   } while (false)
 #define DIS_CONST_OP(name)                                                     \
   do {                                                                         \
-    o << #name << *code.consts[READ_BYTE()];                                   \
+    o << #name << code.consts[READ_BYTE()];                                    \
   } while (false)
 
   const unsigned int PADDING_WIDTH = 4;
@@ -54,7 +54,7 @@ std::ostream &code::operator<<(std::ostream &o, const Code &code) {
     if (i != 0) {
       o << ", ";
     }
-    o << *co;
+    o << co;
     i += 1;
   }
 
@@ -88,9 +88,9 @@ std::ostream &code::operator<<(std::ostream &o, const Code &code) {
 
     switch (byte) {
     case OpCode::MAKE_CLOSURE: {
-      const auto fn = cast<Fn>(code.consts[READ_BYTE()]);
-      o << "MAKE_CLOSURE" << *fn;
-      for (unsigned int i{0}; i < fn->numUpvals; i++) {
+      const auto &fn = cast<Fn>(code.consts[READ_BYTE()].get());
+      o << "MAKE_CLOSURE" << fn;
+      for (unsigned int i{0}; i < fn.numUpvals; i++) {
         const auto isLocal = unsigned(READ_BYTE());
         const auto idx = unsigned(READ_BYTE());
         o << std::endl

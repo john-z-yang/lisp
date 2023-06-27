@@ -9,16 +9,16 @@ namespace sexpr {
 
 class Num final : public Atom {
 protected:
-  std::string toString() const;
-  bool equals(const SExpr &other) const;
+  std::string toString() const override;
+  bool equals(const SExpr &other) const override;
 
 public:
+  explicit Num(const double val);
+
   const double val;
 
-  Num(const double val);
-
   static bool classOf(const SExpr &sExpr);
-  static const std::string typeName;
+  static std::string getTypeName();
 };
 
 } // namespace sexpr

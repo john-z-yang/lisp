@@ -8,11 +8,15 @@
 using namespace sexpr;
 using namespace runtime;
 
-NatFn::NatFn(CppFn fn, const uint8_t argc, const bool isVariadic)
+std::string NatFn::toString() const { return "<Native function>"; }
+
+bool NatFn::equals(const SExpr &other) const { return this == &other; }
+
+NatFn::NatFn(CPPFn &fn, const uint8_t argc, const bool isVariadic)
     : Atom(SExpr::Type::NATIVE_FN), fn(fn), argc(argc), isVariadic(isVariadic) {
 }
 
-const SExpr *NatFn::invoke(StackIter params, const uint8_t incomingArgc,
+const SExpr &NatFn::invoke(StackIter params, const uint8_t incomingArgc,
                            VM &vm) const {
   if ((!isVariadic && incomingArgc != argc) ||
       (isVariadic && incomingArgc < argc)) {
@@ -27,12 +31,8 @@ const SExpr *NatFn::invoke(StackIter params, const uint8_t incomingArgc,
   return fn(params, incomingArgc, vm);
 }
 
-std::string NatFn::toString() const { return "<Native function>"; }
-
-bool NatFn::equals(const SExpr &other) const { return this == &other; }
-
 bool NatFn::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::NATIVE_FN;
 }
 
-const std::string NatFn::typeName = "<Native function>";
+std::string NatFn::getTypeName() { return "<Native function>"; }

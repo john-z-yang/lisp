@@ -1,9 +1,11 @@
 #include "VM.hpp"
 #include "../error/RuntimeError.hpp"
+#include "../sexpr/Cast.cpp"
 #include "../sexpr/NatFn.hpp"
 #include "../sexpr/SExprs.hpp"
-#include "../sexpr/cast.cpp"
-#include "CppFnImpls.hpp"
+#include "CPPFnImpls.hpp"
+#include "FreeStore.hpp"
+#include "GCGuard.hpp"
 #include "StackPtr.hpp"
 #include <algorithm>
 #include <exception>
@@ -16,12 +18,13 @@
 using namespace runtime;
 using namespace sexpr;
 
-const SExpr *VM::eval(const Fn *main, bool withGC) {
+const SExpr &VM::eval(const Fn &main, bool withGC) {
+  stack.push_back(freeStore.alloc<Closure>(main));
   try {
-    stack.push_back(alloc<Closure>(main));
-
-    enableGC = withGC;
-
+    if (withGC) {
+      auto gcGuard = freeStore.startGC();
+      return exec(main);
+    }
     return exec(main);
   } catch (std::exception &e) {
     std::stringstream ss;
@@ -30,14 +33,14 @@ const SExpr *VM::eval(const Fn *main, bool withGC) {
     reset();
     throw re;
   }
-  return nullptr;
+  return freeStore.alloc<Nil>();
 }
 
-const SExpr *VM::exec(const Fn *main) {
+const SExpr &VM::exec(const Fn &main) {
 #define CUR_CALL_FRAME() (callFrames.back())
 #define CUR_CLOSURE() (CUR_CALL_FRAME().closure)
-#define CUR_FN() (CUR_CLOSURE()->fnAtom)
-#define CUR_CODE() (CUR_FN()->code)
+#define CUR_FN() (CUR_CLOSURE().fnAtom)
+#define CUR_CODE() (CUR_FN().code)
 #define BASE_PTR() (CUR_CALL_FRAME().bp)
 #define INST_PTR() (CUR_CALL_FRAME().ip)
 
@@ -45,7 +48,7 @@ const SExpr *VM::exec(const Fn *main) {
 #define READ_SHORT()                                                           \
   (INST_PTR() += 2, (uint16_t)((CUR_CODE().byteCodes[INST_PTR() - 2] << 8 |    \
                                 CUR_CODE().byteCodes[INST_PTR() - 1])))
-#define READ_CONST() (CUR_CODE().consts[READ_BYTE()])
+#define READ_CONST() (CUR_CODE().consts[READ_BYTE()].get())
 
 #define DISPATCH() goto *dispatchTable[READ_BYTE()]
 
@@ -60,18 +63,18 @@ const SExpr *VM::exec(const Fn *main) {
   DISPATCH();
 
 MAKE_CLOSURE : {
-  const auto fnAtom = cast<Fn>(READ_CONST());
+  const auto &fnAtom = cast<Fn>(READ_CONST());
   std::vector<std::shared_ptr<Upvalue>> upvalues;
-  for (unsigned int i{0}; i < fnAtom->numUpvals; ++i) {
+  for (unsigned int i{0}; i < fnAtom.numUpvals; ++i) {
     auto isLocal = READ_BYTE();
     auto idx = READ_BYTE();
     if (isLocal == 1) {
       upvalues.push_back(captureUpvalue(BASE_PTR() + idx));
     } else {
-      upvalues.push_back(CUR_CLOSURE()->upvalues[idx]);
+      upvalues.push_back(CUR_CLOSURE().upvalues[idx]);
     }
   }
-  stack.push_back(alloc<Closure>(fnAtom, upvalues));
+  stack.push_back(freeStore.alloc<Closure>(fnAtom, upvalues));
 }
   DISPATCH();
 CALL : {
@@ -117,11 +120,11 @@ SET_SYM : {
   DISPATCH();
 }
 LOAD_UPVALUE : {
-  stack.push_back(CUR_CLOSURE()->upvalues[READ_BYTE()]->get());
+  stack.push_back(CUR_CLOSURE().upvalues[READ_BYTE()]->get());
   DISPATCH();
 }
 SET_UPVALUE : {
-  CUR_CLOSURE()->upvalues[READ_BYTE()]->set(stack.back());
+  CUR_CLOSURE().upvalues[READ_BYTE()]->set(stack.back());
   DISPATCH();
 }
 LOAD_STACK : {
@@ -145,20 +148,19 @@ POP_JUMP_IF_FALSE : {
   DISPATCH();
 }
 MAKE_LIST : {
-  const auto gcSetting = enableGC;
-  enableGC = false;
+  {
+    auto gcGuard = freeStore.pauseGC();
 
-  const auto n = stack.size() - BASE_PTR() - 1;
+    const auto n = stack.size() - BASE_PTR() - 1;
+    const auto &list = makeList(n);
+    stack.erase(stack.end() - n, stack.end());
+    stack.push_back(list);
+  }
 
-  const auto list = makeList(n);
-  stack.erase(stack.end() - n, stack.end());
-  stack.push_back(list);
-
-  enableGC = gcSetting;
   DISPATCH();
 }
 MAKE_NIL : {
-  stack.push_back(alloc<Nil>());
+  stack.push_back(freeStore.alloc<Nil>());
   DISPATCH();
 }
 
@@ -177,14 +179,14 @@ MAKE_NIL : {
 }
 
 void VM::call(const uint8_t argc) {
-  const auto callee = peak(argc);
+  const auto &callee = peak(argc);
   if (isa<Closure>(callee)) {
-    const auto closure = cast<Closure>(callee);
-    closure->assertArity(argc);
+    const auto &closure = cast<Closure>(callee);
+    closure.assertArity(argc);
     callFrames.push_back({closure, 0, stack.size() - argc - 1});
     return;
   }
-  const auto res = cast<NatFn>(callee)->invoke(stack.end() - argc, argc, *this);
+  const auto &res = cast<NatFn>(callee).invoke(stack.end() - argc, argc, *this);
   stack.erase(stack.end() - argc - 1, stack.end());
   stack.push_back(res);
   return;
@@ -199,101 +201,37 @@ std::shared_ptr<Upvalue> VM::captureUpvalue(StackPtr pos) {
   return openUpvals[pos];
 }
 
-const SExpr *VM::peak(StackPtr distance) { return stack.rbegin()[distance]; }
-
-const SExpr *VM::makeList(StackPtr n) {
-  if (n == 0) {
-    return alloc<Nil>();
-  }
-  return alloc<SExprs>(*(stack.end() - n), makeList(n - 1));
+const SExpr &VM::peak(StackPtr distance) {
+  return stack.rbegin()[distance].get();
 }
 
-const SExpr *VM::eval(const Fn *main) {
-  const auto res = eval(main, false);
+const SExpr &VM::makeList(StackPtr n) {
+  if (n == 0) {
+    return freeStore.alloc<Nil>();
+  }
+  return freeStore.alloc<SExprs>(*(stack.end() - n), makeList(n - 1));
+}
+
+const SExpr &VM::eval(const Fn &main) {
+  const auto &res = eval(main, false);
   return res;
 }
 
-const SExpr *VM::evalWithGC(const Fn *main) {
-  const auto res = eval(main, true);
+const SExpr &VM::evalWithGC(const Fn &main) {
+  const auto &res = eval(main, true);
   return res;
 }
 
 void VM::reset() {
   stack.clear();
   callFrames.clear();
-  enableGC = false;
 }
 
-void VM::gc() {
-  black.clear();
-
-  markGlobals();
-  markStack();
-  markCallFrames();
-  markOpenUpvalues();
-
-  while (grey.size() > 0) {
-    const auto sexpr = grey.front();
-    black.emplace(sexpr);
-    grey.pop_front();
-    trace(sexpr);
-  }
-  std::erase_if(
-      heap, [&](const auto &unique) { return !black.contains(unique.get()); });
-}
-void VM::mark(const SExpr *sexpr) {
-  if (!black.contains(sexpr)) {
-    grey.push_back(sexpr);
-  }
-}
-void VM::trace(const SExpr *sexpr) {
-  if (const auto sexprs = dynCast<SExprs>(sexpr)) {
-    mark(sexprs->first);
-    mark(sexprs->rest);
-    return;
-  }
-  if (const auto fnAtom = dynCast<Fn>(sexpr)) {
-    std::for_each(fnAtom->code.consts.begin(), fnAtom->code.consts.end(),
-                  [&](const auto &sexpr) { mark(sexpr); });
-    return;
-  }
-  if (const auto closureAtom = dynCast<Closure>(sexpr)) {
-    mark(closureAtom->fnAtom);
-    std::for_each(closureAtom->upvalues.begin(), closureAtom->upvalues.end(),
-                  [&](const auto &upvalue) { mark(upvalue->get()); });
-    return;
-  }
-}
-void VM::markGlobals() {
-  for (const auto &[sym, sexpr] : globals.getSymTable()) {
-    grey.push_back(sym);
-    grey.push_back(sexpr);
-  }
-}
-void VM::markStack() {
-  for (const auto &sexpr : stack) {
-    grey.push_back(sexpr);
-  }
-}
-void VM::markCallFrames() {
-  for (const auto &callFrame : callFrames) {
-    grey.push_back(callFrame.closure);
-  }
-}
-void VM::markOpenUpvalues() {
-  for (const auto &[_, openUpvalue] : openUpvals) {
-    grey.push_back(openUpvalue->get());
-  }
-}
-
-VM::VM() : enableGC(false), gcHeapSize(LISP_GC_INIT_HEAP_SIZE) {
-  for (double i{LISP_INT_CACHE_MIN}; i <= LISP_INT_CACHE_MAX; i++) {
-    intCache.push_back(std::make_unique<Num>(i));
-  }
-
+VM::VM() : freeStore(globals, stack, callFrames, openUpvals) {
 #define BIND_NATIVE_FN(sym, func, argc, isVariadic)                            \
   do {                                                                         \
-    globals.def(alloc<Sym>(sym), alloc<NatFn>(&func, argc, isVariadic));       \
+    globals.def(freeStore.alloc<Sym>(sym),                                     \
+                freeStore.alloc<NatFn>(func, argc, isVariadic));               \
   } while (false)
 
   BIND_NATIVE_FN("sym?", lispIsSym, 1, false);
@@ -338,6 +276,6 @@ VM::VM() : enableGC(false), gcHeapSize(LISP_GC_INIT_HEAP_SIZE) {
 #undef BIND_NATIVE_FN
 }
 
-void VM::defMacro(const Sym *sym) { globals.defMacro(sym); }
+void VM::defMacro(const Sym &sym) { globals.defMacro(sym); }
 
-bool VM::isMacro(const Sym *sym) { return globals.isMacro(sym); }
+bool VM::isMacro(const Sym &sym) { return globals.isMacro(sym); }

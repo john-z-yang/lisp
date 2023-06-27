@@ -11,29 +11,30 @@ namespace runtime {
 
 class Env {
   using SymTable =
-      std::unordered_map<const sexpr::Sym *, const sexpr::SExpr *,
+      std::unordered_map<std::reference_wrapper<const sexpr::Sym>,
+                         std::reference_wrapper<const sexpr::SExpr>,
                          sexpr::Sym::HashFunction, sexpr::Sym::EqualFunction>;
 
   using Macros =
-      std::unordered_set<const sexpr::Sym *, sexpr::Sym::HashFunction,
-                         sexpr::Sym::EqualFunction>;
+      std::unordered_set<std::reference_wrapper<const sexpr::Sym>,
+                         sexpr::Sym::HashFunction, sexpr::Sym::EqualFunction>;
 
 private:
   SymTable symTable;
   Macros macros;
 
 public:
-  void def(const sexpr::Sym *sym, const sexpr::SExpr *val);
+  void def(const sexpr::Sym &sym, const sexpr::SExpr &val);
 
-  void set(const sexpr::Sym *sym, const sexpr::SExpr *val);
+  void set(const sexpr::Sym &sym, const sexpr::SExpr &val);
 
   const SymTable &getSymTable() const;
 
-  const sexpr::SExpr *find(const sexpr::Sym *sym);
+  const sexpr::SExpr &find(const sexpr::Sym &sym);
 
-  void defMacro(const sexpr::Sym *sym);
+  void defMacro(const sexpr::Sym &sym);
 
-  bool isMacro(const sexpr::Sym *sym);
+  bool isMacro(const sexpr::Sym &sym);
 };
 
 } // namespace runtime

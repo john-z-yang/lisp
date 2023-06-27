@@ -9,17 +9,17 @@ namespace sexpr {
 
 class SExprs final : public SExpr {
 protected:
-  std::string toString() const;
-  bool equals(const SExpr &other) const;
+  std::string toString() const override;
+  bool equals(const SExpr &other) const override;
 
 public:
-  const SExpr *first;
-  const SExpr *rest;
+  const SExpr &first;
+  const SExpr &rest;
 
-  SExprs(const SExpr *first, const SExpr *rest);
+  SExprs(const SExpr &first, const SExpr &rest);
 
   static bool classOf(const SExpr &sExpr);
-  static const std::string typeName;
+  static std::string getTypeName();
 };
 
 } // namespace sexpr
