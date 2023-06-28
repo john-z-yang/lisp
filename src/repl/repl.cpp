@@ -3,6 +3,8 @@
 #include "../error/RuntimeError.hpp"
 #include "../error/SyntaxError.hpp"
 #include "../runtime/VM.hpp"
+#include "../sexpr/Cast.cpp"
+#include "../sexpr/Nil.hpp"
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
@@ -16,6 +18,7 @@
 #include <string>
 
 using namespace repl;
+using namespace sexpr;
 using namespace compile;
 using namespace runtime;
 
@@ -134,7 +137,9 @@ int repl::repl() {
         Compiler compiler(lines, vm);
         const auto &main = compiler.compile();
         const auto &res = vm.evalWithGC(main);
-        std::cout << res << std::endl;
+        if (!isa<Nil>(res)) {
+          std::cout << res << std::endl;
+        }
       } else {
         std::cout << std::endl << "Farewell." << std::endl;
         return EXIT_SUCCESS;
