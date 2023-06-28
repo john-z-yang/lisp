@@ -113,10 +113,12 @@ LOAD_SYM : {
 }
 DEF_SYM : {
   globals.def(cast<Sym>(READ_CONST()), stack.back());
+  stack.back() = freeStore.alloc<Nil>();
   DISPATCH();
 }
 SET_SYM : {
   globals.set(cast<Sym>(READ_CONST()), stack.back());
+  stack.back() = freeStore.alloc<Nil>();
   DISPATCH();
 }
 LOAD_UPVALUE : {
@@ -125,6 +127,7 @@ LOAD_UPVALUE : {
 }
 SET_UPVALUE : {
   CUR_CLOSURE().upvalues[READ_BYTE()]->set(stack.back());
+  stack.back() = freeStore.alloc<Nil>();
   DISPATCH();
 }
 LOAD_STACK : {
@@ -133,6 +136,7 @@ LOAD_STACK : {
 }
 SET_STACK : {
   stack[BASE_PTR() + READ_BYTE()] = stack.back();
+  stack.back() = freeStore.alloc<Nil>();
   DISPATCH();
 }
 JUMP : {

@@ -12,7 +12,8 @@
 (define make-counter
   (lambda (i)
     (lambda ()
-      (set! i (+ 1 i)))))
+      (set! i (+ 1 i))
+      i)))
 (define my-counter-1 (make-counter 1))
 (define my-counter-2 (make-counter 1))
 (display (eqv? my-counter-1 my-counter-2))
