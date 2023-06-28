@@ -23,9 +23,9 @@ const SExpr &VM::eval(const Fn &main, bool withGC) {
   try {
     if (withGC) {
       auto gcGuard = freeStore.startGC();
-      return exec(main);
+      return exec();
     }
-    return exec(main);
+    return exec();
   } catch (std::exception &e) {
     std::stringstream ss;
     ss << "Runtime error: " << e.what();
@@ -36,7 +36,7 @@ const SExpr &VM::eval(const Fn &main, bool withGC) {
   return freeStore.alloc<Nil>();
 }
 
-const SExpr &VM::exec(const Fn &main) {
+const SExpr &VM::exec() {
 #define CUR_CALL_FRAME() (callFrames.back())
 #define CUR_CLOSURE() (CUR_CALL_FRAME().closure)
 #define CUR_FN() (CUR_CLOSURE().fnAtom)

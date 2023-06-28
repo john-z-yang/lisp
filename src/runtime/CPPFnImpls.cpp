@@ -55,14 +55,16 @@ using namespace runtime;
   }
 
 #define PRED_OP(name, cond)                                                    \
-  const SExpr &name(StackIter params, const uint8_t argc, VM &vm) {            \
+  const SExpr &name(StackIter params, [[maybe_unused]] const uint8_t argc,     \
+                    VM &vm) {                                                  \
     return vm.freeStore.alloc<Bool>(cond);                                     \
   }
 
 PRED_OP(runtime::lispIsSym, isa<Sym>(params->get()));
 
 long genSymCnt = 0;
-const SExpr &runtime::lispGenSym(StackIter params, const uint8_t argc, VM &vm) {
+const SExpr &runtime::lispGenSym([[maybe_unused]] StackIter params,
+                                 [[maybe_unused]] const uint8_t argc, VM &vm) {
   std::stringstream ss;
   ss << ";gensym-" << genSymCnt;
   genSymCnt += 1;
@@ -79,10 +81,12 @@ MATH_CUM_OP(runtime::lispAdd, +=, 0.0);
 MATH_CUM_OP(runtime::lispMult, *=, 1.0);
 MATH_DIM_OP(runtime::lispSub, -=, 0.0 -);
 MATH_DIM_OP(runtime::lispDiv, /=, 1.0 /);
-const SExpr &runtime::lispAbs(StackIter params, const uint8_t argc, VM &vm) {
+const SExpr &runtime::lispAbs(StackIter params,
+                              [[maybe_unused]] const uint8_t argc, VM &vm) {
   return vm.freeStore.alloc<Num>(abs(cast<Num>(params->get()).val));
 }
-const SExpr &runtime::lispMod(StackIter params, const uint8_t argc, VM &vm) {
+const SExpr &runtime::lispMod(StackIter params,
+                              [[maybe_unused]] const uint8_t argc, VM &vm) {
   const auto lhs = cast<Num>(params->get()).val;
   ++params;
   const auto rhs = cast<Num>(params->get()).val;
@@ -90,10 +94,12 @@ const SExpr &runtime::lispMod(StackIter params, const uint8_t argc, VM &vm) {
 }
 
 PRED_OP(runtime::lispIsStr, isa<String>(params->get()));
-const SExpr &runtime::lispStrLen(StackIter params, const uint8_t argc, VM &vm) {
+const SExpr &runtime::lispStrLen(StackIter params,
+                                 [[maybe_unused]] const uint8_t argc, VM &vm) {
   return vm.freeStore.alloc<Num>(cast<String>(params->get()).unescaped.size());
 }
-const SExpr &runtime::lispStrSub(StackIter params, const uint8_t argc, VM &vm) {
+const SExpr &runtime::lispStrSub(StackIter params,
+                                 [[maybe_unused]] const uint8_t argc, VM &vm) {
   const auto &str = cast<String>(params->get());
   const auto &pos = cast<Num>((params + 1)->get()).val;
   const auto &len = cast<Num>((params + 2)->get()).val;
@@ -134,22 +140,28 @@ const SExpr &runtime::lispToStr(StackIter params, const uint8_t argc, VM &vm) {
 
 PRED_OP(runtime::lispIsNull, isa<Nil>(params->get()));
 PRED_OP(runtime::lispIsCons, isa<SExprs>(params->get()));
-const SExpr &runtime::lispCons(StackIter params, const uint8_t argc, VM &vm) {
+const SExpr &runtime::lispCons(StackIter params,
+                               [[maybe_unused]] const uint8_t argc, VM &vm) {
   return vm.freeStore.alloc<SExprs>(params->get(), *(params + 1));
 }
-const SExpr &runtime::lispCar(StackIter params, const uint8_t argc, VM &vm) {
+const SExpr &runtime::lispCar(StackIter params,
+                              [[maybe_unused]] const uint8_t argc,
+                              [[maybe_unused]] VM &vm) {
   return cast<SExprs>(params->get()).first;
 }
-const SExpr &runtime::lispCdr(StackIter params, const uint8_t argc, VM &vm) {
+const SExpr &runtime::lispCdr(StackIter params,
+                              [[maybe_unused]] const uint8_t argc,
+                              [[maybe_unused]] VM &vm) {
   return cast<SExprs>(params->get()).rest;
 }
 
-const SExpr &runtime::lispDis(StackIter params, const uint8_t argc, VM &vm) {
+const SExpr &runtime::lispDis(StackIter params,
+                              [[maybe_unused]] const uint8_t argc, VM &vm) {
   cast<Closure>(params->get()).dissassemble(std::cout);
   return vm.freeStore.alloc<Nil>();
 }
-const SExpr &runtime::lispDisplay(StackIter params, const uint8_t argc,
-                                  VM &vm) {
+const SExpr &runtime::lispDisplay(StackIter params,
+                                  [[maybe_unused]] const uint8_t argc, VM &vm) {
   if (isa<String>(params->get())) {
     const auto &stringAtom = cast<String>(params->get());
     std::cout << stringAtom.unescaped << std::endl;
@@ -159,24 +171,31 @@ const SExpr &runtime::lispDisplay(StackIter params, const uint8_t argc,
   return vm.freeStore.alloc<Nil>();
 }
 
-const SExpr &runtime::lispQuit(StackIter params, const uint8_t argc, VM &vm) {
+const SExpr &runtime::lispQuit([[maybe_unused]] StackIter params,
+                               [[maybe_unused]] const uint8_t argc,
+                               [[maybe_unused]] VM &vm) {
   std::cout << "Farewell." << std::endl;
   exit(0);
 }
-const SExpr &runtime::lispError(StackIter params, const uint8_t argc, VM &vm) {
+const SExpr &runtime::lispError(StackIter params,
+                                [[maybe_unused]] const uint8_t argc,
+                                [[maybe_unused]] VM &vm) {
   std::stringstream ss;
   ss << params->get();
   throw std::runtime_error(ss.str());
 }
 
-const SExpr &runtime::lispEq(StackIter params, const uint8_t argc, VM &vm) {
+const SExpr &runtime::lispEq(StackIter params,
+                             [[maybe_unused]] const uint8_t argc, VM &vm) {
   return vm.freeStore.alloc<Bool>(&params->get() == &(params + 1)->get());
 }
-const SExpr &runtime::lispEqv(StackIter params, const uint8_t argc, VM &vm) {
+const SExpr &runtime::lispEqv(StackIter params,
+                              [[maybe_unused]] const uint8_t argc, VM &vm) {
   return vm.freeStore.alloc<Bool>(params->get() == *(params + 1));
 }
 
-const SExpr &runtime::lispIsProc(StackIter params, const uint8_t argc, VM &vm) {
+const SExpr &runtime::lispIsProc(StackIter params,
+                                 [[maybe_unused]] const uint8_t argc, VM &vm) {
   return vm.freeStore.alloc<Bool>(isa<Closure>(params->get()) ||
                                   isa<NatFn>(params->get()));
 }

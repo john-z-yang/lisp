@@ -30,7 +30,7 @@ private:
   std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> openUpvals;
 
   const sexpr::SExpr &eval(const sexpr::Fn &main, bool withGC);
-  const sexpr::SExpr &exec(const sexpr::Fn &main);
+  const sexpr::SExpr &exec();
 
   void call(const uint8_t argc);
   std::shared_ptr<Upvalue> captureUpvalue(StackPtr pos);

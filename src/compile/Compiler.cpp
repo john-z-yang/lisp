@@ -218,7 +218,7 @@ int Compiler::countParams() {
   if (isVariadic()) {
     return -1;
   }
-  return visitEach(argNames, [](const auto &sExpr) {});
+  return visitEach(argNames, []([[maybe_unused]] const auto &sExpr) {});
 }
 
 unsigned int Compiler::visitEach(const SExpr &sExpr, Visitor visitor) {
