@@ -49,7 +49,7 @@ std::ostream &Closure::dissassemble(std::ostream &o) const {
   o << "<Closure at " << this << ">, instance of:" << std::endl
     << std::setw(PADDING_WIDTH) << "";
   fnAtom.dissassemble(o);
-  return o << std::endl;
+  return o;
 }
 
 bool Closure::classOf(const SExpr &sExpr) {
