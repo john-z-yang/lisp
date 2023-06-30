@@ -100,7 +100,6 @@ CLOSE_UPVALUE : {
     it->second->close();
     openUpvals.erase(it);
   }
-  stack.pop_back();
 }
   DISPATCH();
 LOAD_CONST : {

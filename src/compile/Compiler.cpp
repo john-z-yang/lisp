@@ -494,14 +494,10 @@ void Compiler::compileRet() {
   for (auto curOffset{stackOffset}; curOffset > 0; --curOffset) {
     if (local != locals.rend() && local->stackOffset == curOffset) {
       const auto lineNum = srcMap[&local->symbol].row;
-
       if (local->isCaptured) {
         code.pushCode(OpCode::CLOSE_UPVALUE, lineNum);
-      } else {
-        code.pushCode(OpCode::POP_TOP);
       }
       ++local;
-      continue;
     }
     code.pushCode(OpCode::POP_TOP);
   }
