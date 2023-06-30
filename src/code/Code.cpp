@@ -111,8 +111,12 @@ std::ostream &code::operator<<(std::ostream &o, const Code &code) {
       DIS_NO_OPRAND_OP(POP_TOP);
       break;
     }
+    case OpCode::POP: {
+      DIS_BYTE_OPRAND_OP(POP);
+      break;
+    }
     case OpCode::CLOSE_UPVALUE: {
-      DIS_NO_OPRAND_OP(CLOSE_UPVALUE);
+      DIS_BYTE_OPRAND_OP(CLOSE_UPVALUE);
       break;
     }
     case OpCode::LOAD_CONST: {

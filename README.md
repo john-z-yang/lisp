@@ -226,6 +226,7 @@ flowchart TB
 | **CALL** _argc_                    | Call the function at **TOS** - `argc` with `argc` parameters.                                                                                                                                         |
 | **RETURN**                         | Return **TOS**.                                                                                                                                                                                       |
 | **POP_TOP**                        | Pop **TOS**.                                                                                                                                                                                          |
+| **POP** _argc_                     | Pop **TOS** `argc` times.                                                                                                                                                                             |
 | **CLOSE_UPVALUE**                  | Close the free variables at **TOS**.                                                                                                                                                                  |
 | **LOAD_CONST** _idx_               | Push `const[idx]` onto the stack.                                                                                                                                                                     |
 | **LOAD_SYM** _idx_                 | Push `globals[const[idx]]` onto the stack.                                                                                                                                                            |
@@ -251,14 +252,14 @@ lisp> (define fac
 <Closure at 0x600000980888>
 
 lisp> (dis fac)
-<Closure at 0x1036fcfd0>, instance of:
-    <Function at 0x106db2520, arity: 1, upvalues: 0>
+<Closure at 0x107efd250>, instance of:
+    <Function at 0x10b4b25a0, arity: 1, upvalues: 0>
 Constants:
     =, 0, 1, *, fac, -, 1
 Bytecodes (raw):
-    10 06 00 0b 01 05 01 01 02 0e 00 05 05 02 0d 00
-    12 06 03 0b 01 06 04 06 05 0b 01 05 06 01 02 01
-    01 01 02 0c 00 03 03 03 02
+    11 07 00 0c 01 06 01 01 02 0f 00 05 06 02 0e 00
+    12 07 03 0c 01 07 04 07 05 0c 01 06 06 01 02 01
+    01 01 02 0d 00 04 03 02
 Bytecodes:
     3                  0 MAKE_NIL
     3                  1 LOAD_SYM                =
@@ -278,10 +279,8 @@ Bytecodes:
     5                 31 CALL                    1
     5                 33 CALL                    2
                       35 SET_STACK               0
-                      37 POP_TOP
-                      38 POP_TOP
-                      39 POP_TOP
-                      40 RETURN
+                      37 POP                     3
+                      39 RETURN
 ```
 
 ## Running the tests

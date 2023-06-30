@@ -490,17 +490,16 @@ void Compiler::compileRet() {
   code.pushCode(OpCode::SET_STACK);
   code.pushCode(0);
 
-  auto local = locals.rbegin();
-  for (auto curOffset{stackOffset}; curOffset > 0; --curOffset) {
-    if (local != locals.rend() && local->stackOffset == curOffset) {
-      const auto lineNum = srcMap[&local->symbol].row;
-      if (local->isCaptured) {
-        code.pushCode(OpCode::CLOSE_UPVALUE, lineNum);
-      }
-      ++local;
+  for (const auto &local : locals) {
+    if (local.isCaptured) {
+      const auto lineNum = srcMap[&local.symbol].row;
+      code.pushCode(OpCode::CLOSE_UPVALUE, lineNum);
+      code.pushCode(local.stackOffset);
     }
-    code.pushCode(OpCode::POP_TOP);
   }
+
+  code.pushCode(OpCode::POP);
+  code.pushCode(stackOffset);
   code.pushCode(OpCode::RETURN);
 }
 

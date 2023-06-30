@@ -53,10 +53,10 @@ const SExpr &VM::exec() {
 #define DISPATCH() goto *dispatchTable[READ_BYTE()]
 
   static void *dispatchTable[] = {
-      &&MAKE_CLOSURE, &&CALL,       &&RETURN,    &&POP_TOP, &&CLOSE_UPVALUE,
-      &&LOAD_CONST,   &&LOAD_SYM,   &&DEF_SYM,   &&SET_SYM, &&LOAD_UPVALUE,
-      &&SET_UPVALUE,  &&LOAD_STACK, &&SET_STACK, &&JUMP,    &&POP_JUMP_IF_FALSE,
-      &&MAKE_LIST,    &&MAKE_NIL};
+      &&MAKE_CLOSURE,      &&CALL,        &&RETURN,     &&POP_TOP,   &&POP,
+      &&CLOSE_UPVALUE,     &&LOAD_CONST,  &&LOAD_SYM,   &&DEF_SYM,   &&SET_SYM,
+      &&LOAD_UPVALUE,      &&SET_UPVALUE, &&LOAD_STACK, &&SET_STACK, &&JUMP,
+      &&POP_JUMP_IF_FALSE, &&MAKE_LIST,   &&MAKE_NIL};
 
   call(0);
 
@@ -94,14 +94,18 @@ POP_TOP : {
   stack.pop_back();
   DISPATCH();
 }
+POP : {
+  stack.erase(stack.end() - READ_BYTE(), stack.end());
+  DISPATCH();
+}
 CLOSE_UPVALUE : {
-  auto it = openUpvals.find(stack.size() - 1);
+  auto it = openUpvals.find(BASE_PTR() + READ_BYTE());
   if (it != openUpvals.end()) {
     it->second->close();
     openUpvals.erase(it);
   }
-}
   DISPATCH();
+}
 LOAD_CONST : {
   stack.push_back(READ_CONST());
   DISPATCH();
