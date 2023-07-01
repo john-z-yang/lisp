@@ -29,6 +29,7 @@ private:
 
   std::vector<std::string> source;
   SrcMap srcMap;
+  unsigned int curLine;
 
   const sexpr::SExpr &argNames;
   const sexpr::SExprs &body;
@@ -61,9 +62,23 @@ private:
   int addUpvalue(int idx, bool isLocal);
   int countParams();
   bool isVariadic();
+  void updateCurLine(const sexpr::SExpr &sExpr);
 
-  unsigned int visitEach(const sexpr::SExpr &sExpr, Visitor visitor);
+  template <typename T> code::InstrPtr emitCode(T v) {
+    return code.pushCode(v, curLine);
+  }
+  template <typename T, typename... Args>
+  code::InstrPtr emitCode(T first, Args... args) {
+    const auto idx = emitCode(first);
+    emitCode(args...);
+    return idx;
+  }
+  code::InstrPtr emitConst(const sexpr::SExpr &sExpr);
+  void patchJump(const code::InstrPtr idx);
+
   const sexpr::SExpr &at(const unsigned int n, const sexpr::SExpr &sExpr);
+  const sexpr::SExpr &last(const sexpr::SExpr &sExpr);
+  unsigned int visitEach(const sexpr::SExpr &sExpr, Visitor visitor);
   void traverse(const sexpr::SExpr &sExpr, Visitor visitor);
   void compileStmt(const sexpr::SExpr &sExpr);
   void compileExpr(const sexpr::SExpr &sExpr);

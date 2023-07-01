@@ -164,7 +164,7 @@ Compiler::Compiler(const std::vector<std::string> source, SrcMap sourceLoc,
                    const SExpr &param, const SExprs &body, Compiler &enclosing,
                    VM &vm)
     : vm(vm), enclosing(enclosing), source(source), srcMap(sourceLoc),
-      argNames(param), body(body), stackOffset(1) {
+      curLine(srcMap[&param].row), argNames(param), body(body), stackOffset(1) {
   if (isa<SExprs>(param)) {
     visitEach(cast<SExprs>(param), [&](const auto &sExpr) {
       const auto &sym = cast<Sym>(sExpr);
@@ -216,8 +216,6 @@ int Compiler::addUpvalue(int idx, bool isLocal) {
   return upValues.size() - 1;
 }
 
-bool Compiler::isVariadic() { return isa<Sym>(argNames); }
-
 int Compiler::countParams() {
   if (isVariadic()) {
     return -1;
@@ -225,10 +223,39 @@ int Compiler::countParams() {
   return visitEach(argNames, []([[maybe_unused]] const auto &sExpr) {});
 }
 
+bool Compiler::isVariadic() { return isa<Sym>(argNames); }
+
+void Compiler::updateCurLine(const sexpr::SExpr &sExpr) {
+  curLine = srcMap[&sExpr].row;
+}
+
+code::InstrPtr Compiler::emitConst(const sexpr::SExpr &sExpr) {
+  return code.pushConst(sExpr);
+}
+
+void Compiler::patchJump(const code::InstrPtr idx) { code.patchJump(idx); }
+
+const SExpr &Compiler::at(const unsigned int n, const SExpr &sExpr) {
+  updateCurLine(sExpr);
+  if (n == 0) {
+    return sExpr;
+  }
+  return at(n - 1, cast<SExprs>(sExpr).rest);
+}
+
+const SExpr &Compiler::last(const SExpr &sExpr) {
+  if (isa<Atom>(sExpr)) {
+    return sExpr;
+  }
+  updateCurLine(sExpr);
+  return last(cast<SExprs>(sExpr).rest);
+}
+
 unsigned int Compiler::visitEach(const SExpr &sExpr, Visitor visitor) {
-  if (!isa<SExprs>(sExpr)) {
+  if (isa<Atom>(sExpr)) {
     return 0;
   }
+  updateCurLine(sExpr);
   const auto &sExprs = cast<SExprs>(sExpr);
   visitor(sExprs.first);
   return 1 + visitEach(sExprs.rest, visitor);
@@ -243,14 +270,6 @@ void Compiler::traverse(const SExpr &sExpr, Visitor visitor) {
   visitor(sExpr);
 }
 
-const SExpr &Compiler::at(const unsigned int n, const SExpr &sExpr) {
-  if (n == 0) {
-    return sExpr;
-  }
-  const auto &sexprs = cast<SExprs>(sExpr);
-  return at(n - 1, sexprs.rest);
-}
-
 void Compiler::compileStmt(const SExpr &sExpr) {
   if (isa<SExprs>(sExpr)) {
     const auto &sExprs = cast<SExprs>(sExpr);
@@ -263,7 +282,7 @@ void Compiler::compileStmt(const SExpr &sExpr) {
         execDefMacro(sExpr);
         return;
       } else if (sym.val == "begin") {
-        code.pushCode(OpCode::MAKE_NIL, srcMap[&sym].row);
+        emitCode(OpCode::MAKE_NIL);
         visitEach(sExprs.rest, [&](const auto &sExpr) {
           stackOffset += 1;
           this->compileStmt(sExpr);
@@ -281,6 +300,7 @@ void Compiler::compileExpr(const SExpr &sExpr) {
     compileAtom(atom);
     return;
   }
+  updateCurLine(sExpr);
   const auto &sExprs = cast<SExprs>(sExpr);
   if (isa<Sym>(sExprs.first)) {
     const auto &sym = cast<Sym>(sExprs.first);
@@ -288,11 +308,9 @@ void Compiler::compileExpr(const SExpr &sExpr) {
       compileExpr(execMacro(sExpr));
       return;
     } else if (sym.val == "begin") {
-      const auto lineNum = srcMap[&sExpr].row;
-      code.pushCode(OpCode::MAKE_NIL, lineNum);
-
+      emitCode(OpCode::MAKE_NIL);
       visitEach(sExprs.rest, [&](const auto &sExpr) {
-        code.pushCode(OpCode::POP_TOP, lineNum);
+        emitCode(OpCode::POP_TOP);
         this->compileExpr(sExpr);
       });
       return;
@@ -326,13 +344,12 @@ void Compiler::compileLambda(const SExpr &sExpr) {
     Compiler compiler(source, srcMap, lamArgNames, lamBody, *this, vm);
     const auto &function = compiler.compile();
 
-    const auto &lineNum = srcMap[&sExpr].row;
-    code.pushCode(OpCode::MAKE_CLOSURE, lineNum);
-    code.pushCode(code.pushConst(function), lineNum);
+    cast<Nil>(last(sExpr));
+
+    emitCode(OpCode::MAKE_CLOSURE, emitConst(function));
 
     for (const auto &upValue : compiler.upValues) {
-      code.pushCode(upValue.isLocal ? 1 : 0);
-      code.pushCode(upValue.idx);
+      emitCode(upValue.isLocal ? 1 : 0, upValue.idx);
     }
   } catch (error::TypeError &te) {
     handleSyntaxError(lambdaGrammar, te.expected, te.actual);
@@ -344,9 +361,8 @@ void Compiler::compileCall(const SExprs &sExprs) {
   const auto argc = visitEach(
       sExprs.rest, [&](const auto &sExpr) { this->compileExpr(sExpr); });
 
-  const auto lineNum = srcMap[&sExprs.first].row;
-  code.pushCode(OpCode::CALL, lineNum);
-  code.pushCode(argc, lineNum);
+  cast<Nil>(last(sExprs));
+  emitCode(OpCode::CALL, argc);
 }
 
 void Compiler::compileAtom(const Atom &atom) {
@@ -354,51 +370,40 @@ void Compiler::compileAtom(const Atom &atom) {
     compileSym(cast<Sym>(atom));
     return;
   }
-  const auto lineNum = srcMap[&atom].row;
-  code.pushCode(OpCode::LOAD_CONST, lineNum);
-  code.pushCode(code.pushConst(atom), lineNum);
+  emitCode(OpCode::LOAD_CONST, emitConst(atom));
 }
 
 void Compiler::compileSym(const Sym &sym) {
-  const auto lineNum = srcMap[&sym].row;
-
   if (const auto idx = resolveLocal(sym); idx != -1) {
-    code.pushCode(OpCode::LOAD_STACK, lineNum);
-    code.pushCode((uint8_t)locals[idx].stackOffset, lineNum);
+    emitCode(OpCode::LOAD_STACK, (uint8_t)locals[idx].stackOffset);
     return;
   }
   if (const auto idx = resolveUpvalue(*this, sym); idx != -1) {
-    code.pushCode(OpCode::LOAD_UPVALUE, lineNum);
-    code.pushCode((uint8_t)idx, lineNum);
+    emitCode(OpCode::LOAD_UPVALUE, (uint8_t)idx);
     return;
   }
-  code.pushCode(OpCode::LOAD_SYM, lineNum);
-  code.pushCode(code.pushConst(sym), lineNum);
+  emitCode(OpCode::LOAD_SYM, emitConst(sym));
 }
 
 void Compiler::compileQuote(const SExpr &sExpr) {
   const auto &expr = cast<SExprs>(at(quoteArgPos, sExpr)).first;
+  emitCode(OpCode::LOAD_CONST, emitConst(expr));
   cast<Nil>(at(quoteNilPos, sExpr));
-
-  const auto lineNum = srcMap[&sExpr].row;
-  code.pushCode(OpCode::LOAD_CONST, lineNum);
-  code.pushCode(code.pushConst(expr), lineNum);
 }
 
 void Compiler::compileDef(const SExpr &sExpr) {
   try {
     const auto &sym = cast<Sym>(cast<SExprs>(at(defSymPos, sExpr)).first);
     const auto &expr = cast<SExprs>(at(defSExprPos, sExpr)).first;
-    cast<Nil>(at(defNilPos, sExpr));
 
     compileExpr(expr);
 
-    const auto lineNum = srcMap[&sExpr].row;
+    cast<Nil>(at(defNilPos, sExpr));
+
     if (enclosing.has_value()) {
       locals.push_back({sym, stackOffset, false});
     } else {
-      code.pushCode(OpCode::DEF_SYM, lineNum);
-      code.pushCode(code.pushConst(sym), lineNum);
+      emitCode(OpCode::DEF_SYM, emitConst(sym));
     }
   } catch (error::TypeError &te) {
     handleSyntaxError(defGrammar, te.expected, te.actual);
@@ -422,23 +427,23 @@ void Compiler::execDefMacro(const SExpr &sExpr) {
 
     Code def;
 
-    const auto lineNum = srcMap[&sExpr].row;
-    def.pushCode(OpCode::MAKE_CLOSURE, lineNum);
-    def.pushCode(def.pushConst(function), lineNum);
+    def.pushCode(OpCode::MAKE_CLOSURE, curLine);
+    def.pushCode(def.pushConst(function));
 
     for (const auto &upValue : compiler.upValues) {
       def.pushCode(upValue.isLocal ? 1 : 0);
       def.pushCode(upValue.idx);
     }
 
-    def.pushCode(OpCode::DEF_SYM, lineNum);
-    def.pushCode(def.pushConst(sym), lineNum);
-    def.pushCode(OpCode::RETURN, lineNum);
+    def.pushCode(OpCode::DEF_SYM, curLine);
+    def.pushCode(def.pushConst(sym));
+    def.pushCode(OpCode::RETURN, curLine);
 
     vm.eval(vm.freeStore.alloc<Fn>(0, 0, def));
     vm.regMacro(sym);
 
-    code.pushCode(OpCode::MAKE_NIL);
+    cast<Nil>(last(sExpr));
+    emitCode(OpCode::MAKE_NIL);
   } catch (error::TypeError &te) {
     handleSyntaxError(defMacroGrammar, te.expected, te.actual);
   }
@@ -448,24 +453,20 @@ void Compiler::compileSet(const SExpr &sExpr) {
   try {
     const auto &sym = cast<Sym>(cast<SExprs>(at(setSymPos, sExpr)).first);
     const auto &expr = cast<SExprs>(at(setSExprPos, sExpr)).first;
-    cast<Nil>(at(setNilPos, sExpr));
 
     compileExpr(expr);
 
-    const auto lineNum = srcMap[&sExpr].row;
+    cast<Nil>(at(setNilPos, sExpr));
 
     if (const auto idx = resolveLocal(sym); idx != -1) {
-      code.pushCode(OpCode::SET_STACK, lineNum);
-      code.pushCode(locals[idx].stackOffset, lineNum);
+      emitCode(OpCode::SET_STACK, locals[idx].stackOffset);
       return;
     }
     if (const auto idx = resolveUpvalue(*this, sym); idx != -1) {
-      code.pushCode(OpCode::SET_UPVALUE, lineNum);
-      code.pushCode((uint8_t)idx, lineNum);
+      emitCode(OpCode::SET_UPVALUE, (uint8_t)idx);
       return;
     }
-    code.pushCode(OpCode::SET_SYM, lineNum);
-    code.pushCode(code.pushConst(sym), lineNum);
+    emitCode(OpCode::SET_SYM, emitConst(sym));
   } catch (error::TypeError &te) {
     handleSyntaxError(setGrammar, te.expected, te.actual);
   }
@@ -474,48 +475,36 @@ void Compiler::compileSet(const SExpr &sExpr) {
 void Compiler::compileIf(const SExpr &sExpr) {
   try {
     const auto &test = cast<SExprs>(at(ifTestPos, sExpr)).first;
-    const auto &conseq = cast<SExprs>(at(ifConseqPos, sExpr)).first;
-    const auto &alt = cast<SExprs>(at(ifAltPos, sExpr)).first;
-    cast<Nil>(at(ifNilPos, sExpr));
-
     compileExpr(test);
+    const auto jifIdx =
+        emitCode(OpCode::POP_JUMP_IF_FALSE, UINT8_MAX, UINT8_MAX) + 1;
 
-    const auto testLoc = srcMap[&test].row;
-    const auto jifIdx = code.pushCode(OpCode::POP_JUMP_IF_FALSE, testLoc) + 1;
-    code.pushCode(UINT8_MAX, testLoc);
-    code.pushCode(UINT8_MAX, testLoc);
-
+    const auto &conseq = cast<SExprs>(at(ifConseqPos, sExpr)).first;
     compileExpr(conseq);
+    const auto jIdx = emitCode(OpCode::JUMP, UINT8_MAX, UINT8_MAX) + 1;
+    patchJump(jifIdx);
 
-    const auto conseqLoc = srcMap[&conseq].row;
-    const auto jIdx = code.pushCode(OpCode::JUMP, conseqLoc) + 1;
-    code.pushCode(UINT8_MAX, conseqLoc);
-    code.pushCode(UINT8_MAX, conseqLoc);
-    code.patchJump(jifIdx);
-
+    const auto &alt = cast<SExprs>(at(ifAltPos, sExpr)).first;
     compileExpr(alt);
+    patchJump(jIdx);
 
-    code.patchJump(jIdx);
+    cast<Nil>(at(ifNilPos, sExpr));
   } catch (error::TypeError &te) {
     handleSyntaxError(ifGrammar, te.expected, te.actual);
   }
 }
 
 void Compiler::compileRet() {
-  code.pushCode(OpCode::SET_STACK);
-  code.pushCode(0);
+  emitCode(OpCode::SET_STACK, 0);
 
   for (const auto &local : locals) {
     if (local.isCaptured) {
-      const auto lineNum = srcMap[&local.symbol].row;
-      code.pushCode(OpCode::CLOSE_UPVALUE, lineNum);
-      code.pushCode(local.stackOffset);
+      emitCode(OpCode::CLOSE_UPVALUE, local.stackOffset);
     }
   }
 
-  code.pushCode(OpCode::POP);
-  code.pushCode(stackOffset);
-  code.pushCode(OpCode::RETURN);
+  emitCode(OpCode::POP, stackOffset);
+  emitCode(OpCode::RETURN);
 }
 
 const SExpr &Compiler::execMacro(const SExpr &sExpr) {
@@ -523,25 +512,24 @@ const SExpr &Compiler::execMacro(const SExpr &sExpr) {
 
   const auto &sExprs = cast<SExprs>(sExpr);
 
-  const auto lineNum = srcMap[&sExprs.first].row;
   const auto colNum = srcMap[&sExprs.first].col;
 
-  fexpr.pushCode(OpCode::LOAD_SYM, lineNum);
-  fexpr.pushCode(fexpr.pushConst(sExprs.first), lineNum);
+  fexpr.pushCode(OpCode::LOAD_SYM, curLine);
+  fexpr.pushCode(fexpr.pushConst(sExprs.first));
 
   const auto argc = visitEach(sExprs.rest, [&](const auto &sExpr) {
-    fexpr.pushCode(OpCode::LOAD_CONST, lineNum);
-    fexpr.pushCode(fexpr.pushConst(sExpr), lineNum);
+    fexpr.pushCode(OpCode::LOAD_CONST, curLine);
+    fexpr.pushCode(fexpr.pushConst(sExpr));
   });
 
-  fexpr.pushCode(OpCode::CALL, lineNum);
-  fexpr.pushCode(argc, lineNum);
-  fexpr.pushCode(OpCode::RETURN, lineNum);
+  fexpr.pushCode(OpCode::CALL, curLine);
+  fexpr.pushCode(argc);
+  fexpr.pushCode(OpCode::RETURN, curLine);
 
   const auto &res = vm.eval(vm.freeStore.alloc<Fn>(0, 0, fexpr));
 
   traverse(res, [&](const auto &sExpr) {
-    srcMap.insert({&sExpr, {lineNum, colNum}});
+    srcMap.insert({&sExpr, {curLine, colNum}});
   });
 
   return res;
@@ -558,29 +546,29 @@ void Compiler::handleSyntaxError(const std::string grammar,
 }
 
 Compiler::Compiler(std::vector<std::string> source, VM &vm)
-    : vm(vm), source(source), argNames(vm.freeStore.alloc<Nil>()),
+    : vm(vm), source(source), curLine(0), argNames(vm.freeStore.alloc<Nil>()),
       body(parse()), stackOffset(1) {}
 
 const Fn &Compiler::compile() {
-  const auto lineNum = srcMap[&body].row;
-
   if (isVariadic()) {
-    code.pushCode(OpCode::MAKE_LIST, lineNum);
+    emitCode(OpCode::MAKE_LIST);
   }
 
-  code.pushCode(OpCode::MAKE_NIL, lineNum);
+  emitCode(OpCode::MAKE_NIL);
   visitEach(body, [&](const auto &sExpr) {
     stackOffset += 1;
     this->compileStmt(sExpr);
   });
+
+  cast<Nil>(last(body));
   compileRet();
 
   return vm.freeStore.alloc<Fn>(countParams(), upValues.size(), code);
 }
 
-void Compiler::verifyLex(const std::string &line, const unsigned int lineNum,
+void Compiler::verifyLex(const std::string &line, const unsigned int curLine,
                          unsigned int &openParen, unsigned int &closedParen) {
-  auto tokens = tokenize(line, lineNum);
+  auto tokens = tokenize(line, curLine);
   for (auto it = tokens.cbegin(); it != tokens.cend(); ++it) {
     if (openParen == closedParen && it->str == ")") {
       handleUnexpectedToken(*it, line);
