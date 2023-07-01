@@ -44,9 +44,10 @@ private:
   static std::vector<Token> tokenize(std::string line, const unsigned int row);
 
   const sexpr::SExprs &parse();
-  const sexpr::SExpr &parse(TokenIter &it, const TokenIter &end);
-  const sexpr::SExpr &parseSexprs(TokenIter &it, const TokenIter &end);
+  const sexpr::SExpr &parseLists(TokenIter &it, const TokenIter &end);
   const sexpr::SExpr &parseList(TokenIter &it, const TokenIter &end);
+  const sexpr::SExpr &parseElem(TokenIter &it, const TokenIter &end);
+  const sexpr::SExpr &parseSexprs(TokenIter &it, const TokenIter &end);
   const sexpr::SExpr &parseAtom(Token token);
 
   static void handleUnexpectedToken(const Token &token,
@@ -62,8 +63,8 @@ private:
   bool isVariadic();
 
   unsigned int visitEach(const sexpr::SExpr &sExpr, Visitor visitor);
-  void traverse(const sexpr::SExpr &sExpr, Visitor visitor);
   const sexpr::SExpr &at(const unsigned int n, const sexpr::SExpr &sExpr);
+  void traverse(const sexpr::SExpr &sExpr, Visitor visitor);
   void compileStmt(const sexpr::SExpr &sExpr);
   void compileExpr(const sexpr::SExpr &sExpr);
   void compileLambda(const sexpr::SExpr &sExpr);
@@ -72,7 +73,7 @@ private:
   void compileSym(const sexpr::Sym &sym);
   void compileQuote(const sexpr::SExpr &sExpr);
   void compileDef(const sexpr::SExpr &sExpr);
-  void compileDefMacro(const sexpr::SExpr &sExpr);
+  void execDefMacro(const sexpr::SExpr &sExpr);
   void compileSet(const sexpr::SExpr &sExpr);
   void compileIf(const sexpr::SExpr &sExpr);
   void compileRet();

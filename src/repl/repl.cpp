@@ -45,23 +45,17 @@ bool getConsoleInput(std::vector<std::string> &lines, std::string prompt,
   return false;
 }
 
-std::istream &getFileInput(std::istream &in, std::vector<std::string> &lines) {
+bool getFileInput(std::istream &in, std::vector<std::string> &lines) {
   auto openParen = 0U;
   auto closedParen = 0U;
   std::string line;
   while (getline(in, line)) {
     line = std::regex_replace(
         line, std::regex("(\\\\\"|\"(?:\\\\\"|[^\"])*\")|(;.*$)"), "$1");
-    if (line.empty()) {
-      continue;
-    }
     Compiler::verifyLex(line, lines.size() + 1, openParen, closedParen);
     lines.push_back(line + " ");
-    if (openParen == closedParen) {
-      return in;
-    }
   }
-  return in;
+  return lines.size() > 0;
 }
 
 int execFile(const std::string filePath, VM &vm) {
@@ -74,26 +68,19 @@ int execFile(const std::string filePath, VM &vm) {
     return EXIT_FAILURE;
   }
 
-  while (true) {
-    std::vector<std::string> lines;
-    try {
-      if (getFileInput(fs, lines)) {
-        Compiler compiler(lines, vm);
-        const auto &main = compiler.compile();
-        vm.evalWithGC(main);
-      } else {
-        break;
-      }
-    } catch (error::SyntaxError &se) {
-      std::cerr << "In line " << lines.size() << " of \"" << filePath << "\""
-                << std::endl
-                << se;
-    } catch (error::RuntimeError &re) {
-      std::cerr << "In line " << lines.size() << " of \"" << filePath << "\""
-                << std::endl
-                << re;
+  std::vector<std::string> lines;
+  try {
+    if (getFileInput(fs, lines)) {
+      Compiler compiler(lines, vm);
+      const auto &main = compiler.compile();
+      vm.evalWithGC(main);
     }
+  } catch (error::SyntaxError &se) {
+    std::cerr << "In \"" << filePath << "\"" << std::endl << se << std::endl;
+  } catch (error::RuntimeError &re) {
+    std::cerr << "In \"" << filePath << "\"" << std::endl << re << std::endl;
   }
+
   return EXIT_SUCCESS;
 }
 

@@ -283,6 +283,6 @@ VM::VM() : freeStore(globals, stack, callFrames, openUpvals) {
 #undef BIND_NATIVE_FN
 }
 
-void VM::defMacro(const Sym &sym) { globals.defMacro(sym); }
+void VM::regMacro(const Sym &sym) { globals.regMacro(sym); }
 
 bool VM::isMacro(const Sym &sym) { return globals.isMacro(sym); }

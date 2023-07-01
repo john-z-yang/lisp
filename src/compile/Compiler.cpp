@@ -54,25 +54,29 @@ bool Compiler::isNum(const std::string s) {
 const SExprs &Compiler::parse() {
   auto tokens = tokenize(source);
   auto it = tokens.cbegin();
-  const auto &res = parse(it, tokens.end());
-  if (it != tokens.end()) {
-    handleUnexpectedToken(*it, source[it->srcLoc.row - 1]);
-  }
-  return vm.freeStore.alloc<SExprs>(res, vm.freeStore.alloc<Nil>());
+  return cast<SExprs>(parseLists(it, tokens.cend()));
 }
 
-const SExpr &Compiler::parse(TokenIter &it, const TokenIter &end) {
+const SExpr &Compiler::parseLists(TokenIter &it, const TokenIter &end) {
+  if (it == end) {
+    return vm.freeStore.alloc<Nil>();
+  }
+  const auto &cur = parseList(it, end);
+  return vm.freeStore.alloc<SExprs>(cur, parseLists(it, end));
+}
+
+const SExpr &Compiler::parseList(TokenIter &it, const TokenIter &end) {
   auto token = *it;
   it += 1;
   if (token.str == "(") {
-    const auto &sExprs = parseSexprs(it, end);
+    const auto &sExprs = parseElem(it, end);
     srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col}});
     return sExprs;
   }
   if (token.str == "'" || token.str == "`" || token.str == "," ||
       token.str == ",@") {
-    const auto &rest =
-        vm.freeStore.alloc<SExprs>(parse(it, end), vm.freeStore.alloc<Nil>());
+    const auto &rest = vm.freeStore.alloc<SExprs>(parseList(it, end),
+                                                  vm.freeStore.alloc<Nil>());
     srcMap.insert({&rest, {token.srcLoc.row, token.srcLoc.col}});
     const auto &sExprs = vm.freeStore.alloc<SExprs>(parseAtom(token), rest);
     srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col}});
@@ -83,7 +87,7 @@ const SExpr &Compiler::parse(TokenIter &it, const TokenIter &end) {
   return atom;
 }
 
-const SExpr &Compiler::parseSexprs(TokenIter &it, const TokenIter &end) {
+const SExpr &Compiler::parseElem(TokenIter &it, const TokenIter &end) {
   auto token = *it;
   if (token.str == ")") {
     it += 1;
@@ -92,21 +96,21 @@ const SExpr &Compiler::parseSexprs(TokenIter &it, const TokenIter &end) {
     return nil;
   } else if (token.str == "(") {
     it += 1;
-    const auto &first = parseSexprs(it, end);
-    const auto &rest = parseSexprs(it, end);
+    const auto &first = parseElem(it, end);
+    const auto &rest = parseElem(it, end);
     const auto &sExprs = vm.freeStore.alloc<SExprs>(first, rest);
     srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col - 1}});
     return sExprs;
   }
-  return parseList(it, end);
+  return parseSexprs(it, end);
 }
 
-const SExpr &Compiler::parseList(TokenIter &it, const TokenIter &end) {
+const SExpr &Compiler::parseSexprs(TokenIter &it, const TokenIter &end) {
   auto token = *it;
-  const auto &first = parse(it, end);
+  const auto &first = parseList(it, end);
   if (it->str == ".") {
     it += 1;
-    const auto &rest = parse(it, end);
+    const auto &rest = parseList(it, end);
     if (it == end) {
       handleSyntaxError(dotGrammer, "datum", rest);
     }
@@ -115,7 +119,7 @@ const SExpr &Compiler::parseList(TokenIter &it, const TokenIter &end) {
     srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col - 1}});
     return sExprs;
   }
-  const auto &rest = parseSexprs(it, end);
+  const auto &rest = parseElem(it, end);
   const auto &sExprs = vm.freeStore.alloc<SExprs>(first, rest);
   srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col - 1}});
   return sExprs;
@@ -256,7 +260,7 @@ void Compiler::compileStmt(const SExpr &sExpr) {
         compileDef(sExpr);
         return;
       } else if (sym.val == "defmacro") {
-        compileDefMacro(sExpr);
+        execDefMacro(sExpr);
         return;
       } else if (sym.val == "begin") {
         code.pushCode(OpCode::MAKE_NIL, srcMap[&sym].row);
@@ -401,7 +405,7 @@ void Compiler::compileDef(const SExpr &sExpr) {
   }
 }
 
-void Compiler::compileDefMacro(const SExpr &sExpr) {
+void Compiler::execDefMacro(const SExpr &sExpr) {
   if (enclosing.has_value()) {
     const auto [row, col] = srcMap[&sExpr];
     throw error::SyntaxError(
@@ -416,14 +420,25 @@ void Compiler::compileDefMacro(const SExpr &sExpr) {
     Compiler compiler(source, srcMap, argNames, body, *this, vm);
     const auto &function = compiler.compile();
 
+    Code def;
+
     const auto lineNum = srcMap[&sExpr].row;
-    code.pushCode(OpCode::MAKE_CLOSURE, lineNum);
-    code.pushCode(code.pushConst(function), lineNum);
+    def.pushCode(OpCode::MAKE_CLOSURE, lineNum);
+    def.pushCode(def.pushConst(function), lineNum);
 
-    code.pushCode(OpCode::DEF_SYM, lineNum);
-    code.pushCode(code.pushConst(sym), lineNum);
+    for (const auto &upValue : compiler.upValues) {
+      def.pushCode(upValue.isLocal ? 1 : 0);
+      def.pushCode(upValue.idx);
+    }
 
-    vm.defMacro(sym);
+    def.pushCode(OpCode::DEF_SYM, lineNum);
+    def.pushCode(def.pushConst(sym), lineNum);
+    def.pushCode(OpCode::RETURN, lineNum);
+
+    vm.eval(vm.freeStore.alloc<Fn>(0, 0, def));
+    vm.regMacro(sym);
+
+    code.pushCode(OpCode::MAKE_NIL);
   } catch (error::TypeError &te) {
     handleSyntaxError(defMacroGrammar, te.expected, te.actual);
   }
@@ -567,8 +582,7 @@ void Compiler::verifyLex(const std::string &line, const unsigned int lineNum,
                          unsigned int &openParen, unsigned int &closedParen) {
   auto tokens = tokenize(line, lineNum);
   for (auto it = tokens.cbegin(); it != tokens.cend(); ++it) {
-    if ((openParen == closedParen && openParen > 0) ||
-        (openParen == closedParen && it->str == ")")) {
+    if (openParen == closedParen && it->str == ")") {
       handleUnexpectedToken(*it, line);
     }
     if (it->str == "(") {

@@ -32,7 +32,7 @@ public:
 
   const sexpr::SExpr &find(const sexpr::Sym &sym);
 
-  void defMacro(const sexpr::Sym &sym);
+  void regMacro(const sexpr::Sym &sym);
 
   bool isMacro(const sexpr::Sym &sym);
 };

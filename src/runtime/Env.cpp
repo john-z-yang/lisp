@@ -34,6 +34,6 @@ const SExpr &Env::find(const Sym &sym) {
 
 const Env::SymTable &Env::getSymTable() const { return symTable; }
 
-void Env::defMacro(const Sym &sym) { macros.insert(sym); }
+void Env::regMacro(const Sym &sym) { macros.insert(sym); }
 
 bool Env::isMacro(const Sym &sym) { return macros.find(sym) != macros.end(); }

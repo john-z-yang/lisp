@@ -1,6 +1,7 @@
 #include "Code.hpp"
 #include "../sexpr/Cast.cpp"
 #include "../sexpr/Fn.hpp"
+#include "InstrPtr.hpp"
 #include "OpCode.hpp"
 #include <cstdint>
 #include <iomanip>
@@ -8,9 +9,9 @@
 using namespace code;
 using namespace sexpr;
 
-uint8_t Code::pushCode(const uint8_t code) { return pushCode(code, 0); }
+InstrPtr Code::pushCode(const uint8_t code) { return pushCode(code, 0); }
 
-uint8_t Code::pushCode(const uint8_t code, const unsigned int lineNum) {
+InstrPtr Code::pushCode(const uint8_t code, const unsigned int lineNum) {
   byteCodes.push_back(code);
   lineNums.push_back(lineNum);
   return byteCodes.size() - 1;

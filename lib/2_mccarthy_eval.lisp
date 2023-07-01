@@ -1,5 +1,3 @@
-(define not (lambda (v) (if v #f #t)))
-
 (defmacro and args
   (if (null? args) #t
       (if (null? (cdr args)) (car args)
