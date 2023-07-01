@@ -73,11 +73,11 @@ private:
   void compileSym(const sexpr::Sym &sym);
   void compileQuote(const sexpr::SExpr &sExpr);
   void compileDef(const sexpr::SExpr &sExpr);
-  void execDefMacro(const sexpr::SExpr &sExpr);
   void compileSet(const sexpr::SExpr &sExpr);
   void compileIf(const sexpr::SExpr &sExpr);
   void compileRet();
-  const sexpr::SExpr &expandMacro(const sexpr::SExpr &macro);
+  void execDefMacro(const sexpr::SExpr &sExpr);
+  const sexpr::SExpr &execMacro(const sexpr::SExpr &macro);
 
   void handleSyntaxError(const std::string grammar, const std::string expected,
                          const sexpr::SExpr &actual);

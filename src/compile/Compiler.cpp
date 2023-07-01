@@ -285,7 +285,7 @@ void Compiler::compileExpr(const SExpr &sExpr) {
   if (isa<Sym>(sExprs.first)) {
     const auto &sym = cast<Sym>(sExprs.first);
     if (vm.isMacro(sym)) {
-      compileExpr(expandMacro(sExpr));
+      compileExpr(execMacro(sExpr));
       return;
     } else if (sym.val == "begin") {
       const auto lineNum = srcMap[&sExpr].row;
@@ -518,7 +518,7 @@ void Compiler::compileRet() {
   code.pushCode(OpCode::RETURN);
 }
 
-const SExpr &Compiler::expandMacro(const SExpr &sExpr) {
+const SExpr &Compiler::execMacro(const SExpr &sExpr) {
   Code fexpr;
 
   const auto &sExprs = cast<SExprs>(sExpr);
