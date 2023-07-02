@@ -275,18 +275,21 @@ void Compiler::compileStmt(const SExpr &sExpr) {
     const auto &sExprs = cast<SExprs>(sExpr);
     if (isa<Sym>(sExprs.first)) {
       const auto &sym = cast<Sym>(sExprs.first);
-      if (sym.val == "define") {
-        compileDef(sExpr);
-        return;
-      } else if (sym.val == "defmacro") {
-        execDefMacro(sExpr);
-        return;
-      } else if (sym.val == "begin") {
+      if (sym.val == "begin") {
         emitCode(OpCode::MAKE_NIL);
         visitEach(sExprs.rest, [&](const auto &sExpr) {
           stackOffset += 1;
           this->compileStmt(sExpr);
         });
+        return;
+      } else if (sym.val == "define") {
+        compileDef(sExpr);
+        return;
+      } else if (sym.val == "defmacro") {
+        execDefMacro(sExpr);
+        return;
+      } else if (vm.isMacro(sym)) {
+        compileStmt(execMacro(sExpr));
         return;
       }
     }
@@ -304,10 +307,7 @@ void Compiler::compileExpr(const SExpr &sExpr) {
   const auto &sExprs = cast<SExprs>(sExpr);
   if (isa<Sym>(sExprs.first)) {
     const auto &sym = cast<Sym>(sExprs.first);
-    if (vm.isMacro(sym)) {
-      compileExpr(execMacro(sExpr));
-      return;
-    } else if (sym.val == "begin") {
+    if (sym.val == "begin") {
       emitCode(OpCode::MAKE_NIL);
       visitEach(sExprs.rest, [&](const auto &sExpr) {
         emitCode(OpCode::POP_TOP);
@@ -331,6 +331,9 @@ void Compiler::compileExpr(const SExpr &sExpr) {
       throw error::SyntaxError(
           "Invalid syntax for define: cannot use define as an expression",
           source[row - 1], row, col);
+    } else if (vm.isMacro(sym)) {
+      compileExpr(execMacro(sExpr));
+      return;
     }
   }
   compileCall(sExprs);
