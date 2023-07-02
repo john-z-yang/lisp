@@ -9,27 +9,26 @@ on:
       - '**'
 
 jobs:
+
   test:
-
-    runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
-    - name: set LISP_LIB_ENV variable
-      run: export LISP_LIB_ENV=./lib
-    - name: make
-      run: make
-    - name: make test
-      run: make test
+      - uses: actions/checkout@v3
+      - name: make
+        run: make
+      - name: make test
+        run: make test
 
   gc-stress-test:
-
-    runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
-    - name: set LISP_LIB_ENV variable
-      run: export LISP_LIB_ENV=./lib
     - name: make with GC_STRESS_TEST flag
       run: make CXXFLAGS_EXTRA="-DGC_STRESS_TEST=1"
     - name: make test
