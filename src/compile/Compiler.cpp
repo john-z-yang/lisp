@@ -554,7 +554,7 @@ Compiler::Compiler(std::vector<std::string> source, VM &vm)
 
 const Fn &Compiler::compile() {
   if (isVariadic()) {
-    emitCode(OpCode::MAKE_LIST);
+    emitCode(OpCode::MAKE_LIST, 1);
   }
 
   emitCode(OpCode::MAKE_NIL);

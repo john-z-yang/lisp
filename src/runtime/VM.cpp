@@ -6,6 +6,7 @@
 #include "CPPFnImpls.hpp"
 #include "FreeStore.hpp"
 #include "GCGuard.hpp"
+#include "StackIter.hpp"
 #include "StackPtr.hpp"
 #include <algorithm>
 #include <exception>
@@ -158,9 +159,9 @@ MAKE_LIST : {
   {
     auto gcGuard = freeStore.pauseGC();
 
-    const auto n = stack.size() - BASE_PTR() - 1;
-    const auto &list = makeList(n);
-    stack.erase(stack.end() - n, stack.end());
+    const auto start = stack.begin() + BASE_PTR() + READ_BYTE();
+    const auto &list = makeList(start);
+    stack.erase(start, stack.end());
     stack.push_back(list);
   }
 
@@ -212,11 +213,11 @@ const SExpr &VM::peak(StackPtr distance) {
   return stack.rbegin()[distance].get();
 }
 
-const SExpr &VM::makeList(StackPtr n) {
-  if (n == 0) {
+const SExpr &VM::makeList(StackIter start) {
+  if (start == stack.cend()) {
     return freeStore.alloc<Nil>();
   }
-  return freeStore.alloc<SExprs>(*(stack.end() - n), makeList(n - 1));
+  return freeStore.alloc<SExprs>(*start, makeList(start + 1));
 }
 
 const SExpr &VM::eval(const Fn &main) {

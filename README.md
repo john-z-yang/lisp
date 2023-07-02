@@ -238,7 +238,7 @@ flowchart TB
 | **SET_STACK** _idx_                | Set `upvalues[idx]` to **TOS**.                                                                                                                                                                       |
 | **JUMP** _offset_                  | Set `ip` of current frame to `offset`.                                                                                                                                                                |
 | **POP_JUMP_IF_FALSE** _offset_     | Set `ip` of current frame to `offset` if **TOS** is not _truthy_.                                                                                                                                     |
-| **MAKE_LIST**                      | Pop all elements from **BASE_PTR** **TOS**, push those elements as cons list onto the stack.                                                                                                          |
+| **MAKE_LIST** _offset_             | Pop all elements from **BASE_PTR** + _offset_ to **TOS**, push those elements as cons list onto the stack.                                                                                            |
 | **MAKE_NIL**                       | Push `'()` onto the stack                                                                                                                                                                             |
 
 #### Example

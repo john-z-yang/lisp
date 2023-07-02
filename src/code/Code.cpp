@@ -161,7 +161,7 @@ std::ostream &code::operator<<(std::ostream &o, const Code &code) {
       break;
     }
     case OpCode::MAKE_LIST: {
-      DIS_NO_OPRAND_OP(MAKE_LIST);
+      DIS_BYTE_OPRAND_OP(MAKE_LIST);
       break;
     }
     case OpCode::MAKE_NIL: {
