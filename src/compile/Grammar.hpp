@@ -51,6 +51,8 @@ const auto lambdaArgPos = 1;
 const auto lambdaBodyPos = 2;
 const auto lambdaNilPos = 3;
 
+const auto callGrammar = "(proc expression*)";
+
 const auto ifGrammar = "(if expression_1 expression_2 expression_3)";
 const auto ifTestPos = 1;
 const auto ifConseqPos = 2;

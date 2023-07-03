@@ -370,7 +370,11 @@ void Compiler::compileCall(const SExprs &sExprs) {
   const auto argc = visitEach(
       sExprs.rest, [&](const auto &sExpr) { this->compileExpr(sExpr); });
 
-  cast<Nil>(last(sExprs));
+  try {
+    cast<Nil>(last(sExprs));
+  } catch (error::TypeError &te) {
+    handleSyntaxError(callGrammar, te.expected, te.actual);
+  }
   emitCode(OpCode::CALL, argc);
 }
 
@@ -395,9 +399,13 @@ void Compiler::compileSym(const Sym &sym) {
 }
 
 void Compiler::compileQuote(const SExpr &sExpr) {
-  const auto &expr = cast<SExprs>(at(quoteArgPos, sExpr)).first;
-  emitCode(OpCode::LOAD_CONST, emitConst(expr));
-  cast<Nil>(at(quoteNilPos, sExpr));
+  try {
+    const auto &expr = cast<SExprs>(at(quoteArgPos, sExpr)).first;
+    emitCode(OpCode::LOAD_CONST, emitConst(expr));
+    cast<Nil>(at(quoteNilPos, sExpr));
+  } catch (error::TypeError &te) {
+    handleSyntaxError(quoteGrammar, te.expected, te.actual);
+  }
 }
 
 void Compiler::compileDef(const SExpr &sExpr) {
@@ -504,6 +512,12 @@ void Compiler::compileIf(const SExpr &sExpr) {
 }
 
 void Compiler::compileRet() {
+  try {
+    cast<Nil>(last(body));
+  } catch (error::TypeError &te) {
+    handleSyntaxError(lambdaGrammar, te.expected, te.actual);
+  }
+
   emitCode(OpCode::SET_STACK, 0);
 
   for (const auto &local : locals) {
@@ -569,7 +583,6 @@ const Fn &Compiler::compile() {
     this->compileStmt(sExpr);
   });
 
-  cast<Nil>(last(body));
   compileRet();
 
   return vm.freeStore.alloc<Fn>(upValues.size(), arity, variadic, code);
