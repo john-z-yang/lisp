@@ -16,13 +16,13 @@ protected:
   bool equals(const SExpr &other) const override;
 
 public:
-  NatFn(runtime::CPPFn &fn, const uint8_t argc, const bool isVariadic);
+  NatFn(runtime::CPPFn &fn, const uint8_t arity, const bool variadic);
 
   runtime::CPPFn &fn;
-  const uint8_t argc;
-  const bool isVariadic;
+  const uint8_t arity;
+  const bool variadic;
 
-  const SExpr &invoke(runtime::StackIter params, const uint8_t incomingArgc,
+  const SExpr &invoke(runtime::StackIter params, const uint8_t argc,
                       runtime::VM &vm) const;
 
   static bool classOf(const SExpr &sExpr);

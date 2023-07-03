@@ -20,7 +20,7 @@ public:
   Closure(const Fn &fnAtom,
           const std::vector<std::shared_ptr<runtime::Upvalue>> upvalues);
 
-  const Fn &fnAtom;
+  const Fn &fn;
   const std::vector<std::shared_ptr<runtime::Upvalue>> upvalues;
 
   void assertArity(const uint8_t arity) const;

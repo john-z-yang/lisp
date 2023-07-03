@@ -25,13 +25,16 @@ private:
   using Visitor = std::function<void(const sexpr::SExpr &)>;
 
   runtime::VM &vm;
-  std::optional<std::reference_wrapper<Compiler>> enclosing;
+  const std::optional<std::reference_wrapper<Compiler>> enclosing;
 
   std::vector<std::string> source;
   SrcMap srcMap;
   unsigned int curLine;
 
   const sexpr::SExpr &argNames;
+  const uint8_t arity;
+  const bool variadic;
+
   const sexpr::SExprs &body;
 
   std::vector<Local> locals;
@@ -57,12 +60,12 @@ private:
   Compiler(const std::vector<std::string> source, SrcMap sourceLoc,
            const sexpr::SExpr &param, const sexpr::SExprs &body,
            Compiler &enclosing, runtime::VM &vm);
+  void updateCurLine(const sexpr::SExpr &sExpr);
   int resolveLocal(const sexpr::Sym &sym);
   int resolveUpvalue(Compiler &caller, const sexpr::Sym &sym);
   int addUpvalue(int idx, bool isLocal);
-  int countParams();
   bool isVariadic();
-  void updateCurLine(const sexpr::SExpr &sExpr);
+  uint8_t countArity();
 
   template <typename T> code::InstrPtr emitCode(T v) {
     return code.pushCode(v, curLine);

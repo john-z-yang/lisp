@@ -66,21 +66,23 @@ _Happy hacking!_
 
 ### Procedures
 
-| Syntax                                                       | Description                                                                                                                                                                             |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| (**lambda** (_sym<sub>1</sub> ... sym<sub>n</sub>_) _expr+_) | Produces a _procedure_ that accepts _n_ arguments. When invoked, bind each argument to a _sym_, evalulate _expr_ in order and return the result of the last _expr_.                     |
-| (**lambda** _sym expr+_)                                     | Produces a _procedure_ that accepts arbitary number of arguments. When invoked, bind parameters to _sym_ as a list, evalulate _expr_ in order and return the result of the last _expr_. |
-| (**procedure** _expr\*_)                                     | Evaluates each _expr_, invoke _procedure_ with the results as arguments.                                                                                                                |
+| Syntax                                                                                 | Description                                                                                                                                                                                                                                                                                                                                       |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| (**lambda** (_sym<sub>1</sub> ... sym<sub>n</sub>_) _expr+_)                           | Produces a _procedure_ that accepts _n_ arguments. When invoked, bind each argument to a _sym_, evalulate _expr_ in order and return the result of the last _expr_.                                                                                                                                                                               |
+| (**lambda** _sym expr+_)                                                               | Produces a _procedure_ that accepts arbitary number of arguments. When invoked, bind parameters to _sym_ as a list, evalulate _expr_ in order and return the result of the last _expr_.                                                                                                                                                           |
+| (**lambda** (_sym<sub>1</sub> ... sym<sub>n - 1</sub> **.** sym<sub>n</sub>_) _expr+_) | Produces a _procedure_ that accepts _n - 1_ or more arguments. When invoked, bind each argument to a _sym_, the last variable will be a newly allocated list of the arguments left over after all the other arguments have been matched up against the other formal argument, evalulate _expr_ in order and return the result of the last _expr_. |
+| (**procedure** _expr\*_)                                                               | Evaluates each _expr_, invoke _procedure_ with the results as arguments.                                                                                                                                                                                                                                                                          |
 
 ### Macros
 
-| Syntax                                                                | Description                                                                                                                   |
-| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| (**defmacro** _form_ (_sym<sub>1</sub> ... sym<sub>n</sub>_) _expr+_) | Register a _procedure_ equivalent to (**lambda** (_sym<sub>1</sub> ... sym<sub>n</sub>_) _expr_) as a _macro_.                |
-| (**defmacro** _form expr+_)                                           | Register a _procedure_ equivalent to (**lambda** _sym expr_) as a _macro_.                                                    |
-| (_form_ _expr*_)                                                      | Invoke the procedure _macro_ is bound to with the unevaluated _expr_ as arugment **during compile time**. Compile the output. |
-| (**quote** _expr_)                                                    | Returns _expr_ without evaluating it.                                                                                         |
-| **'**_expr_                                                           | Equivalent to (**quote** _expr_)                                                                                              |
+| Syntax                                                                                        | Description                                                                                                                               |
+| --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| (**defmacro** _form_ (_sym<sub>1</sub> ... sym<sub>n</sub>_) _expr+_)                         | Register a _procedure_ equivalent to (**lambda** (_sym<sub>1</sub> ... sym<sub>n</sub>_) _expr_) as a _macro_.                            |
+| (**defmacro** _form sym expr+_)                                                               | Register a _procedure_ equivalent to (**lambda** _sym expr_) as a _macro_.                                                                |
+| (**defmacro** _form (_sym<sub>1</sub> ... sym<sub>n - 1</sub> **.** sym<sub>n</sub>_) expr+_) | Register a _procedure_ equivalent to (**lambda** (_sym<sub>1</sub> ... sym<sub>n - 1</sub> **.** sym<sub>n</sub>_) _expr+_) as a _macro_. |
+| (_form_ _expr*_)                                                                              | Invoke the procedure _macro_ is bound to with the unevaluated _expr_ as arugment **during compile time**. Compile the output.             |
+| (**quote** _expr_)                                                                            | Returns _expr_ without evaluating it.                                                                                                     |
+| **'**_expr_                                                                                   | Equivalent to (**quote** _expr_)                                                                                                          |
 
 ### Symbols
 
@@ -238,7 +240,7 @@ flowchart TB
 | **SET_STACK** _idx_                | Set `upvalues[idx]` to **TOS**.                                                                                                                                                                       |
 | **JUMP** _offset_                  | Set `ip` of current frame to `offset`.                                                                                                                                                                |
 | **POP_JUMP_IF_FALSE** _offset_     | Set `ip` of current frame to `offset` if **TOS** is not _truthy_.                                                                                                                                     |
-| **MAKE_LIST**                      | Pop all elements from **BASE_PTR** **TOS**, push those elements as cons list onto the stack.                                                                                                          |
+| **MAKE_LIST** _offset_             | Pop all elements from **BASE_PTR** + _offset_ to **TOS**, push those elements as cons list onto the stack.                                                                                            |
 | **MAKE_NIL**                       | Push `'()` onto the stack                                                                                                                                                                             |
 
 #### Example

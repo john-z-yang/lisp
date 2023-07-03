@@ -6,6 +6,7 @@
 #include "CPPFnImpls.hpp"
 #include "FreeStore.hpp"
 #include "GCGuard.hpp"
+#include "StackIter.hpp"
 #include "StackPtr.hpp"
 #include <algorithm>
 #include <exception>
@@ -39,7 +40,7 @@ const SExpr &VM::eval(const Fn &main, bool withGC) {
 const SExpr &VM::exec() {
 #define CUR_CALL_FRAME() (callFrames.back())
 #define CUR_CLOSURE() (CUR_CALL_FRAME().closure)
-#define CUR_FN() (CUR_CLOSURE().fnAtom)
+#define CUR_FN() (CUR_CLOSURE().fn)
 #define CUR_CODE() (CUR_FN().code)
 #define BASE_PTR() (CUR_CALL_FRAME().bp)
 #define INST_PTR() (CUR_CALL_FRAME().ip)
@@ -158,9 +159,9 @@ MAKE_LIST : {
   {
     auto gcGuard = freeStore.pauseGC();
 
-    const auto n = stack.size() - BASE_PTR() - 1;
-    const auto &list = makeList(n);
-    stack.erase(stack.end() - n, stack.end());
+    const auto start = stack.begin() + BASE_PTR() + READ_BYTE();
+    const auto &list = makeList(start);
+    stack.erase(start, stack.end());
     stack.push_back(list);
   }
 
@@ -212,11 +213,11 @@ const SExpr &VM::peak(StackPtr distance) {
   return stack.rbegin()[distance].get();
 }
 
-const SExpr &VM::makeList(StackPtr n) {
-  if (n == 0) {
+const SExpr &VM::makeList(StackIter start) {
+  if (start == stack.cend()) {
     return freeStore.alloc<Nil>();
   }
-  return freeStore.alloc<SExprs>(*(stack.end() - n), makeList(n - 1));
+  return freeStore.alloc<SExprs>(*start, makeList(start + 1));
 }
 
 const SExpr &VM::eval(const Fn &main) {
@@ -235,10 +236,10 @@ void VM::reset() {
 }
 
 VM::VM() : freeStore(globals, stack, callFrames, openUpvals) {
-#define BIND_NATIVE_FN(sym, func, argc, isVariadic)                            \
+#define BIND_NATIVE_FN(sym, func, argc, variadic)                              \
   do {                                                                         \
     globals.def(freeStore.alloc<Sym>(sym),                                     \
-                freeStore.alloc<NatFn>(func, argc, isVariadic));               \
+                freeStore.alloc<NatFn>(func, argc, variadic));                 \
   } while (false)
 
   BIND_NATIVE_FN("sym?", lispIsSym, 1, false);

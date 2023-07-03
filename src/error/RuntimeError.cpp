@@ -26,7 +26,7 @@ std::ostream &error::operator<<(std::ostream &o, const RuntimeError &re) {
   o << "In code object with ip: " << re.frames.back().ip << std::endl;
 
   o << std::setw(PADDING_WIDTH) << std::right
-    << re.frames.back().closure.fnAtom.code << "Call stack:";
+    << re.frames.back().closure.fn.code << "Call stack:";
   for (unsigned int idx = 0; const auto &stackFrame : re.frames) {
     o << std::endl
       << std::setw(PADDING_WIDTH) << "" << std::setw(IDX_WIDTH) << std::left

@@ -13,9 +13,10 @@ std::string Fn::toString() const {
 
 bool Fn::equals(const SExpr &other) const { return this == &other; }
 
-Fn::Fn(const int8_t arity, const unsigned int numUpvals, const code::Code code)
+Fn::Fn(const unsigned int numUpvals, const uint8_t arity, const bool variadic,
+       const code::Code code)
     : Atom(SExpr::Type::FUNCTION), numUpvals(numUpvals), arity(arity),
-      code(code) {}
+      variadic(variadic), code(code) {}
 
 std::ostream &Fn::dissassemble(std::ostream &o) const {
   o << "<Function at " << this << ", arity: " << unsigned(arity)
