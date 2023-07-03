@@ -12,23 +12,20 @@ std::string NatFn::toString() const { return "<Native function>"; }
 
 bool NatFn::equals(const SExpr &other) const { return this == &other; }
 
-NatFn::NatFn(CPPFn &fn, const uint8_t argc, const bool isVariadic)
-    : Atom(SExpr::Type::NATIVE_FN), fn(fn), argc(argc), isVariadic(isVariadic) {
-}
+NatFn::NatFn(CPPFn &fn, const uint8_t arity, const bool variadic)
+    : Atom(SExpr::Type::NATIVE_FN), fn(fn), arity(arity), variadic(variadic) {}
 
-const SExpr &NatFn::invoke(StackIter params, const uint8_t incomingArgc,
-                           VM &vm) const {
-  if ((!isVariadic && incomingArgc != argc) ||
-      (isVariadic && incomingArgc < argc)) {
+const SExpr &NatFn::invoke(StackIter params, const uint8_t argc, VM &vm) const {
+  if ((!variadic && argc != arity) || (variadic && argc < arity)) {
     std::stringstream ss;
-    ss << "Invalid number of arguments. Expected " << unsigned(argc);
-    if (isVariadic) {
+    ss << "Invalid number of arguments. Expected " << unsigned(arity);
+    if (variadic) {
       ss << " or more";
     }
-    ss << " arguments, but got " << unsigned(incomingArgc) << ".";
+    ss << " arguments, but got " << unsigned(argc) << ".";
     throw std::invalid_argument(ss.str());
   }
-  return fn(params, incomingArgc, vm);
+  return fn(params, argc, vm);
 }
 
 bool NatFn::classOf(const SExpr &sExpr) {

@@ -164,19 +164,28 @@ Compiler::Compiler(const std::vector<std::string> source, SrcMap sourceLoc,
                    const SExpr &param, const SExprs &body, Compiler &enclosing,
                    VM &vm)
     : vm(vm), enclosing(enclosing), source(source), srcMap(sourceLoc),
-      curLine(srcMap[&param].row), argNames(param), body(body), stackOffset(1) {
+      curLine(srcMap[&param].row), argNames(param), arity(countArity()),
+      variadic(isVariadic()), body(body), stackOffset(1) {
   if (isa<SExprs>(param)) {
     visitEach(cast<SExprs>(param), [&](const auto &sExpr) {
       const auto &sym = cast<Sym>(sExpr);
       locals.push_back({sym, stackOffset, false});
       stackOffset += 1;
     });
-  } else if (isa<Sym>(param)) {
-    locals.push_back({cast<Sym>(param), stackOffset, false});
-    stackOffset += 1;
-  } else if (!isa<Nil>(param)) {
-    handleSyntaxError(lambdaGrammar, Nil::getTypeName(), param);
   }
+
+  const auto &lastParam = last(argNames);
+
+  if (isa<Sym>(lastParam)) {
+    locals.push_back({cast<Sym>(lastParam), stackOffset, false});
+    stackOffset += 1;
+  } else if (!isa<Nil>(lastParam)) {
+    handleSyntaxError(lambdaGrammar, Nil::getTypeName(), lastParam);
+  }
+}
+
+void Compiler::updateCurLine(const sexpr::SExpr &sExpr) {
+  curLine = srcMap[&sExpr].row;
 }
 
 int Compiler::resolveLocal(const Sym &sym) {
@@ -216,17 +225,14 @@ int Compiler::addUpvalue(int idx, bool isLocal) {
   return upValues.size() - 1;
 }
 
-int Compiler::countParams() {
-  if (isVariadic()) {
-    return -1;
+bool Compiler::isVariadic() { return isa<Sym>(last(argNames)); }
+
+uint8_t Compiler::countArity() {
+  if (isa<Nil>(argNames) || isa<Sym>(argNames)) {
+    return 0;
   }
-  return visitEach(argNames, []([[maybe_unused]] const auto &sExpr) {});
-}
-
-bool Compiler::isVariadic() { return isa<Sym>(argNames); }
-
-void Compiler::updateCurLine(const sexpr::SExpr &sExpr) {
-  curLine = srcMap[&sExpr].row;
+  return visitEach(cast<SExprs>(argNames),
+                   [&]([[maybe_unused]] const auto &sExpr) {});
 }
 
 code::InstrPtr Compiler::emitConst(const sexpr::SExpr &sExpr) {
@@ -442,7 +448,7 @@ void Compiler::execDefMacro(const SExpr &sExpr) {
     def.pushCode(def.pushConst(sym));
     def.pushCode(OpCode::RETURN, curLine);
 
-    vm.eval(vm.freeStore.alloc<Fn>(0, 0, def));
+    vm.eval(vm.freeStore.alloc<Fn>(0, 0, false, def));
     vm.regMacro(sym);
 
     cast<Nil>(last(sExpr));
@@ -529,7 +535,7 @@ const SExpr &Compiler::execMacro(const SExpr &sExpr) {
   fexpr.pushCode(argc);
   fexpr.pushCode(OpCode::RETURN, curLine);
 
-  const auto &res = vm.eval(vm.freeStore.alloc<Fn>(0, 0, fexpr));
+  const auto &res = vm.eval(vm.freeStore.alloc<Fn>(0, 0, false, fexpr));
 
   traverse(res, [&](const auto &sExpr) {
     srcMap.insert({&sExpr, {curLine, colNum}});
@@ -550,11 +556,11 @@ void Compiler::handleSyntaxError(const std::string grammar,
 
 Compiler::Compiler(std::vector<std::string> source, VM &vm)
     : vm(vm), source(source), curLine(0), argNames(vm.freeStore.alloc<Nil>()),
-      body(parse()), stackOffset(1) {}
+      arity(0), variadic(false), body(parse()), stackOffset(1) {}
 
 const Fn &Compiler::compile() {
-  if (isVariadic()) {
-    emitCode(OpCode::MAKE_LIST, 1);
+  if (variadic) {
+    emitCode(OpCode::MAKE_LIST, arity + 1);
   }
 
   emitCode(OpCode::MAKE_NIL);
@@ -566,7 +572,7 @@ const Fn &Compiler::compile() {
   cast<Nil>(last(body));
   compileRet();
 
-  return vm.freeStore.alloc<Fn>(countParams(), upValues.size(), code);
+  return vm.freeStore.alloc<Fn>(upValues.size(), arity, variadic, code);
 }
 
 void Compiler::verifyLex(const std::string &line, const unsigned int curLine,

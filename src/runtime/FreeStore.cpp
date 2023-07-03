@@ -60,7 +60,7 @@ void FreeStore::trace(const SExpr &sexpr) {
   }
   if (isa<Closure>(sexpr)) {
     const auto &closureAtom = cast<Closure>(sexpr);
-    mark(closureAtom.fnAtom);
+    mark(closureAtom.fn);
     std::for_each(closureAtom.upvalues.cbegin(), closureAtom.upvalues.cend(),
                   [&](const auto &upvalue) { mark(upvalue->get()); });
     return;

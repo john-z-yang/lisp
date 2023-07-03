@@ -12,10 +12,12 @@ protected:
   bool equals(const SExpr &other) const override;
 
 public:
-  Fn(const int8_t arity, const unsigned int numUpvals, const code::Code code);
+  Fn(const unsigned int numUpvals, const uint8_t arity, const bool variadic,
+     const code::Code code);
 
   const unsigned int numUpvals;
-  const int8_t arity;
+  const uint8_t arity;
+  const bool variadic;
   const code::Code code;
 
   std::ostream &dissassemble(std::ostream &o) const;
