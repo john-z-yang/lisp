@@ -87,7 +87,7 @@ flowchart TB
   macro -- Macro invocation --> vm
 ```
 
-The bytecode compiler only supports compliation of the following 7 special forms:
+The bytecode compiler supports compliation of the following 7 primitive special forms:
 
 - Atomic values
 - Symbol assignments
@@ -97,25 +97,25 @@ The bytecode compiler only supports compliation of the following 7 special forms
 - Macro expansions
 - Macro definitions
 
-All other syntaxes are defined as macros (see the `/lib` directory), and are desugared into some combination of the 7 special forms above.
+All other syntaxes are defined as macros, and are lowered/desugared into the 7 special forms. (see the `/lib` directory)
 
 ### Example
 
 Source code
 
 ```lisp
-lisp> (define fac
-  ...   (lambda (n)
-  ...     (cond ((or (not (num? n)) (< n 0))
-  ...            (display "Invalid argument for fac"))
-  ...           ((= n 0)
-  ...            1)
-  ...           (else
-  ...            (* n (fac (- n 1)))))))
+(define fac
+  (lambda (n)
+    (cond ((or (not (num? n)) (< n 0))
+           (display "Invalid argument for fac"))
+          ((= n 0)
+           1)
+          (else
+           (* n (fac (- n 1)))))))
 ```
 
 <details>
-<summary>Click to see the desugared syntax (after macro expansion)</summary>
+<summary>Click to see the lowered/desugared S-expression (after macro expansion)</summary>
 
 ```lisp
 (define fac
