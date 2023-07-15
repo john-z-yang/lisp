@@ -111,6 +111,12 @@ lisp> (define fac
   ...            1)
   ...           (else
   ...            (* n (fac (- n 1)))))))
+```
+
+<details>
+<summary>Disassemble</summary>
+
+```lisp
 lisp> (dis fac)
 <Closure at 0x107cfcd50>, instance of:
     <Function at 0x10b0ae920, arity: 1, upvalues: 0>
@@ -189,6 +195,8 @@ Bytecodes:
     3                 21 POP                     3
     3                 23 RETURN
 ```
+
+</details>
 
 ### File structure
 
