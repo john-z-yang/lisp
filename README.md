@@ -86,7 +86,7 @@ flowchart TB
 
 ```
 
-The bytecode compiler and only supports compliation of the following 7 special forms:
+The bytecode compiler only supports compliation of the following 7 special forms:
 
 - Atomic values
 - Symbol assignments
@@ -100,9 +100,9 @@ All other syntaxes are defined as macros (see the `/lib` directory), and are des
 
 ### Example
 
+Source code
+
 ```lisp
-Lisp (C++ std: 202002, Jul 14 2023, 17:29:08)
-Type "(quit)" or trigger EOF to exit the session.
 lisp> (define fac
   ...   (lambda (n)
   ...     (cond ((or (not (num? n)) (< n 0))
@@ -114,10 +114,26 @@ lisp> (define fac
 ```
 
 <details>
-<summary>Disassemble</summary>
+<summary>Click to see the desugared syntax (after macro expansion)</summary>
 
 ```lisp
-lisp> (dis fac)
+(define fac
+  (lambda (n)
+    (if ((lambda (#:gensym-100) (if #:gensym-100 #:gensym-100 (or (< n 0)))) (not (num? n)))
+        (begin (display "Invalid argument for fac"))
+    (if (= n 0)
+        (begin 1)
+    (if #t
+        (begin (* n (fac (- n 1))))
+    '())))))
+```
+
+</details>
+
+<details>
+<summary>Click to see the disassembly (after compilation)</summary>
+
+```lisp
 <Closure at 0x107cfcd50>, instance of:
     <Function at 0x10b0ae920, arity: 1, upvalues: 0>
 Constants:
