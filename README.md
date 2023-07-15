@@ -70,20 +70,21 @@ The interpreter is implemented through a [bytecode](https://en.wikipedia.org/wik
 flowchart TB
   repl[REPL]
   vm[Virtual Machine]
-  subgraph compiler[Compiler&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp]
+  subgraph compiler[Compiler&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp]
     direction TB
     tok[Tokenization]
     par[Parsing]
+    macro[Macro expansion]
     byte[Bytecode generation]
 
     tok -- Token --> par
-    par -- S-expression --> byte
+    par -- S-expression --> macro
+    macro -- S-expression --> byte
   end
 
   repl -- std::string --> tok
   byte -- Bytecode --> vm
-  byte <-- macro expansion --> vm
-
+  macro -- Macro invocation --> vm
 ```
 
 The bytecode compiler only supports compliation of the following 7 special forms:
