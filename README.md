@@ -119,7 +119,7 @@ lisp> (define fac
 ```lisp
 (define fac
   (lambda (n)
-    (if ((lambda (#:gensym-100) (if #:gensym-100 #:gensym-100 (or (< n 0)))) (not (num? n)))
+    (if ((lambda (#:gensym-100) (if #:gensym-100 #:gensym-100 (< n 0))) (not (num? n)))
         (begin (display "Invalid argument for fac"))
     (if (= n 0)
         (begin 1)
