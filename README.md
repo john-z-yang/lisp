@@ -3,7 +3,7 @@
 Interpreter for a subset of Scheme written in C++. Implemented through a compiler and a virtual machine. (See [Technical Overview section](#technical-overview) for more details.)
 
 <p align="center">
-    <img src="https://raw.githubusercontent.com/john-z-yang/lisp/master/docs/assets/fib_seq_gen.gif" style="max-width:768px;  width:100%;">
+    <img src="https://raw.githubusercontent.com/john-z-yang/lisp/master/docs/assets/fib_range.png" style="max-width:768px;  width:100%;">
 </p>
 
 ## Getting Started
