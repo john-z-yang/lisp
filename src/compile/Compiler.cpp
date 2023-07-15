@@ -5,6 +5,7 @@
 #include "../sexpr/Cast.cpp"
 #include "../sexpr/String.hpp"
 #include "Grammar.hpp"
+#include <optional>
 #include <regex>
 #include <sstream>
 
@@ -188,31 +189,33 @@ void Compiler::updateCurLine(const sexpr::SExpr &sExpr) {
   curLine = srcMap[&sExpr].row;
 }
 
-int Compiler::resolveLocal(const Sym &sym) {
+std::optional<const std::size_t> Compiler::resolveLocal(const Sym &sym) {
   auto it =
       std::find_if(locals.rbegin(), locals.rend(),
                    [&](const auto &local) { return local.symbol == sym; });
   if (it == locals.rend()) {
-    return -1;
+    return std::nullopt;
   }
   return std::distance(begin(locals), it.base()) - 1;
 }
 
-int Compiler::resolveUpvalue(Compiler &caller, const Sym &sym) {
-  if (enclosing.has_value()) {
-    if (auto idx = enclosing->get().resolveLocal(sym); idx != -1) {
-      enclosing->get().locals[idx].isCaptured = true;
-      return caller.addUpvalue(enclosing->get().locals[idx].stackOffset, true);
-    }
-    if (auto idx = enclosing->get().resolveUpvalue(*enclosing, sym);
-        idx != -1) {
-      return caller.addUpvalue(idx, false);
-    }
+std::optional<const std::size_t> Compiler::resolveUpvalue(Compiler &caller,
+                                                          const Sym &sym) {
+  if (!enclosing.has_value()) {
+    return std::nullopt;
   }
-  return -1;
+  if (auto idx = enclosing->get().resolveLocal(sym); idx.has_value()) {
+    enclosing->get().locals[idx.value()].isCaptured = true;
+    return caller.addUpvalue(enclosing->get().locals[*idx].stackOffset, true);
+  }
+  if (auto idx = enclosing->get().resolveUpvalue(*enclosing, sym);
+      idx.has_value()) {
+    return caller.addUpvalue(*idx, false);
+  }
+  return std::nullopt;
 }
 
-int Compiler::addUpvalue(int idx, bool isLocal) {
+std::size_t Compiler::addUpvalue(int idx, bool isLocal) {
   if (auto it = std::find_if(upValues.cbegin(), upValues.cend(),
                              [=](const auto upValue) {
                                return upValue.idx == idx &&
@@ -387,12 +390,12 @@ void Compiler::compileAtom(const Atom &atom) {
 }
 
 void Compiler::compileSym(const Sym &sym) {
-  if (const auto idx = resolveLocal(sym); idx != -1) {
-    emitCode(OpCode::LOAD_STACK, (uint8_t)locals[idx].stackOffset);
+  if (const auto idx = resolveLocal(sym); idx.has_value()) {
+    emitCode(OpCode::LOAD_STACK, (uint8_t)locals[*idx].stackOffset);
     return;
   }
-  if (const auto idx = resolveUpvalue(*this, sym); idx != -1) {
-    emitCode(OpCode::LOAD_UPVALUE, (uint8_t)idx);
+  if (const auto idx = resolveUpvalue(*this, sym); idx.has_value()) {
+    emitCode(OpCode::LOAD_UPVALUE, (uint8_t)*idx);
     return;
   }
   emitCode(OpCode::LOAD_SYM, emitConst(sym));
@@ -475,12 +478,12 @@ void Compiler::compileSet(const SExpr &sExpr) {
 
     cast<Nil>(at(setNilPos, sExpr));
 
-    if (const auto idx = resolveLocal(sym); idx != -1) {
-      emitCode(OpCode::SET_STACK, locals[idx].stackOffset);
+    if (const auto idx = resolveLocal(sym); idx.has_value()) {
+      emitCode(OpCode::SET_STACK, locals[*idx].stackOffset);
       return;
     }
-    if (const auto idx = resolveUpvalue(*this, sym); idx != -1) {
-      emitCode(OpCode::SET_UPVALUE, (uint8_t)idx);
+    if (const auto idx = resolveUpvalue(*this, sym); idx.has_value()) {
+      emitCode(OpCode::SET_UPVALUE, (uint8_t)*idx);
       return;
     }
     emitCode(OpCode::SET_SYM, emitConst(sym));

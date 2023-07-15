@@ -46,6 +46,8 @@ private:
   static bool isNum(const std::string s);
   static std::vector<Token> tokenize(std::vector<std::string> lines);
   static std::vector<Token> tokenize(std::string line, const unsigned int row);
+  static void handleUnexpectedToken(const Token &token,
+                                    const std::string &line);
 
   const sexpr::SExprs &parse();
   const sexpr::SExpr &parseLists(TokenIter &it, const TokenIter &end);
@@ -54,16 +56,15 @@ private:
   const sexpr::SExpr &parseSexprs(TokenIter &it, const TokenIter &end);
   const sexpr::SExpr &parseAtom(Token token);
 
-  static void handleUnexpectedToken(const Token &token,
-                                    const std::string &line);
-
   Compiler(const std::vector<std::string> source, SrcMap sourceLoc,
            const sexpr::SExpr &param, const sexpr::SExprs &body,
            Compiler &enclosing, runtime::VM &vm);
+
   void updateCurLine(const sexpr::SExpr &sExpr);
-  int resolveLocal(const sexpr::Sym &sym);
-  int resolveUpvalue(Compiler &caller, const sexpr::Sym &sym);
-  int addUpvalue(int idx, bool isLocal);
+  std::optional<const std::size_t> resolveLocal(const sexpr::Sym &sym);
+  std::optional<const std::size_t> resolveUpvalue(Compiler &caller,
+                                                  const sexpr::Sym &sym);
+  std::size_t addUpvalue(int idx, bool isLocal);
   bool isVariadic();
   uint8_t countArity();
 
