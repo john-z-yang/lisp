@@ -36,4 +36,4 @@
 
 (define dec-range (lambda (a) (if (= a 0) (quote ()) (cons a (dec-range (- a 1))))))
 
-(display (merge-sort (dec-range 1000)))
+(display (merge-sort (dec-range 512)))

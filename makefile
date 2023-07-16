@@ -35,11 +35,27 @@ _DEPS = code/Code.hpp \
 DEPS = $(addprefix $(SRCDIR)/,$(_DEPS))
 OBJS = $(patsubst %.hpp,$(OUTDIR)/%.o,$(subst /,_,$(_DEPS)))
 
-TESTS = $(TESTDIR)/begin $(TESTDIR)/combine $(TESTDIR)/compare $(TESTDIR)/cons \
-    $(TESTDIR)/equality $(TESTDIR)/hof $(TESTDIR)/lexbind $(TESTDIR)/list \
-	$(TESTDIR)/logic $(TESTDIR)/math $(TESTDIR)/parse $(TESTDIR)/pred \
-	$(TESTDIR)/recur $(TESTDIR)/set $(TESTDIR)/sort $(TESTDIR)/string \
-	$(TESTDIR)/tailcall $(TESTDIR)/upvalues $(TESTDIR)/varargs \
+TESTS = \
+    $(TESTDIR)/apply \
+    $(TESTDIR)/begin \
+    $(TESTDIR)/combine \
+    $(TESTDIR)/compare \
+    $(TESTDIR)/cons \
+    $(TESTDIR)/equality \
+	$(TESTDIR)/hof \
+	$(TESTDIR)/lexbind \
+	$(TESTDIR)/list \
+	$(TESTDIR)/logic \
+	$(TESTDIR)/math \
+	$(TESTDIR)/parse \
+	$(TESTDIR)/pred \
+	$(TESTDIR)/recur \
+	$(TESTDIR)/set \
+	$(TESTDIR)/sort \
+	$(TESTDIR)/string \
+	$(TESTDIR)/tailcall \
+	$(TESTDIR)/upvalues \
+	$(TESTDIR)/varargs \
 	$(TESTDIR)/z-combinator
 
 all: $(OUTDIR)/lisp check-env
