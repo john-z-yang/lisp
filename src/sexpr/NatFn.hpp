@@ -17,10 +17,13 @@ protected:
 
 public:
   NatFn(runtime::CPPFn &fn, const uint8_t arity, const bool variadic);
+  NatFn(runtime::CPPFn &fn, const uint8_t arity, const bool variadic,
+        const bool abandonsCont);
 
   runtime::CPPFn &fn;
   const uint8_t arity;
   const bool variadic;
+  const bool abandonsCont;
 
   const SExpr &invoke(runtime::StackIter params, const uint8_t argc,
                       runtime::VM &vm) const;

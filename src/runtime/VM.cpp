@@ -13,6 +13,7 @@
 #include <iomanip>
 #include <memory>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -194,10 +195,20 @@ void VM::call(const uint8_t argc) {
     callFrames.push_back({closure, 0, stack.size() - argc - 1});
     return;
   }
-  const auto &res = cast<NatFn>(callee).invoke(stack.end() - argc, argc, *this);
-  stack.erase(stack.end() - argc - 1, stack.end());
-  stack.push_back(res);
-  return;
+  if (isa<NatFn>(callee)) {
+    const auto &natFn = cast<NatFn>(callee);
+    const auto &res = natFn.invoke(stack.end() - argc, argc, *this);
+    if (!natFn.abandonsCont) {
+      stack.erase(stack.end() - argc - 1, stack.end());
+      stack.push_back(res);
+    }
+    return;
+  }
+  std::stringstream ss;
+  ss << "Expected a closure or native function as callee, but got " << callee
+     << ".";
+  const auto re = std::invalid_argument(ss.str());
+  throw re;
 }
 
 std::shared_ptr<Upvalue> VM::captureUpvalue(StackPtr pos) {
@@ -220,6 +231,15 @@ const SExpr &VM::makeList(StackIter start) {
   return freeStore.alloc<SExprs>(*start, makeList(start + 1));
 }
 
+unsigned int VM::unpackList(const SExpr &sexpr) {
+  if (isa<Nil>(sexpr)) {
+    return 0;
+  }
+  const auto &sexprs = cast<SExprs>(sexpr);
+  stack.push_back(sexprs.first);
+  return 1 + unpackList(sexprs.rest);
+}
+
 const SExpr &VM::eval(const Fn &main) {
   const auto &res = eval(main, false);
   return res;
@@ -236,52 +256,78 @@ void VM::reset() {
 }
 
 VM::VM() : freeStore(globals, stack, callFrames, openUpvals) {
-#define BIND_NATIVE_FN(sym, func, argc, variadic)                              \
-  do {                                                                         \
-    globals.def(freeStore.alloc<Sym>(sym),                                     \
-                freeStore.alloc<NatFn>(func, argc, variadic));                 \
-  } while (false)
+  globals.def(freeStore.alloc<Sym>("sym?"),
+              freeStore.alloc<NatFn>(lispIsSym, 1, false));
+  globals.def(freeStore.alloc<Sym>("gensym"),
+              freeStore.alloc<NatFn>(lispGenSym, 0, false));
 
-  BIND_NATIVE_FN("sym?", lispIsSym, 1, false);
-  BIND_NATIVE_FN("gensym", lispGenSym, 0, false);
+  globals.def(freeStore.alloc<Sym>("num?"),
+              freeStore.alloc<NatFn>(lispIsNum, 1, false));
+  globals.def(freeStore.alloc<Sym>("="),
+              freeStore.alloc<NatFn>(lispNumEq, 1, true));
+  globals.def(freeStore.alloc<Sym>(">"),
+              freeStore.alloc<NatFn>(lispGt, 1, true));
+  globals.def(freeStore.alloc<Sym>(">="),
+              freeStore.alloc<NatFn>(lispGteq, 1, true));
+  globals.def(freeStore.alloc<Sym>("<"),
+              freeStore.alloc<NatFn>(lispLt, 1, true));
+  globals.def(freeStore.alloc<Sym>("<="),
+              freeStore.alloc<NatFn>(lispLteq, 1, true));
+  globals.def(freeStore.alloc<Sym>("+"),
+              freeStore.alloc<NatFn>(lispAdd, 1, true));
+  globals.def(freeStore.alloc<Sym>("*"),
+              freeStore.alloc<NatFn>(lispMult, 1, true));
+  globals.def(freeStore.alloc<Sym>("-"),
+              freeStore.alloc<NatFn>(lispSub, 1, true));
+  globals.def(freeStore.alloc<Sym>("/"),
+              freeStore.alloc<NatFn>(lispDiv, 1, true));
+  globals.def(freeStore.alloc<Sym>("abs"),
+              freeStore.alloc<NatFn>(lispAbs, 1, false));
+  globals.def(freeStore.alloc<Sym>("%"),
+              freeStore.alloc<NatFn>(lispMod, 2, false));
 
-  BIND_NATIVE_FN("num?", lispIsNum, 1, false);
-  BIND_NATIVE_FN("=", lispNumEq, 1, true);
-  BIND_NATIVE_FN(">", lispGt, 1, true);
-  BIND_NATIVE_FN(">=", lispGteq, 1, true);
-  BIND_NATIVE_FN("<", lispLt, 1, true);
-  BIND_NATIVE_FN("<=", lispLteq, 1, true);
-  BIND_NATIVE_FN("+", lispAdd, 1, true);
-  BIND_NATIVE_FN("*", lispMult, 1, true);
-  BIND_NATIVE_FN("-", lispSub, 1, true);
-  BIND_NATIVE_FN("/", lispDiv, 1, true);
-  BIND_NATIVE_FN("abs", lispAbs, 1, false);
-  BIND_NATIVE_FN("%", lispMod, 2, false);
+  globals.def(freeStore.alloc<Sym>("str?"),
+              freeStore.alloc<NatFn>(lispIsStr, 1, false));
+  globals.def(freeStore.alloc<Sym>("str-len"),
+              freeStore.alloc<NatFn>(lispStrLen, 1, false));
+  globals.def(freeStore.alloc<Sym>("str-sub"),
+              freeStore.alloc<NatFn>(lispStrSub, 3, false));
+  globals.def(freeStore.alloc<Sym>("str-con"),
+              freeStore.alloc<NatFn>(lispStrCon, 1, true));
+  globals.def(freeStore.alloc<Sym>("->str"),
+              freeStore.alloc<NatFn>(lispToStr, 1, false));
 
-  BIND_NATIVE_FN("str?", lispIsStr, 1, false);
-  BIND_NATIVE_FN("str-len", lispStrLen, 1, false);
-  BIND_NATIVE_FN("str-sub", lispStrSub, 3, false);
-  BIND_NATIVE_FN("str-con", lispStrCon, 1, true);
-  BIND_NATIVE_FN("->str", lispToStr, 1, false);
+  globals.def(freeStore.alloc<Sym>("null?"),
+              freeStore.alloc<NatFn>(lispIsNull, 1, false));
+  globals.def(freeStore.alloc<Sym>("cons?"),
+              freeStore.alloc<NatFn>(lispIsCons, 1, false));
+  globals.def(freeStore.alloc<Sym>("cons"),
+              freeStore.alloc<NatFn>(lispCons, 2, false));
+  globals.def(freeStore.alloc<Sym>("car"),
+              freeStore.alloc<NatFn>(lispCar, 1, false));
+  globals.def(freeStore.alloc<Sym>("cdr"),
+              freeStore.alloc<NatFn>(lispCdr, 1, false));
 
-  BIND_NATIVE_FN("null?", lispIsNull, 1, false);
-  BIND_NATIVE_FN("cons?", lispIsCons, 1, false);
-  BIND_NATIVE_FN("cons", lispCons, 2, false);
-  BIND_NATIVE_FN("car", lispCar, 1, false);
-  BIND_NATIVE_FN("cdr", lispCdr, 1, false);
+  globals.def(freeStore.alloc<Sym>("dis"),
+              freeStore.alloc<NatFn>(lispDis, 1, false));
+  globals.def(freeStore.alloc<Sym>("display"),
+              freeStore.alloc<NatFn>(lispDisplay, 1, false));
 
-  BIND_NATIVE_FN("dis", lispDis, 1, false);
-  BIND_NATIVE_FN("display", lispDisplay, 1, false);
+  globals.def(freeStore.alloc<Sym>("quit"),
+              freeStore.alloc<NatFn>(lispQuit, 0, false));
+  globals.def(freeStore.alloc<Sym>("error"),
+              freeStore.alloc<NatFn>(lispError, 1, false));
 
-  BIND_NATIVE_FN("quit", lispQuit, 0, false);
-  BIND_NATIVE_FN("error", lispError, 1, false);
+  globals.def(freeStore.alloc<Sym>("eq?"),
+              freeStore.alloc<NatFn>(lispEq, 2, false));
+  globals.def(freeStore.alloc<Sym>("eqv?"),
+              freeStore.alloc<NatFn>(lispEqv, 2, false));
 
-  BIND_NATIVE_FN("eq?", lispEq, 2, false);
-  BIND_NATIVE_FN("eqv?", lispEqv, 2, false);
+  globals.def(freeStore.alloc<Sym>("proc?"),
+              freeStore.alloc<NatFn>(lispIsProc, 1, false));
 
-  BIND_NATIVE_FN("proc?", lispIsProc, 1, false);
-
-#undef BIND_NATIVE_FN
+  globals.def(freeStore.alloc<Sym>("apply"),
+              freeStore.alloc<NatFn>(lispApply, 2, true, true));
 }
 
 void VM::regMacro(const Sym &sym) { globals.regMacro(sym); }
