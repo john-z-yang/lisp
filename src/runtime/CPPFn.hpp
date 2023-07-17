@@ -3,9 +3,10 @@
 
 #include "../sexpr/SExpr.hpp"
 #include "StackIter.hpp"
-#include "VM.hpp"
 
 namespace runtime {
+
+class VM;
 
 using CPPFn = const sexpr::SExpr &(StackIter params, const uint8_t argc,
                                    VM &vm);

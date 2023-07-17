@@ -47,6 +47,8 @@ CPPFn lispEqv;
 
 CPPFn lispIsProc;
 
+CPPFn lispApply;
+
 } // namespace runtime
 
 #endif

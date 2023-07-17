@@ -8,6 +8,7 @@
 #include "../sexpr/SExprs.hpp"
 #include "../sexpr/String.hpp"
 #include "../sexpr/Sym.hpp"
+#include "VM.hpp"
 #include <cmath>
 #include <cstdlib>
 #include <exception>
@@ -198,6 +199,19 @@ const SExpr &runtime::lispIsProc(StackIter params,
                                  [[maybe_unused]] const uint8_t argc, VM &vm) {
   return vm.freeStore.alloc<Bool>(isa<Closure>(params->get()) ||
                                   isa<NatFn>(params->get()));
+}
+
+const SExpr &runtime::lispApply(StackIter params, const uint8_t argc, VM &vm) {
+  const auto &newArgs = (params + argc - 1)->get();
+
+  vm.stack.erase(params + argc - 1);
+  vm.stack.erase(params - 1);
+
+  const auto newArgc = vm.unpackList(newArgs);
+
+  vm.call(argc + newArgc - 2);
+
+  return vm.freeStore.alloc<Nil>();
 }
 
 #undef MATH_CMP_OP

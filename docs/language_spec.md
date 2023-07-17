@@ -108,9 +108,10 @@
 
 ### Miscellaneous
 
-| Function            | Description                                                   |
-| ------------------- | ------------------------------------------------------------- |
-| (**quit**)          | Quits the session.                                            |
-| (**error** _msg_)   | Throws a runtime error with _msg_ as the message.             |
-| (**dis** _closure_) | Prints the disassembled bytecode for _closure_, returns `'()` |
-| (**display** _arg_) | Prints arg to std::cout, returns `'()`.                       |
+| Function                   | Description                                                                                                    |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| (**apply** _fn arg* list_) | Invoke fn with arg* and all elements within list as arguments (**Note:** list must be a properly formed list.) |
+| (**quit**)                 | Quits the session.                                                                                             |
+| (**error** _msg_)          | Throws a runtime error with _msg_ as the message.                                                              |
+| (**dis** _closure_)        | Prints the disassembled bytecode for _closure_, returns `'()`                                                  |
+| (**display** _arg_)        | Prints arg to std::cout, returns `'()`.                                                                        |
