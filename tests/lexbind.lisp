@@ -26,3 +26,25 @@
 (display (let* ((x 0)) (let* ((y (+ 1 x))) (let* ((z (+ 1 y))) (list y x z)))))
 
 (display (let* ((x 0)) (let* ((x (+ 1 x))) (let* ((x (+ 1 x))) x))))
+
+(letrec ((factorial
+       (lambda (n)
+         (if (<= n 1)
+        1
+        (* n (factorial (- n 1)))))))
+  (display (factorial 8)))
+
+(letrec ((even?
+          (lambda (n)
+            (if (= 0 n)
+                #t
+                (odd? (- n 1)))))
+         (odd?
+          (lambda (n)
+            (if (= 0 n)
+                #f
+                (even? (- n 1))))))
+  (display (map even? (list 0 1 2 3 4 5 6 7 8)))
+  (display (map odd? (list 0 1 2 3 4 5 6 7 8))))
+
+(letrec () (display "?"))
