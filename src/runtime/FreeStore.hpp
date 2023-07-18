@@ -5,6 +5,7 @@
 #include "../sexpr/Nil.hpp"
 #include "../sexpr/Num.hpp"
 #include "../sexpr/SExpr.hpp"
+#include "../sexpr/Undefined.hpp"
 #include "CallFrame.hpp"
 #include "Env.hpp"
 #include "GCGuard.hpp"
@@ -62,7 +63,9 @@ public:
     return ref;
   }
 };
-
+template <> inline const sexpr::Undefined &FreeStore::alloc() {
+  return sexpr::Undefined::getInstance();
+}
 template <> inline const sexpr::Nil &FreeStore::alloc() {
   return sexpr::Nil::getInstance();
 }

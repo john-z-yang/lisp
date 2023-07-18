@@ -38,7 +38,7 @@
            (let ((binding-pairs (validate-binding-pairs-- binding-pairs err-msg)))
              (cons 'let
                    (cons (map (lambda (binding-pair)
-                                (list (car binding-pair) '()))
+                                (list (car binding-pair) ''#<undefined>))
                               binding-pairs)
                          (append (map (lambda (binding-pair)
                                       (list 'set!
