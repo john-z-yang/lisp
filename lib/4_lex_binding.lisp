@@ -35,14 +35,13 @@
     (cond ((null? binding-pairs)
            (cons 'begin body))
           (else
-           (let ((binding-pairs (validate-binding-pairs-- binding-pairs err-msg)))
-             (cons 'let
-                   (cons (map (lambda (binding-pair)
-                                (list (car binding-pair) ''#<undefined>))
-                              binding-pairs)
-                         (append (map (lambda (binding-pair)
-                                      (list 'set!
-                                            (car binding-pair)
-                                            (car (cdr binding-pair))))
-                                     binding-pairs)
-                                  body))))))))
+           (let ((binding-pairs (validate-binding-pairs-- binding-pairs err-msg))
+                 (initializers (map (lambda (binding-pair)
+                                      (list (car binding-pair) ''#<undefined>))
+                                    binding-pairs))
+                 (setters (map (lambda (binding-pair)
+                                 (list 'set!
+                                       (car binding-pair)
+                                       (car (cdr binding-pair))))
+                              binding-pairs)))
+             (cons 'let (cons initializers (append setters body))))))))
