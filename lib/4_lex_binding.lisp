@@ -27,3 +27,21 @@
                     (cons 'let*
                           (cons rem-binding-pair
                                 body))))))))
+
+(defmacro letrec (binding-pairs . body)
+  (let ((err-msg (str-con "Invalid syntax for letrec. "
+                          "Expected (letrec ((sym expr)*) expr), but got "
+                          (->str (cons 'letrec (cons binding-pairs body))) ". ")))
+    (cond ((null? binding-pairs)
+           (cons 'begin body))
+          (else
+           (let ((binding-pairs (validate-binding-pairs-- binding-pairs err-msg))
+                 (initializers (map (lambda (binding-pair)
+                                      (list (car binding-pair) ''#<undefined>))
+                                    binding-pairs))
+                 (setters (map (lambda (binding-pair)
+                                 (list 'set!
+                                       (car binding-pair)
+                                       (car (cdr binding-pair))))
+                              binding-pairs)))
+             (cons 'let (cons initializers (append setters body))))))))

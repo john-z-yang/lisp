@@ -133,6 +133,9 @@ const SExpr &Compiler::parseAtom(Token token) {
   if (token.str.front() == '\"' && token.str.back() == '\"') {
     return vm.freeStore.alloc<String>(token.str);
   }
+  if (token.str == "#<undefined>") {
+    return vm.freeStore.alloc<Undefined>();
+  }
   if (token.str == "#t") {
     return vm.freeStore.alloc<Bool>(true);
   }

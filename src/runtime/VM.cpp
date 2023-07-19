@@ -113,7 +113,13 @@ LOAD_CONST : {
   DISPATCH();
 }
 LOAD_SYM : {
-  stack.push_back(globals.find(cast<Sym>(READ_CONST())));
+  const auto &sym = cast<Sym>(READ_CONST());
+  stack.push_back(globals.find(sym));
+  if (isa<Undefined>(stack.back())) [[unlikely]] {
+    std::stringstream ss;
+    ss << "Access of an undefined global: " << sym << ".";
+    throw std::invalid_argument(ss.str());
+  }
   DISPATCH();
 }
 DEF_SYM : {
@@ -128,6 +134,9 @@ SET_SYM : {
 }
 LOAD_UPVALUE : {
   stack.push_back(CUR_CLOSURE().upvalues[READ_BYTE()]->get());
+  if (isa<Undefined>(stack.back())) [[unlikely]] {
+    throw std::invalid_argument("Access of an undefined upvalue.");
+  }
   DISPATCH();
 }
 SET_UPVALUE : {
@@ -137,6 +146,9 @@ SET_UPVALUE : {
 }
 LOAD_STACK : {
   stack.push_back(stack[BASE_PTR() + READ_BYTE()]);
+  if (isa<Undefined>(stack.back())) [[unlikely]] {
+    throw std::invalid_argument("Access of an undefined local.");
+  }
   DISPATCH();
 }
 SET_STACK : {

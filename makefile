@@ -23,25 +23,25 @@ To set it to the /lib folder of this project.
 endef
 
 _DEPS = code/Code.hpp \
-    compile/Compiler.hpp \
+	compile/Compiler.hpp \
 	error/RuntimeError.hpp error/SyntaxError.hpp error/TypeError.hpp \
 	repl/repl.hpp \
 	runtime/Env.hpp runtime/FreeStore.hpp runtime/GCGuard.hpp runtime/CPPFnImpls.hpp runtime/Upvalue.hpp runtime/VM.hpp \
 	sexpr/Atom.hpp sexpr/Bool.hpp sexpr/Closure.hpp sexpr/Fn.hpp sexpr/Num.hpp \
 	sexpr/NatFn.hpp sexpr/Nil.hpp sexpr/SExpr.hpp sexpr/SExprs.hpp \
-	sexpr/String.hpp sexpr/Sym.hpp
+	sexpr/String.hpp sexpr/Sym.hpp sexpr/Undefined.hpp
 
 
 DEPS = $(addprefix $(SRCDIR)/,$(_DEPS))
 OBJS = $(patsubst %.hpp,$(OUTDIR)/%.o,$(subst /,_,$(_DEPS)))
 
 TESTS = \
-    $(TESTDIR)/apply \
-    $(TESTDIR)/begin \
-    $(TESTDIR)/combine \
-    $(TESTDIR)/compare \
-    $(TESTDIR)/cons \
-    $(TESTDIR)/equality \
+	$(TESTDIR)/apply \
+	$(TESTDIR)/begin \
+	$(TESTDIR)/combine \
+	$(TESTDIR)/compare \
+	$(TESTDIR)/cons \
+	$(TESTDIR)/equality \
 	$(TESTDIR)/hof \
 	$(TESTDIR)/lexbind \
 	$(TESTDIR)/list \
