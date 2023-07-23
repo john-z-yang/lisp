@@ -5,10 +5,8 @@
 
 using namespace sexpr;
 
-std::string Fn::toString() const {
-  std::stringstream ss;
-  ss << "<Function at " << this << ">";
-  return ss.str();
+std::ostream &Fn::serialize(std::ostream &o) const {
+  return o << "<Function at " << this << ">";
 }
 
 bool Fn::equals(const SExpr &other) const { return this == &other; }

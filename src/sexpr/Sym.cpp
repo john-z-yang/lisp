@@ -5,7 +5,7 @@
 
 using namespace sexpr;
 
-std::string Sym::toString() const { return val; }
+std::ostream &Sym::serialize(std::ostream &o) const { return o << val; }
 
 bool Sym::equals(const SExpr &other) const {
   if (isa<Sym>(other)) {

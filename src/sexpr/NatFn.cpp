@@ -8,7 +8,9 @@
 using namespace sexpr;
 using namespace runtime;
 
-std::string NatFn::toString() const { return "<Native function>"; }
+std::ostream &NatFn::serialize(std::ostream &o) const {
+  return o << "<Native function>";
+}
 
 bool NatFn::equals(const SExpr &other) const { return this == &other; }
 

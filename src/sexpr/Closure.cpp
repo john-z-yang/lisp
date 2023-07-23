@@ -8,10 +8,8 @@
 using namespace sexpr;
 using namespace runtime;
 
-std::string Closure::toString() const {
-  std::stringstream ss;
-  ss << "<Closure at " << this << ">";
-  return ss.str();
+std::ostream &Closure::serialize(std::ostream &o) const {
+  return o << "<Closure at " << this << ">";
 }
 
 bool Closure::equals(const SExpr &other) const {

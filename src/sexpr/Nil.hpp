@@ -10,7 +10,7 @@ class Nil final : public Atom {
 protected:
   Nil();
 
-  std::string toString() const override;
+  std::ostream &serialize(std::ostream &o) const override;
   bool equals(const SExpr &other) const override;
 
   static Nil instance;

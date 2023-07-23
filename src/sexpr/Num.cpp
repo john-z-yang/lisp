@@ -5,11 +5,7 @@
 
 using namespace sexpr;
 
-std::string Num::toString() const {
-  std::stringstream ss;
-  ss << val;
-  return ss.str();
-}
+std::ostream &Num::serialize(std::ostream &o) const { return o << val; }
 
 bool Num::equals(const SExpr &other) const {
   if (isa<Num>(other)) {

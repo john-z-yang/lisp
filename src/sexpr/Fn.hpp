@@ -8,7 +8,7 @@ namespace sexpr {
 
 class Fn final : public Atom {
 protected:
-  std::string toString() const override;
+  std::ostream &serialize(std::ostream &o) const override;
   bool equals(const SExpr &other) const override;
 
 public:
