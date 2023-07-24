@@ -1,11 +1,16 @@
 #include "Num.hpp"
 #include "Cast.cpp"
+#include <iomanip>
+#include <limits>
 #include <sstream>
 #include <string>
 
 using namespace sexpr;
 
-std::ostream &Num::serialize(std::ostream &o) const { return o << val; }
+std::ostream &Num::serialize(std::ostream &o) const {
+  return o << std::setprecision(std::numeric_limits<double>::max_digits10)
+           << val;
+}
 
 bool Num::equals(const SExpr &other) const {
   if (isa<Num>(other)) {
