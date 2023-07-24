@@ -8,8 +8,11 @@
 namespace sexpr {
 
 class SExprs final : public SExpr {
+private:
+  std::ostream &_serialize(std::ostream &o) const;
+
 protected:
-  std::string toString() const override;
+  std::ostream &serialize(std::ostream &o) const override;
   bool equals(const SExpr &other) const override;
 
 public:

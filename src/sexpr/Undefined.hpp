@@ -9,7 +9,7 @@ class Undefined final : public Atom {
 protected:
   Undefined();
 
-  std::string toString() const override;
+  std::ostream &serialize(std::ostream &o) const override;
   bool equals(const SExpr &other) const override;
 
   static Undefined instance;

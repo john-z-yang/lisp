@@ -1,4 +1,5 @@
 #include "SExprs.hpp"
+#include "Atom.hpp"
 #include "Cast.cpp"
 #include "Nil.hpp"
 #include <cstddef>
@@ -8,18 +9,19 @@
 
 using namespace sexpr;
 
-std::string SExprs::toString() const {
-  std::string str = "";
-  str += isa<SExprs>(first) ? "(" : "";
-  str += first.toString();
+std::ostream &SExprs::serialize(std::ostream &o) const {
+  return _serialize(o << "(");
+}
+
+std::ostream &SExprs::_serialize(std::ostream &o) const {
+  first.serialize(o);
   if (isa<Nil>(rest)) {
-    str += ")";
-  } else if (!isa<SExprs>(rest)) {
-    str += " . " + rest.toString() + ")";
-  } else {
-    str += isa<Nil>(rest) ? ")" : " " + rest.toString();
+    return o << ")";
+  } else if (isa<Atom>(rest)) {
+    return rest.serialize(o << " . ") << ")";
   }
-  return str;
+  const auto &sexprs = cast<SExprs>(rest);
+  return sexprs._serialize(o << " ");
 }
 
 bool SExprs::equals(const SExpr &other) const {

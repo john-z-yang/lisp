@@ -12,7 +12,7 @@ class SExpr {
   friend bool operator==(const SExpr &lhs, const SExpr &rhs);
 
 protected:
-  virtual std::string toString() const = 0;
+  virtual std::ostream &serialize(std::ostream &o) const = 0;
   virtual bool equals(const SExpr &other) const = 0;
 
 public:

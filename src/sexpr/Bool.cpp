@@ -10,7 +10,9 @@ Bool::Bool(const bool val) : Atom(SExpr::Type::BOOL), val(val) {}
 Bool Bool::_true(true);
 Bool Bool::_false(false);
 
-std::string Bool::toString() const { return (val) ? "#t" : "#f"; }
+std::ostream &Bool::serialize(std::ostream &o) const {
+  return (val) ? o << "#t" : o << "#f";
+}
 
 bool Bool::equals(const SExpr &other) const {
   if (isa<Bool>(other)) {

@@ -6,7 +6,9 @@ using namespace sexpr;
 
 Undefined::Undefined() : Atom(SExpr::Type::UNDEFINED) {}
 
-std::string Undefined::toString() const { return "#<undefined>"; }
+std::ostream &Undefined::serialize(std::ostream &o) const {
+  return o << "#<undefined>";
+}
 
 bool Undefined::equals(const SExpr &other) const {
   return isa<Undefined>(other);

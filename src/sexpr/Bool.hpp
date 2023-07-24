@@ -15,7 +15,7 @@ protected:
   static Bool _true;
   static Bool _false;
 
-  std::string toString() const override;
+  std::ostream &serialize(std::ostream &o) const override;
   bool equals(const SExpr &other) const override;
 
 public:

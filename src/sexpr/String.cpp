@@ -12,7 +12,7 @@ std::string String::unescape(const std::string literal) {
   return res.substr(1, res.size() - 2);
 }
 
-std::string String::toString() const { return literal; }
+std::ostream &String::serialize(std::ostream &o) const { return o << literal; }
 
 bool String::equals(const SExpr &other) const {
   if (isa<String>(other)) {
