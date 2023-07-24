@@ -8,7 +8,7 @@
     (map (lambda (binding-pair) (car binding-pair))
          binding-pairs))
   (define init-exprs
-    (map (lambda (binding-pair) (car (cdr binding-pair)))
+    (map (lambda (binding-pair) (cadr binding-pair))
          binding-pairs))
   (cons (cons 'lambda (cons syms body)) init-exprs))
 
@@ -42,6 +42,6 @@
                  (setters (map (lambda (binding-pair)
                                  (list 'set!
                                        (car binding-pair)
-                                       (car (cdr binding-pair))))
+                                       (cadr binding-pair)))
                               binding-pairs)))
              (cons 'let (cons initializers (append setters body))))))))
