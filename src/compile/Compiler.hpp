@@ -29,7 +29,7 @@ private:
 
   std::vector<std::string> source;
   SrcMap srcMap;
-  unsigned int curLine;
+  SrcLoc curSrcLoc;
 
   const sexpr::SExpr &argNames;
   const uint8_t arity;
@@ -60,7 +60,7 @@ private:
            const sexpr::SExpr &param, const sexpr::SExprs &body,
            Compiler &enclosing, runtime::VM &vm);
 
-  void updateCurLine(const sexpr::SExpr &sExpr);
+  void updateCurSrcLoc(const sexpr::SExpr &sExpr);
   std::optional<const std::size_t> resolveLocal(const sexpr::Sym &sym);
   std::optional<const std::size_t> resolveUpvalue(Compiler &caller,
                                                   const sexpr::Sym &sym);
@@ -69,7 +69,7 @@ private:
   uint8_t countArity();
 
   template <typename T> code::InstrPtr emitCode(T v) {
-    return code.pushCode(v, curLine);
+    return code.pushCode(v, curSrcLoc.row);
   }
   template <typename T, typename... Args>
   code::InstrPtr emitCode(T first, Args... args) {

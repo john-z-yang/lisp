@@ -1,5 +1,5 @@
 (display (null? (list)))
-(display (null? ()))
+(display (null? '()))
 (display (null? (list 1)))
 (display (null? 1))
 (display (cons? (cons 1 1)))

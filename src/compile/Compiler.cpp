@@ -5,6 +5,7 @@
 #include "../sexpr/Cast.cpp"
 #include "../sexpr/String.hpp"
 #include "Grammar.hpp"
+#include "SrcLoc.hpp"
 #include <optional>
 #include <regex>
 #include <sstream>
@@ -62,8 +63,11 @@ const SExpr &Compiler::parseLists(TokenIter &it, const TokenIter &end) {
   if (it == end) {
     return vm.freeStore.alloc<Nil>();
   }
+  const auto [row, col] = it->srcLoc;
   const auto &cur = parseList(it, end);
-  return vm.freeStore.alloc<SExprs>(cur, parseLists(it, end));
+  const auto &sexprs = vm.freeStore.alloc<SExprs>(cur, parseLists(it, end));
+  srcMap[&sexprs] = {row, col};
+  return sexprs;
 }
 
 const SExpr &Compiler::parseList(TokenIter &it, const TokenIter &end) {
@@ -84,7 +88,6 @@ const SExpr &Compiler::parseList(TokenIter &it, const TokenIter &end) {
     return sExprs;
   }
   const auto &atom = parseAtom(token);
-  srcMap.insert({&atom, {token.srcLoc.row, token.srcLoc.col}});
   return atom;
 }
 
@@ -92,15 +95,13 @@ const SExpr &Compiler::parseElem(TokenIter &it, const TokenIter &end) {
   auto token = *it;
   if (token.str == ")") {
     it += 1;
-    const auto &nil = vm.freeStore.alloc<Nil>();
-    srcMap.insert({&nil, {token.srcLoc.row, token.srcLoc.col - 1}});
-    return nil;
+    return vm.freeStore.alloc<Nil>();
   } else if (token.str == "(") {
     it += 1;
     const auto &first = parseElem(it, end);
     const auto &rest = parseElem(it, end);
     const auto &sExprs = vm.freeStore.alloc<SExprs>(first, rest);
-    srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col - 1}});
+    srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col}});
     return sExprs;
   }
   return parseSexprs(it, end);
@@ -117,12 +118,12 @@ const SExpr &Compiler::parseSexprs(TokenIter &it, const TokenIter &end) {
     }
     it += 1;
     const auto &sExprs = vm.freeStore.alloc<SExprs>(first, rest);
-    srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col - 1}});
+    srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col}});
     return sExprs;
   }
   const auto &rest = parseElem(it, end);
   const auto &sExprs = vm.freeStore.alloc<SExprs>(first, rest);
-  srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col - 1}});
+  srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col}});
   return sExprs;
 }
 
@@ -168,8 +169,8 @@ Compiler::Compiler(const std::vector<std::string> source, SrcMap sourceLoc,
                    const SExpr &param, const SExprs &body, Compiler &enclosing,
                    VM &vm)
     : vm(vm), enclosing(enclosing), source(source), srcMap(sourceLoc),
-      curLine(srcMap[&param].row), argNames(param), arity(countArity()),
-      variadic(isVariadic()), body(body), stackOffset(1) {
+      curSrcLoc({srcMap[&param].row, srcMap[&param].col}), argNames(param),
+      arity(countArity()), variadic(isVariadic()), body(body), stackOffset(1) {
   if (isa<SExprs>(param)) {
     visitEach(cast<SExprs>(param), [&](const auto &sExpr) {
       const auto &sym = cast<Sym>(sExpr);
@@ -188,8 +189,11 @@ Compiler::Compiler(const std::vector<std::string> source, SrcMap sourceLoc,
   }
 }
 
-void Compiler::updateCurLine(const sexpr::SExpr &sExpr) {
-  curLine = srcMap[&sExpr].row;
+void Compiler::updateCurSrcLoc(const sexpr::SExpr &sExpr) {
+  if (isa<Atom>(sExpr)) {
+    return;
+  }
+  curSrcLoc = srcMap[&sExpr];
 }
 
 std::optional<const std::size_t> Compiler::resolveLocal(const Sym &sym) {
@@ -248,7 +252,7 @@ code::InstrPtr Compiler::emitConst(const sexpr::SExpr &sExpr) {
 void Compiler::patchJump(const code::InstrPtr idx) { code.patchJump(idx); }
 
 const SExpr &Compiler::at(const unsigned int n, const SExpr &sExpr) {
-  updateCurLine(sExpr);
+  updateCurSrcLoc(sExpr);
   if (n == 0) {
     return sExpr;
   }
@@ -256,10 +260,10 @@ const SExpr &Compiler::at(const unsigned int n, const SExpr &sExpr) {
 }
 
 const SExpr &Compiler::last(const SExpr &sExpr) {
+  updateCurSrcLoc(sExpr);
   if (isa<Atom>(sExpr)) {
     return sExpr;
   }
-  updateCurLine(sExpr);
   return last(cast<SExprs>(sExpr).rest);
 }
 
@@ -267,7 +271,7 @@ unsigned int Compiler::visitEach(const SExpr &sExpr, Visitor visitor) {
   if (isa<Atom>(sExpr)) {
     return 0;
   }
-  updateCurLine(sExpr);
+  updateCurSrcLoc(sExpr);
   const auto &sExprs = cast<SExprs>(sExpr);
   visitor(sExprs.first);
   return 1 + visitEach(sExprs.rest, visitor);
@@ -315,7 +319,7 @@ void Compiler::compileExpr(const SExpr &sExpr) {
     compileAtom(atom);
     return;
   }
-  updateCurLine(sExpr);
+  updateCurSrcLoc(sExpr);
   const auto &sExprs = cast<SExprs>(sExpr);
   if (isa<Sym>(sExprs.first)) {
     const auto &sym = cast<Sym>(sExprs.first);
@@ -339,7 +343,7 @@ void Compiler::compileExpr(const SExpr &sExpr) {
       compileLambda(sExpr);
       return;
     } else if (sym.val == "define" || sym.val == "defmacro") {
-      const auto [row, col] = srcMap[&sExpr];
+      const auto [row, col] = curSrcLoc;
       throw error::SyntaxError(
           "Invalid syntax for define: cannot use define as an expression",
           source[row - 1], row, col);
@@ -389,6 +393,11 @@ void Compiler::compileAtom(const Atom &atom) {
     compileSym(cast<Sym>(atom));
     return;
   }
+  if (isa<Nil>(atom)) {
+    throw error::SyntaxError("Expected a non-empty list.",
+                             source[curSrcLoc.row - 1], curSrcLoc.row,
+                             curSrcLoc.col);
+  }
   emitCode(OpCode::LOAD_CONST, emitConst(atom));
 }
 
@@ -435,7 +444,7 @@ void Compiler::compileDef(const SExpr &sExpr) {
 
 void Compiler::execDefMacro(const SExpr &sExpr) {
   if (enclosing.has_value()) {
-    const auto [row, col] = srcMap[&sExpr];
+    const auto [row, col] = curSrcLoc;
     throw error::SyntaxError(
         "Invalid syntax for define-macro: must define macros in top level",
         source[row - 1], row, col);
@@ -450,7 +459,7 @@ void Compiler::execDefMacro(const SExpr &sExpr) {
 
     Code def;
 
-    def.pushCode(OpCode::MAKE_CLOSURE, curLine);
+    def.pushCode(OpCode::MAKE_CLOSURE, curSrcLoc.row);
     def.pushCode(def.pushConst(function));
 
     for (const auto &upValue : compiler.upValues) {
@@ -458,9 +467,9 @@ void Compiler::execDefMacro(const SExpr &sExpr) {
       def.pushCode(upValue.idx);
     }
 
-    def.pushCode(OpCode::DEF_SYM, curLine);
+    def.pushCode(OpCode::DEF_SYM, curSrcLoc.row);
     def.pushCode(def.pushConst(sym));
-    def.pushCode(OpCode::RETURN, curLine);
+    def.pushCode(OpCode::RETURN, curSrcLoc.row);
 
     vm.eval(vm.freeStore.alloc<Fn>(0, 0, false, def));
     vm.regMacro(sym);
@@ -541,25 +550,21 @@ const SExpr &Compiler::execMacro(const SExpr &sExpr) {
 
   const auto &sExprs = cast<SExprs>(sExpr);
 
-  const auto colNum = srcMap[&sExprs.first].col;
-
-  fexpr.pushCode(OpCode::LOAD_SYM, curLine);
+  fexpr.pushCode(OpCode::LOAD_SYM, curSrcLoc.row);
   fexpr.pushCode(fexpr.pushConst(sExprs.first));
 
   const auto argc = visitEach(sExprs.rest, [&](const auto &sExpr) {
-    fexpr.pushCode(OpCode::LOAD_CONST, curLine);
+    fexpr.pushCode(OpCode::LOAD_CONST, curSrcLoc.row);
     fexpr.pushCode(fexpr.pushConst(sExpr));
   });
 
-  fexpr.pushCode(OpCode::CALL, curLine);
+  fexpr.pushCode(OpCode::CALL, curSrcLoc.row);
   fexpr.pushCode(argc);
-  fexpr.pushCode(OpCode::RETURN, curLine);
+  fexpr.pushCode(OpCode::RETURN, curSrcLoc.row);
 
   const auto &res = vm.eval(vm.freeStore.alloc<Fn>(0, 0, false, fexpr));
 
-  traverse(res, [&](const auto &sExpr) {
-    srcMap.insert({&sExpr, {curLine, colNum}});
-  });
+  traverse(res, [&](const auto &sExpr) { srcMap.insert({&sExpr, curSrcLoc}); });
 
   return res;
 }
@@ -570,13 +575,14 @@ void Compiler::handleSyntaxError(const std::string grammar,
   std::stringstream ss;
   ss << "Invalid syntax for " << grammar << "." << std::endl
      << "Expected " << expected << ", but got " << actual << ".";
-  const auto [row, col] = srcMap[&actual];
+  const auto [row, col] = curSrcLoc;
   throw SyntaxError(ss.str(), source[row - 1], row, col);
 }
 
 Compiler::Compiler(std::vector<std::string> source, VM &vm)
-    : vm(vm), source(source), curLine(0), argNames(vm.freeStore.alloc<Nil>()),
-      arity(0), variadic(false), body(parse()), stackOffset(1) {}
+    : vm(vm), source(source), curSrcLoc({1, 0}),
+      argNames(vm.freeStore.alloc<Nil>()), arity(0), variadic(false),
+      body(parse()), stackOffset(1) {}
 
 const Fn &Compiler::compile() {
   if (variadic) {
@@ -594,9 +600,9 @@ const Fn &Compiler::compile() {
   return vm.freeStore.alloc<Fn>(upValues.size(), arity, variadic, code);
 }
 
-void Compiler::verifyLex(const std::string &line, const unsigned int curLine,
+void Compiler::verifyLex(const std::string &line, const unsigned int curSrcLoc,
                          unsigned int &openParen, unsigned int &closedParen) {
-  auto tokens = tokenize(line, curLine);
+  auto tokens = tokenize(line, curSrcLoc);
   for (auto it = tokens.cbegin(); it != tokens.cend(); ++it) {
     if (openParen == closedParen && it->str == ")") {
       handleUnexpectedToken(*it, line);

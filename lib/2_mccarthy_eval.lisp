@@ -20,7 +20,7 @@
                 (car args)))))
 
 (defmacro cond sexprs
-  (if (null? sexprs) '()
+  (if (null? sexprs) ''()
       ((lambda ()
          (define cur-clause (car sexprs))
          (define next-clause (cdr sexprs))

@@ -11,7 +11,7 @@
 (display (getOne))
 (display ((lambda () (+ (+ 1 2) (+ 3 4)))))
 (display ((lambda () 1)))
-(display ((lambda () ())))
+(display ((lambda () '())))
 (define twice (lambda (x) (* 2 x)))
 (display (twice 5))
 (define repeat (lambda (f) (lambda (x) (f (f x)))))
