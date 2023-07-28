@@ -4,6 +4,7 @@
 #include "../sexpr/NatFn.hpp"
 #include "../sexpr/SExprs.hpp"
 #include "CPPFnImpls.hpp"
+#include "CallFrame.hpp"
 #include "FreeStore.hpp"
 #include "GCGuard.hpp"
 #include "StackIter.hpp"
@@ -19,6 +20,7 @@
 
 using namespace runtime;
 using namespace sexpr;
+using namespace code;
 
 const SExpr &VM::eval(const Fn &main, bool withGC) {
   stack.push_back(freeStore.alloc<Closure>(main));
@@ -38,165 +40,22 @@ const SExpr &VM::eval(const Fn &main, bool withGC) {
   return freeStore.alloc<Nil>();
 }
 
-const SExpr &VM::exec() {
-#define CUR_CALL_FRAME() (callFrames.back())
-#define CUR_CLOSURE() (CUR_CALL_FRAME().closure)
-#define CUR_FN() (CUR_CLOSURE().fn)
-#define CUR_CODE() (CUR_FN().code)
-#define BASE_PTR() (CUR_CALL_FRAME().bp)
-#define INST_PTR() (CUR_CALL_FRAME().ip)
+inline CallFrame &VM::callFrame() { return callFrames.back(); }
+inline const Closure &VM::closure() { return callFrame().closure; }
+inline const Fn &VM::fn() { return closure().fn; }
+inline const Code &VM::code() { return fn().code; }
 
-#define READ_BYTE() (CUR_CODE().byteCodes[INST_PTR()++])
-#define READ_SHORT()                                                           \
-  (INST_PTR() += 2, (uint16_t)((CUR_CODE().byteCodes[INST_PTR() - 2] << 8 |    \
-                                CUR_CODE().byteCodes[INST_PTR() - 1])))
-#define READ_CONST() (CUR_CODE().consts[READ_BYTE()].get())
+inline code::InstrPtr &VM::instPtr() { return callFrame().ip; }
+inline runtime::StackPtr &VM::basePtr() { return callFrame().bp; }
 
-#define DISPATCH() goto *dispatchTable[READ_BYTE()]
-
-  static void *dispatchTable[] = {
-      &&MAKE_CLOSURE,      &&CALL,        &&RETURN,     &&POP_TOP,   &&POP,
-      &&CLOSE_UPVALUE,     &&LOAD_CONST,  &&LOAD_SYM,   &&DEF_SYM,   &&SET_SYM,
-      &&LOAD_UPVALUE,      &&SET_UPVALUE, &&LOAD_STACK, &&SET_STACK, &&JUMP,
-      &&POP_JUMP_IF_FALSE, &&MAKE_LIST,   &&MAKE_NIL};
-
-  call(0);
-
-  DISPATCH();
-
-MAKE_CLOSURE : {
-  const auto &fnAtom = cast<Fn>(READ_CONST());
-  std::vector<std::shared_ptr<Upvalue>> upvalues;
-  for (unsigned int i{0}; i < fnAtom.numUpvals; ++i) {
-    auto isLocal = READ_BYTE();
-    auto idx = READ_BYTE();
-    if (isLocal == 1) {
-      upvalues.push_back(captureUpvalue(BASE_PTR() + idx));
-    } else {
-      upvalues.push_back(CUR_CLOSURE().upvalues[idx]);
-    }
-  }
-  stack.push_back(freeStore.alloc<Closure>(fnAtom, upvalues));
+inline const sexpr::SExpr &VM::readConst() {
+  return code().consts[readByte()].get();
 }
-  DISPATCH();
-CALL : {
-  call(READ_BYTE());
-  DISPATCH();
-}
-RETURN : {
-  if (callFrames.size() == 1) {
-    const auto res = stack.back();
-    reset();
-    return res;
-  }
-  callFrames.pop_back();
-  DISPATCH();
-}
-POP_TOP : {
-  stack.pop_back();
-  DISPATCH();
-}
-POP : {
-  stack.erase(stack.end() - READ_BYTE(), stack.end());
-  DISPATCH();
-}
-CLOSE_UPVALUE : {
-  auto it = openUpvals.find(BASE_PTR() + READ_BYTE());
-  if (it != openUpvals.end()) {
-    it->second->close();
-    openUpvals.erase(it);
-  }
-  DISPATCH();
-}
-LOAD_CONST : {
-  stack.push_back(READ_CONST());
-  DISPATCH();
-}
-LOAD_SYM : {
-  const auto &sym = cast<Sym>(READ_CONST());
-  stack.push_back(globals.find(sym));
-  if (isa<Undefined>(stack.back())) [[unlikely]] {
-    std::stringstream ss;
-    ss << "Access of an undefined global: " << sym << ".";
-    throw std::invalid_argument(ss.str());
-  }
-  DISPATCH();
-}
-DEF_SYM : {
-  globals.def(cast<Sym>(READ_CONST()), stack.back());
-  stack.back() = freeStore.alloc<Nil>();
-  DISPATCH();
-}
-SET_SYM : {
-  globals.set(cast<Sym>(READ_CONST()), stack.back());
-  stack.back() = freeStore.alloc<Nil>();
-  DISPATCH();
-}
-LOAD_UPVALUE : {
-  stack.push_back(CUR_CLOSURE().upvalues[READ_BYTE()]->get());
-  if (isa<Undefined>(stack.back())) [[unlikely]] {
-    throw std::invalid_argument("Access of an undefined upvalue.");
-  }
-  DISPATCH();
-}
-SET_UPVALUE : {
-  CUR_CLOSURE().upvalues[READ_BYTE()]->set(stack.back());
-  stack.back() = freeStore.alloc<Nil>();
-  DISPATCH();
-}
-LOAD_STACK : {
-  stack.push_back(stack[BASE_PTR() + READ_BYTE()]);
-  if (isa<Undefined>(stack.back())) [[unlikely]] {
-    throw std::invalid_argument("Access of an undefined local.");
-  }
-  DISPATCH();
-}
-SET_STACK : {
-  stack[BASE_PTR() + READ_BYTE()] = stack.back();
-  stack.back() = freeStore.alloc<Nil>();
-  DISPATCH();
-}
-JUMP : {
-  INST_PTR() += READ_SHORT();
-  DISPATCH();
-}
-POP_JUMP_IF_FALSE : {
-  auto offset = READ_SHORT();
-  if (!Bool::toBool(stack.back())) {
-    INST_PTR() += offset;
-  }
-  stack.pop_back();
-  DISPATCH();
-}
-MAKE_LIST : {
-  {
-    auto gcGuard = freeStore.pauseGC();
-
-    const auto start = stack.begin() + BASE_PTR() + READ_BYTE();
-    const auto &list = makeList(start);
-    stack.erase(start, stack.end());
-    stack.push_back(list);
-  }
-
-  DISPATCH();
-}
-MAKE_NIL : {
-  stack.push_back(freeStore.alloc<Nil>());
-  DISPATCH();
-}
-
-#undef CUR_CALL_FRAME
-#undef CUR_CLOSURE
-#undef CUR_FN
-#undef CUR_CODE
-#undef BASE_PTR
-#undef INST_PTR
-
-#undef READ_BYTE
-#undef READ_SHORT
-#undef READ_CONST
-
-#undef DISPATCH
+inline uint8_t VM::readByte() { return code().byteCodes[instPtr()++]; }
+inline uint16_t VM::readShort() {
+  instPtr() += 2;
+  return (uint16_t)((code().byteCodes[instPtr() - 2] << 8 |
+                     code().byteCodes[instPtr() - 1]));
 }
 
 void VM::call(const uint8_t argc) {
@@ -252,19 +111,147 @@ unsigned int VM::unpackList(const SExpr &sexpr) {
   return 1 + unpackList(sexprs.rest);
 }
 
-const SExpr &VM::eval(const Fn &main) {
-  const auto &res = eval(main, false);
-  return res;
-}
-
-const SExpr &VM::evalWithGC(const Fn &main) {
-  const auto &res = eval(main, true);
-  return res;
-}
-
 void VM::reset() {
   stack.clear();
   callFrames.clear();
+}
+
+const SExpr &VM::exec() {
+
+#define DISPATCH() goto *dispatchTable[readByte()]
+
+  static void *dispatchTable[] = {
+      &&MAKE_CLOSURE,      &&CALL,        &&RETURN,     &&POP_TOP,   &&POP,
+      &&CLOSE_UPVALUE,     &&LOAD_CONST,  &&LOAD_SYM,   &&DEF_SYM,   &&SET_SYM,
+      &&LOAD_UPVALUE,      &&SET_UPVALUE, &&LOAD_STACK, &&SET_STACK, &&JUMP,
+      &&POP_JUMP_IF_FALSE, &&MAKE_LIST,   &&MAKE_NIL};
+
+  call(0);
+
+  DISPATCH();
+
+MAKE_CLOSURE : {
+  const auto &fnAtom = cast<Fn>(readConst());
+  std::vector<std::shared_ptr<Upvalue>> upvalues;
+  for (unsigned int i{0}; i < fnAtom.numUpvals; ++i) {
+    auto isLocal = readByte();
+    auto idx = readByte();
+    if (isLocal == 1) {
+      upvalues.push_back(captureUpvalue(basePtr() + idx));
+    } else {
+      upvalues.push_back(closure().upvalues[idx]);
+    }
+  }
+  stack.push_back(freeStore.alloc<Closure>(fnAtom, upvalues));
+}
+  DISPATCH();
+CALL : {
+  call(readByte());
+  DISPATCH();
+}
+RETURN : {
+  if (callFrames.size() == 1) {
+    const auto res = stack.back();
+    reset();
+    return res;
+  }
+  callFrames.pop_back();
+  DISPATCH();
+}
+POP_TOP : {
+  stack.pop_back();
+  DISPATCH();
+}
+POP : {
+  stack.erase(stack.end() - readByte(), stack.end());
+  DISPATCH();
+}
+CLOSE_UPVALUE : {
+  auto it = openUpvals.find(basePtr() + readByte());
+  if (it != openUpvals.end()) {
+    it->second->close();
+    openUpvals.erase(it);
+  }
+  DISPATCH();
+}
+LOAD_CONST : {
+  stack.push_back(readConst());
+  DISPATCH();
+}
+LOAD_SYM : {
+  const auto &sym = cast<Sym>(readConst());
+  stack.push_back(globals.find(sym));
+  if (isa<Undefined>(stack.back())) [[unlikely]] {
+    std::stringstream ss;
+    ss << "Access of an undefined global: " << sym << ".";
+    throw std::invalid_argument(ss.str());
+  }
+  DISPATCH();
+}
+DEF_SYM : {
+  globals.def(cast<Sym>(readConst()), stack.back());
+  stack.back() = freeStore.alloc<Nil>();
+  DISPATCH();
+}
+SET_SYM : {
+  globals.set(cast<Sym>(readConst()), stack.back());
+  stack.back() = freeStore.alloc<Nil>();
+  DISPATCH();
+}
+LOAD_UPVALUE : {
+  stack.push_back(closure().upvalues[readByte()]->get());
+  if (isa<Undefined>(stack.back())) [[unlikely]] {
+    throw std::invalid_argument("Access of an undefined upvalue.");
+  }
+  DISPATCH();
+}
+SET_UPVALUE : {
+  closure().upvalues[readByte()]->set(stack.back());
+  stack.back() = freeStore.alloc<Nil>();
+  DISPATCH();
+}
+LOAD_STACK : {
+  stack.push_back(stack[basePtr() + readByte()]);
+  if (isa<Undefined>(stack.back())) [[unlikely]] {
+    throw std::invalid_argument("Access of an undefined local.");
+  }
+  DISPATCH();
+}
+SET_STACK : {
+  stack[basePtr() + readByte()] = stack.back();
+  stack.back() = freeStore.alloc<Nil>();
+  DISPATCH();
+}
+JUMP : {
+  instPtr() += readShort();
+  DISPATCH();
+}
+POP_JUMP_IF_FALSE : {
+  auto offset = readShort();
+  if (!Bool::toBool(stack.back())) {
+    instPtr() += offset;
+  }
+  stack.pop_back();
+  DISPATCH();
+}
+MAKE_LIST : {
+  {
+    auto gcGuard = freeStore.pauseGC();
+
+    const auto start = stack.begin() + basePtr() + readByte();
+    const auto &list = makeList(start);
+    stack.erase(start, stack.end());
+    stack.push_back(list);
+  }
+
+  DISPATCH();
+}
+MAKE_NIL : {
+  stack.push_back(freeStore.alloc<Nil>());
+  DISPATCH();
+}
+
+#undef DISPATCH
 }
 
 VM::VM() : freeStore(globals, stack, callFrames, openUpvals) {
@@ -347,3 +334,13 @@ VM::VM() : freeStore(globals, stack, callFrames, openUpvals) {
 void VM::regMacro(const Sym &sym) { globals.regMacro(sym); }
 
 bool VM::isMacro(const Sym &sym) { return globals.isMacro(sym); }
+
+const SExpr &VM::eval(const Fn &main) {
+  const auto &res = eval(main, false);
+  return res;
+}
+
+const SExpr &VM::evalWithGC(const Fn &main) {
+  const auto &res = eval(main, true);
+  return res;
+}
