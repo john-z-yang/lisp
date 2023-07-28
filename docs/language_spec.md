@@ -71,7 +71,7 @@
 | (**-** _num<sub>1</sub> ... num<sub>n</sub>_)  | Returns num<sub>1</sub> - ... - num<sub>n</sub>, `0` - num<sub>1</sub> if no argument are provided.    |
 | (**\*** _num<sub>1</sub> ... num<sub>n</sub>_) | Returns the product of all of the arguments, `1` if no arguments are provided.                         |
 | (**/** _num<sub>1</sub> ... num<sub>n</sub>_)  | Returns num<sub>1</sub> ÷ ... ÷ num<sub>n</sub>, `1` ÷ num<sub>n</sub> if only 1 argument is supplied. |
-| (**%** _lhs rhs_)                              | Returns lhs % rhs.                                                                                     |
+| (**modulo** _lhs rhs_)                         | Returns lhs modulo rhs.                                                                                |
 
 ### Strings
 

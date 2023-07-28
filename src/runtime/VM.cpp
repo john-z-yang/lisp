@@ -282,7 +282,7 @@ VM::VM() : freeStore(globals, stack, callFrames, openUpvals) {
               freeStore.alloc<NatFn>(lispDiv, 1, true));
   globals.def(freeStore.alloc<Sym>("abs"),
               freeStore.alloc<NatFn>(lispAbs, 1, false));
-  globals.def(freeStore.alloc<Sym>("%"),
+  globals.def(freeStore.alloc<Sym>("modulo"),
               freeStore.alloc<NatFn>(lispMod, 2, false));
 
   globals.def(freeStore.alloc<Sym>("string?"),
