@@ -41,6 +41,7 @@ TESTS = \
 	$(TESTDIR)/combine \
 	$(TESTDIR)/compare \
 	$(TESTDIR)/cons \
+	$(TESTDIR)/define \
 	$(TESTDIR)/equality \
 	$(TESTDIR)/hof \
 	$(TESTDIR)/lexbind \
