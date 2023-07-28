@@ -9,7 +9,7 @@ namespace sexpr {
 
 class String final : public Atom {
 private:
-  static std::string unescape(const std::string literal);
+  static std::string escape(const std::string literal);
 
 protected:
   std::ostream &serialize(std::ostream &o) const override;
@@ -19,7 +19,7 @@ public:
   explicit String(const std::string literal);
 
   const std::string literal;
-  const std::string unescaped;
+  const std::string escaped;
 
   static bool classOf(const SExpr &sExpr);
   static std::string getTypeName();

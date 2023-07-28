@@ -285,13 +285,13 @@ VM::VM() : freeStore(globals, stack, callFrames, openUpvals) {
   globals.def(freeStore.alloc<Sym>("%"),
               freeStore.alloc<NatFn>(lispMod, 2, false));
 
-  globals.def(freeStore.alloc<Sym>("str?"),
+  globals.def(freeStore.alloc<Sym>("string?"),
               freeStore.alloc<NatFn>(lispIsStr, 1, false));
-  globals.def(freeStore.alloc<Sym>("str-len"),
+  globals.def(freeStore.alloc<Sym>("string-length"),
               freeStore.alloc<NatFn>(lispStrLen, 1, false));
-  globals.def(freeStore.alloc<Sym>("str-sub"),
+  globals.def(freeStore.alloc<Sym>("substring"),
               freeStore.alloc<NatFn>(lispStrSub, 3, false));
-  globals.def(freeStore.alloc<Sym>("str-con"),
+  globals.def(freeStore.alloc<Sym>("string-append"),
               freeStore.alloc<NatFn>(lispStrCon, 1, true));
   globals.def(freeStore.alloc<Sym>("->str"),
               freeStore.alloc<NatFn>(lispToStr, 1, false));
