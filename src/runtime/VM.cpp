@@ -324,7 +324,7 @@ VM::VM() : freeStore(globals, stack, callFrames, openUpvals) {
   globals.def(freeStore.alloc<Sym>("equal?"),
               freeStore.alloc<NatFn>(lispEqual, 2, false));
 
-  globals.def(freeStore.alloc<Sym>("proc?"),
+  globals.def(freeStore.alloc<Sym>("procedure?"),
               freeStore.alloc<NatFn>(lispIsProc, 1, false));
 
   globals.def(freeStore.alloc<Sym>("apply"),
