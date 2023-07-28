@@ -88,7 +88,7 @@
 | Function                                         | Description                                                                                                             |
 | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
 | (**null?** _arg_)                                | Returns `#t` if arg is `'()`, `#f` otherwise.                                                                           |
-| (**cons?** _arg_)                                | Returns `#t` if arg is a cons pair, `#f` otherwise.                                                                     |
+| (**pair?** _arg_)                                | Returns `#t` if arg is a cons pair, `#f` otherwise.                                                                     |
 | (**cons** _lhs rhs_)                             | Returns a pair where first element is lhs and second element is rhs.                                                    |
 | (**car** _pair_)                                 | Returns the first element of pair.                                                                                      |
 | (**cdr** _pair_)                                 | Returns the second element of pair.                                                                                     |

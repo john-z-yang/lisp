@@ -28,7 +28,7 @@
            (string-append "Invalid syntax for cond. "
                     "Expected (cond (test expr)* (else expr)), but got "
                     (->str (cons 'cond sexprs))))
-         (if (not (cons? cur-clause))
+         (if (not (pair? cur-clause))
              (error err-msg)
              (list 'if
                    (if (eqv? (car cur-clause) 'else)

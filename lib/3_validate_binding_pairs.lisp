@@ -1,12 +1,12 @@
 (define validate-binding-pairs--
   (lambda (binding-pairs err-msg)
-    (if (and (not (cons? binding-pairs))
+    (if (and (not (pair? binding-pairs))
              (not (null? binding-pairs)))
         (error (string-append err-msg "Binding pairs must be in a list."))
         ((lambda ()
            (define validate-binding-pair
              (lambda (binding-pair)
-               (cond ((not (cons? binding-pair))
+               (cond ((not (pair? binding-pair))
                       (error (string-append err-msg
                                       "Each binding pair must be a list.")))
                      ((not (sym? (car binding-pair)))

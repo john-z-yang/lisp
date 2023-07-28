@@ -298,7 +298,7 @@ VM::VM() : freeStore(globals, stack, callFrames, openUpvals) {
 
   globals.def(freeStore.alloc<Sym>("null?"),
               freeStore.alloc<NatFn>(lispIsNull, 1, false));
-  globals.def(freeStore.alloc<Sym>("cons?"),
+  globals.def(freeStore.alloc<Sym>("pair?"),
               freeStore.alloc<NatFn>(lispIsCons, 1, false));
   globals.def(freeStore.alloc<Sym>("cons"),
               freeStore.alloc<NatFn>(lispCons, 2, false));
