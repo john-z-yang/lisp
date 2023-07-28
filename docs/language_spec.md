@@ -101,11 +101,12 @@
 
 ### Predicates
 
-| Function             | Description                                                                      |
-| -------------------- | -------------------------------------------------------------------------------- |
-| (**proc?** _arg_)    | Returns `#t` if arg is _closure_ or _native function_, `#f` otherwise.           |
-| (**eq?** _lhs rhs_)  | Returns `#t` if lhs and rhs represent the same object in memory, `#f` otherwise. |
-| (**eqv?** _lhs rhs_) | Returns `#t` if lhs and rhs are equivalent in value, `#f` otherwise.             |
+| Function               | Description                                                                                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| (**proc?** _arg_)      | Returns `#t` if arg is _closure_ or _native function_, `#f` otherwise.                                                                |
+| (**eq?** _lhs rhs_)    | Returns `#t` if lhs and rhs are symbol and are equivalent in value, or represent the same object in memory, `#f` otherwise.           |
+| (**eqv?** _lhs rhs_)   | Returns `#t` if lhs and rhs are symbol or number and are equivalent in value, or represent the same object in memory, `#f` otherwise. |
+| (**equal?** _lhs rhs_) | Returns `#t` if lhs and rhs are equivalent in value, `#f` otherwise.                                                                  |
 
 ### Miscellaneous
 

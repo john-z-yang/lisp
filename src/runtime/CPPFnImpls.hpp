@@ -44,6 +44,7 @@ CPPFn lispError;
 
 CPPFn lispEq;
 CPPFn lispEqv;
+CPPFn lispEqual;
 
 CPPFn lispIsProc;
 

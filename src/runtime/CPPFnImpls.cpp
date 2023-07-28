@@ -188,11 +188,27 @@ const SExpr &runtime::lispError(StackIter params,
 
 const SExpr &runtime::lispEq(StackIter params,
                              [[maybe_unused]] const uint8_t argc, VM &vm) {
-  return vm.freeStore.alloc<Bool>(&params->get() == &(params + 1)->get());
+  const auto &lhs = params->get();
+  const auto &rhs = (params + 1)->get();
+  if (isa<Sym>(lhs)) {
+    return vm.freeStore.alloc<Bool>(lhs == rhs);
+  }
+  return vm.freeStore.alloc<Bool>(&lhs == &rhs);
 }
 const SExpr &runtime::lispEqv(StackIter params,
                               [[maybe_unused]] const uint8_t argc, VM &vm) {
-  return vm.freeStore.alloc<Bool>(params->get() == *(params + 1));
+  const auto &lhs = params->get();
+  const auto &rhs = (params + 1)->get();
+  if (isa<Sym>(lhs) || isa<Num>(lhs)) {
+    return vm.freeStore.alloc<Bool>(lhs == rhs);
+  }
+  return vm.freeStore.alloc<Bool>(&lhs == &rhs);
+}
+const SExpr &runtime::lispEqual(StackIter params,
+                                [[maybe_unused]] const uint8_t argc, VM &vm) {
+  const auto &lhs = params->get();
+  const auto &rhs = (params + 1)->get();
+  return vm.freeStore.alloc<Bool>(lhs == rhs);
 }
 
 const SExpr &runtime::lispIsProc(StackIter params,
