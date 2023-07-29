@@ -260,7 +260,7 @@ VM::VM() : freeStore(globals, stack, callFrames, openUpvals) {
   globals.def(freeStore.alloc<Sym>("gensym"),
               freeStore.alloc<NatFn>(lispGenSym, 0, false));
 
-  globals.def(freeStore.alloc<Sym>("num?"),
+  globals.def(freeStore.alloc<Sym>("number?"),
               freeStore.alloc<NatFn>(lispIsNum, 1, false));
   globals.def(freeStore.alloc<Sym>("="),
               freeStore.alloc<NatFn>(lispNumEq, 1, true));

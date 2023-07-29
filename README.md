@@ -106,7 +106,7 @@ Source code
 ```lisp
 (define fac
   (lambda (n)
-    (cond ((or (not (num? n)) (< n 0))
+    (cond ((or (not (number? n)) (< n 0))
            (display "Invalid argument for fac"))
           ((= n 0)
            1)
@@ -120,7 +120,7 @@ Source code
 ```lisp
 (define fac
   (lambda (n)
-    (if ((lambda (#:gensym-100) (if #:gensym-100 #:gensym-100 (< n 0))) (not (num? n)))
+    (if ((lambda (#:gensym-100) (if #:gensym-100 #:gensym-100 (< n 0))) (not (number? n)))
         (begin (display "Invalid argument for fac"))
     (if (= n 0)
         (begin 1)
@@ -138,7 +138,7 @@ Source code
 <Closure at 0x107cfcd50>, instance of:
     <Function at 0x10b0ae920, arity: 1, upvalues: 0>
 Constants:
-    <Function at 0x10b09bd20>, not, num?, display, "Invalid argument for fac", =, 0, 1, #t, *, fac, -, 1, ()
+    <Function at 0x10b09bd20>, not, number?, display, "Invalid argument for fac", =, 0, 1, #t, *, fac, -, 1, ()
 Bytecodes (raw):
     11 00 00 01 01 07 01 07 02 0c 01 01 01 01 01 01
     01 0f 00 0b 11 03 07 03 06 04 01 01 0e 00 30 07
@@ -151,7 +151,7 @@ Bytecodes:
     3                  1 MAKE_CLOSURE            <Function at 0x10b09bd20>
                                                  LOCAL 1
     3                  5 LOAD_SYM                not
-    3                  7 LOAD_SYM                num?
+    3                  7 LOAD_SYM                number?
     3                  9 LOAD_STACK              1
     3                 11 CALL                    1
     3                 13 CALL                    1
