@@ -1,6 +1,6 @@
 # Lisp Interpreter &middot; [![build](https://github.com/john-z-yang/lisp/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/john-z-yang/lisp/actions/workflows/ci.yml)
 
-Interpreter for a subset of Scheme written in C++. Implemented through a compiler and a virtual machine. (See [Technical Overview section](#technical-overview) for more details.)
+Interpreter for a subset of [R4RS](https://people.csail.mit.edu/jaffer/r4rs_toc.html) Scheme written in C++. Implemented through a compiler and a virtual machine. (See [Technical Overview section](#technical-overview) for more details.)
 
 <p align="center">
     <img src="https://raw.githubusercontent.com/john-z-yang/lisp/master/docs/assets/fib_range.png" style="max-width:768px;  width:100%;">
