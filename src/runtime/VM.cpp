@@ -311,6 +311,8 @@ VM::VM() : freeStore(globals, stack, callFrames, openUpvals) {
               freeStore.alloc<NatFn>(lispDis, 1, false));
   globals.def(freeStore.alloc<Sym>("display"),
               freeStore.alloc<NatFn>(lispDisplay, 1, false));
+  globals.def(freeStore.alloc<Sym>("newline"),
+              freeStore.alloc<NatFn>(lispNewline, 0, false));
 
   globals.def(freeStore.alloc<Sym>("quit"),
               freeStore.alloc<NatFn>(lispQuit, 0, false));

@@ -38,6 +38,7 @@ CPPFn lispCdr;
 CPPFn lispDis;
 CPPFn lispIsClosure;
 CPPFn lispDisplay;
+CPPFn lispNewline;
 
 CPPFn lispQuit;
 CPPFn lispError;

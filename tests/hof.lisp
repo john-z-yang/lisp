@@ -19,3 +19,4 @@
 (display ((repeat (repeat twice)) 10))
 (display ((repeat (repeat (repeat twice))) 10))
 (display ((repeat (repeat (repeat (repeat twice)))) 10))
+(newline)

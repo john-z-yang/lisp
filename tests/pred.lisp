@@ -23,3 +23,4 @@
 (display (procedure? +))
 (display (procedure? quit))
 (display (procedure? x))
+(newline)

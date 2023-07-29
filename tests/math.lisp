@@ -23,3 +23,4 @@
 (display (modulo 1 1))
 (display (modulo 3 2))
 (display (modulo 7 4))
+(newline)

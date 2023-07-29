@@ -165,10 +165,15 @@ const SExpr &runtime::lispDisplay(StackIter params,
                                   [[maybe_unused]] const uint8_t argc, VM &vm) {
   if (isa<String>(params->get())) {
     const auto &stringAtom = cast<String>(params->get());
-    std::cout << stringAtom.escaped << std::endl;
+    std::cout << stringAtom.escaped;
   } else {
-    std::cout << params->get() << std::endl;
+    std::cout << params->get();
   }
+  return vm.freeStore.alloc<Nil>();
+}
+const SExpr &runtime::lispNewline([[maybe_unused]] StackIter params,
+                                  [[maybe_unused]] const uint8_t argc, VM &vm) {
+  std::cout << std::endl;
   return vm.freeStore.alloc<Nil>();
 }
 

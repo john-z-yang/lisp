@@ -13,3 +13,4 @@
 (display (<= 0 0 0 0 0))
 (display (>= 0 0 0 0 0))
 (display (= 0 0 0 0 1))
+(newline)

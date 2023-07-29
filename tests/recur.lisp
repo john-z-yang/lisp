@@ -6,3 +6,4 @@
 (display (fib 1))
 (display (fib 2))
 (display (fib 24))
+(newline)

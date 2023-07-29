@@ -20,3 +20,4 @@
 (display (substring "abc" 0 3))
 (display (substring "\"\"\"" 0 1))
 (display (substring "\"\"\"" 0 3))
+(newline)
