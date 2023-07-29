@@ -9,7 +9,7 @@
                (cond ((not (pair? binding-pair))
                       (error (string-append err-msg
                                       "Each binding pair must be a list.")))
-                     ((not (sym? (car binding-pair)))
+                     ((not (symbol? (car binding-pair)))
                       (error (string-append err-msg
                                       "First element of a binding pair "
                                       "must be a symbol).")))

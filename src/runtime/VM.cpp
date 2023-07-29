@@ -255,7 +255,7 @@ MAKE_NIL : {
 }
 
 VM::VM() : freeStore(globals, stack, callFrames, openUpvals) {
-  globals.def(freeStore.alloc<Sym>("sym?"),
+  globals.def(freeStore.alloc<Sym>("symbol?"),
               freeStore.alloc<NatFn>(lispIsSym, 1, false));
   globals.def(freeStore.alloc<Sym>("gensym"),
               freeStore.alloc<NatFn>(lispGenSym, 0, false));

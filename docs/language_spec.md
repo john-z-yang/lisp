@@ -52,9 +52,9 @@
 
 ### Symbols
 
-| Function         | Description                                          |
-| ---------------- | ---------------------------------------------------- |
-| (**sym?** _arg_) | Returns `#t` if _arg_ is a _symbol_, `#f` otherwise. |
+| Function            | Description                                          |
+| ------------------- | ---------------------------------------------------- |
+| (**symbol?** _arg_) | Returns `#t` if _arg_ is a _symbol_, `#f` otherwise. |
 
 ### Intergers
 
