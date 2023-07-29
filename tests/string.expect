@@ -1,17 +1,1 @@
-This is a "string" atom, use the double quote (") character to create string atom.
-Use the handy back-slash (\) character to prevent the lexer from capturing it.
-For instance, \" escapes the " character and \\ escapes the \ character.
-You also do not need to worry about characters like "(", ")" or ";",
-the lexer will not capture them.
-You can use the str? predicate to test if an s-expression is a string or not.
-For example: (str? "") will yield:
-#t
-Similarly: (str? 1) will yield:
-#f
-
-Happy hacking
-think
-abcdef
-abc
-
-"This string contains" 22 characters.
+This is a "string" atom, use the double quote (") character to create string atom.Use the handy back-slash (\) character to prevent the lexer from capturing it.For instance, \" escapes the " character and \\ escapes the \ character.You also do not need to worry about characters like "(", ")" or ";",the lexer will not capture them.You can use the string? predicate to test if an s-expression is a string or not.For example: (string? "") will yield:#tSimilarly: (string? 1) will yield:#fHappy hackingthabcdefabc"This string contains" 22 characters.abc""""

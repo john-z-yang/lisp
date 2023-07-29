@@ -20,25 +20,25 @@
                 (car args)))))
 
 (defmacro cond sexprs
-  (if (null? sexprs) '()
+  (if (null? sexprs) ''()
       ((lambda ()
          (define cur-clause (car sexprs))
          (define next-clause (cdr sexprs))
          (define err-msg
-           (str-con "Invalid syntax for cond. "
+           (string-append "Invalid syntax for cond. "
                     "Expected (cond (test expr)* (else expr)), but got "
                     (->str (cons 'cond sexprs))))
-         (if (not (cons? cur-clause))
+         (if (not (pair? cur-clause))
              (error err-msg)
              (list 'if
                    (if (eqv? (car cur-clause) 'else)
                        (if (null? next-clause)
                            #t
-                           (error (str-con err-msg
+                           (error (string-append err-msg
                                            " (else clause must be last).")))
                        (car cur-clause))
                    (if (null? (cdr cur-clause))
-                       (error (str-con err-msg
+                       (error (string-append err-msg
                                        "(missing expression after test)."))
                        (cons 'begin (cdr cur-clause)))
                    (cons 'cond next-clause)))))))

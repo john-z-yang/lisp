@@ -97,20 +97,20 @@ const SExpr &runtime::lispMod(StackIter params,
 PRED_OP(runtime::lispIsStr, isa<String>(params->get()));
 const SExpr &runtime::lispStrLen(StackIter params,
                                  [[maybe_unused]] const uint8_t argc, VM &vm) {
-  return vm.freeStore.alloc<Num>(cast<String>(params->get()).unescaped.size());
+  return vm.freeStore.alloc<Num>(cast<String>(params->get()).escaped.size());
 }
 const SExpr &runtime::lispStrSub(StackIter params,
                                  [[maybe_unused]] const uint8_t argc, VM &vm) {
   const auto &str = cast<String>(params->get());
   const auto &pos = cast<Num>((params + 1)->get()).val;
-  const auto &len = cast<Num>((params + 2)->get()).val;
+  const auto &end = cast<Num>((params + 2)->get()).val;
   std::stringstream ss;
   try {
-    ss << "\"" << str.unescaped.substr(pos, len) << "\"";
+    ss << "\"" << str.escaped.substr(pos, end - pos) << "\"";
   } catch (std::out_of_range &ofr) {
     std::stringstream ess;
-    ess << "Invalid range for " << str.literal << " (" << pos << ", " << len
-        << ")";
+    ess << "Invalid range to substring for " << str.literal << " (" << pos
+        << ", " << end << ")";
     throw std::invalid_argument(ess.str());
   }
   return vm.freeStore.alloc<String>(ss.str());
@@ -119,7 +119,7 @@ const SExpr &runtime::lispStrCon(StackIter params, const uint8_t argc, VM &vm) {
   std::stringstream ss;
   ss << "\"";
   for (uint8_t i{0}; i < argc; ++i) {
-    ss << cast<String>(params->get()).unescaped;
+    ss << cast<String>(params->get()).escaped;
     ++params;
   }
   ss << "\"";
@@ -165,10 +165,15 @@ const SExpr &runtime::lispDisplay(StackIter params,
                                   [[maybe_unused]] const uint8_t argc, VM &vm) {
   if (isa<String>(params->get())) {
     const auto &stringAtom = cast<String>(params->get());
-    std::cout << stringAtom.unescaped << std::endl;
+    std::cout << stringAtom.escaped;
   } else {
-    std::cout << params->get() << std::endl;
+    std::cout << params->get();
   }
+  return vm.freeStore.alloc<Nil>();
+}
+const SExpr &runtime::lispNewline([[maybe_unused]] StackIter params,
+                                  [[maybe_unused]] const uint8_t argc, VM &vm) {
+  std::cout << std::endl;
   return vm.freeStore.alloc<Nil>();
 }
 
@@ -188,11 +193,27 @@ const SExpr &runtime::lispError(StackIter params,
 
 const SExpr &runtime::lispEq(StackIter params,
                              [[maybe_unused]] const uint8_t argc, VM &vm) {
-  return vm.freeStore.alloc<Bool>(&params->get() == &(params + 1)->get());
+  const auto &lhs = params->get();
+  const auto &rhs = (params + 1)->get();
+  if (isa<Sym>(lhs)) {
+    return vm.freeStore.alloc<Bool>(lhs == rhs);
+  }
+  return vm.freeStore.alloc<Bool>(&lhs == &rhs);
 }
 const SExpr &runtime::lispEqv(StackIter params,
                               [[maybe_unused]] const uint8_t argc, VM &vm) {
-  return vm.freeStore.alloc<Bool>(params->get() == *(params + 1));
+  const auto &lhs = params->get();
+  const auto &rhs = (params + 1)->get();
+  if (isa<Sym>(lhs) || isa<Num>(lhs)) {
+    return vm.freeStore.alloc<Bool>(lhs == rhs);
+  }
+  return vm.freeStore.alloc<Bool>(&lhs == &rhs);
+}
+const SExpr &runtime::lispEqual(StackIter params,
+                                [[maybe_unused]] const uint8_t argc, VM &vm) {
+  const auto &lhs = params->get();
+  const auto &rhs = (params + 1)->get();
+  return vm.freeStore.alloc<Bool>(lhs == rhs);
 }
 
 const SExpr &runtime::lispIsProc(StackIter params,

@@ -41,6 +41,7 @@ TESTS = \
 	$(TESTDIR)/combine \
 	$(TESTDIR)/compare \
 	$(TESTDIR)/cons \
+	$(TESTDIR)/define \
 	$(TESTDIR)/equality \
 	$(TESTDIR)/hof \
 	$(TESTDIR)/lexbind \
@@ -71,8 +72,8 @@ $(OUTDIR)/%.o: $$(subst _,/,$$(patsubst $$(OUTDIR)/$$(PERCENT).o,src/$$(PERCENT)
 	$$(subst _,/,$$(patsubst $$(OUTDIR)/$$(PERCENT).o,src/$$(PERCENT).hpp,$$@))
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(TESTDIR)/%: $(TESTDIR)/%.lisp $(TESTDIR)/%.expect $(OUTDIR)/lisp
-	(export LISP_LIB_ENV=$(LIBDIR); $(OUTDIR)/lisp $@.lisp >> $@.out 2>&1)
+$(TESTDIR)/%: $(TESTDIR)/%.scm $(TESTDIR)/%.expect $(OUTDIR)/lisp
+	(export LISP_LIB_ENV=$(LIBDIR); $(OUTDIR)/lisp $@.scm >> $@.out 2>&1)
 	diff $@.expect $@.out
 	rm $@.out
 

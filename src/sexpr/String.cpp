@@ -5,7 +5,7 @@
 
 using namespace sexpr;
 
-std::string String::unescape(const std::string literal) {
+std::string String::escape(const std::string literal) {
   auto res = literal;
   res = std::regex_replace(res, std::regex("\\\\\""), "\"");
   res = std::regex_replace(res, std::regex("\\\\\\\\"), "\\");
@@ -22,7 +22,7 @@ bool String::equals(const SExpr &other) const {
 }
 
 String::String(const std::string literal)
-    : Atom(SExpr::Type::STR), literal(literal), unescaped(unescape(literal)) {}
+    : Atom(SExpr::Type::STR), literal(literal), escaped(escape(literal)) {}
 
 bool String::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::STR;

@@ -33,7 +33,18 @@ private:
   std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> openUpvals;
 
   const sexpr::SExpr &eval(const sexpr::Fn &main, bool withGC);
-  const sexpr::SExpr &exec();
+
+  CallFrame &callFrame();
+  const sexpr::Closure &closure();
+  const sexpr::Fn &fn();
+  const code::Code &code();
+
+  code::InstrPtr &instPtr();
+  runtime::StackPtr &basePtr();
+
+  const sexpr::SExpr &readConst();
+  uint8_t readByte();
+  uint16_t readShort();
 
   void call(const uint8_t argc);
   std::shared_ptr<Upvalue> captureUpvalue(StackPtr pos);
@@ -42,16 +53,18 @@ private:
   unsigned int unpackList(const sexpr::SExpr &sexpr);
   void reset();
 
+  const sexpr::SExpr &exec();
+
 public:
   VM();
 
   FreeStore freeStore;
 
-  const sexpr::SExpr &evalWithGC(const sexpr::Fn &main);
-  const sexpr::SExpr &eval(const sexpr::Fn &main);
-
   void regMacro(const sexpr::Sym &sym);
   bool isMacro(const sexpr::Sym &sym);
+
+  const sexpr::SExpr &evalWithGC(const sexpr::Fn &main);
+  const sexpr::SExpr &eval(const sexpr::Fn &main);
 };
 } // namespace runtime
 

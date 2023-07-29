@@ -8,17 +8,12 @@ using namespace runtime;
 using namespace sexpr;
 
 void Env::def(const Sym &sym, const SExpr &val) {
-  auto it = symTable.find(sym);
-  if (it != symTable.end()) {
-    throw std::invalid_argument("Symbol \"" + sym.val +
-                                "\" is already defined.");
-  }
-  symTable.insert({sym, val});
+  symTable.insert_or_assign(sym, val);
 }
 
 void Env::set(const Sym &sym, const SExpr &val) {
   auto it = symTable.find(sym);
-  if (it == symTable.end()) {
+  if (it == symTable.end()) [[unlikely]] {
     throw std::invalid_argument("Symbol \"" + sym.val + "\" is not defined.");
   }
   it->second = val;
@@ -26,7 +21,7 @@ void Env::set(const Sym &sym, const SExpr &val) {
 
 const SExpr &Env::find(const Sym &sym) {
   auto it = symTable.find(sym);
-  if (it == symTable.end()) {
+  if (it == symTable.end()) [[unlikely]] {
     throw std::invalid_argument("Symbol \"" + sym.val + "\" is not defined.");
   }
   return it->second;

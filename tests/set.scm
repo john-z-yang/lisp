@@ -47,3 +47,4 @@
   x
   (begin (set! x 0) x)
   x))
+(newline)

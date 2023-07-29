@@ -52,15 +52,15 @@
 
 ### Symbols
 
-| Function         | Description                                          |
-| ---------------- | ---------------------------------------------------- |
-| (**sym?** _arg_) | Returns `#t` if _arg_ is a _symbol_, `#f` otherwise. |
+| Function            | Description                                          |
+| ------------------- | ---------------------------------------------------- |
+| (**symbol?** _arg_) | Returns `#t` if _arg_ is a _symbol_, `#f` otherwise. |
 
 ### Intergers
 
 | Function                                       | Description                                                                                            |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| (**num?** _arg_)                               | Returns `#t` if _arg_ is a _number_, `#f` otherwise.                                                   |
+| (**number?** _arg_)                            | Returns `#t` if _arg_ is a _number_, `#f` otherwise.                                                   |
 | (**=** _num<sub>1</sub> ... num<sub>n</sub>_)  | Returns `#t` if all of the arguments are numerically equal, `#f` otherwise.                            |
 | (**>** _num<sub>1</sub> ... num<sub>n</sub>_)  | Returns `#t` if all of the arguments in the given order are strictly increasing, `#f` otherwise.       |
 | (**>=** _num<sub>1</sub> ... num<sub>n</sub>_) | Returns `#t` if all of the arguments in the given order are non-decreasing, `#f` otherwise.            |
@@ -71,24 +71,24 @@
 | (**-** _num<sub>1</sub> ... num<sub>n</sub>_)  | Returns num<sub>1</sub> - ... - num<sub>n</sub>, `0` - num<sub>1</sub> if no argument are provided.    |
 | (**\*** _num<sub>1</sub> ... num<sub>n</sub>_) | Returns the product of all of the arguments, `1` if no arguments are provided.                         |
 | (**/** _num<sub>1</sub> ... num<sub>n</sub>_)  | Returns num<sub>1</sub> ÷ ... ÷ num<sub>n</sub>, `1` ÷ num<sub>n</sub> if only 1 argument is supplied. |
-| (**%** _lhs rhs_)                              | Returns lhs % rhs.                                                                                     |
+| (**modulo** _lhs rhs_)                         | Returns lhs modulo rhs.                                                                                |
 
 ### Strings
 
-| Function                                              | Description                                                                                                                                 |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| (**str?** _arg_)                                      | Returns `#t` if _arg_ is _string_; otherwise return _#f_.                                                                                   |
-| (**str-len** _arg_)                                   | Returns the length of _arg_.                                                                                                                |
-| (**str-sub** _str_ _pos_ _len_)                       | Returns a new string that starts at character position _pos_ and spans _len_ characters (or until the end of _str_, whichever comes first). |
-| (**str-con** _str<sub>1</sub>_ ... _str<sub>n</sub>_) | Returns a new string that is the concatenation of _str<sub>1</sub>_, ..., _str<sub>n</sub>_.                                                |
-| (**->str** _arg_)                                     | Returns _arg_ in string representation.                                                                                                     |
+| Function                                                    | Description                                                                                                                      |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| (**string?** _arg_)                                         | Returns `#t` if _arg_ is _string_; otherwise return _#f_.                                                                        |
+| (**string-length** _arg_)                                   | Returns the length of _arg_.                                                                                                     |
+| (**substring** _str_ _start_ _end_)                         | Returns a new string that starts position _start_ and ends at position _end_ (or until the end of _str_, whichever comes first). |
+| (**string-append** _str<sub>1</sub>_ ... _str<sub>n</sub>_) | Returns a new string that is the concatenation of _str<sub>1</sub>_, ..., _str<sub>n</sub>_.                                     |
+| (**->str** _arg_)                                           | Returns _arg_ in string representation.                                                                                          |
 
 ### Pairs and Lists
 
 | Function                                         | Description                                                                                                             |
 | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
 | (**null?** _arg_)                                | Returns `#t` if arg is `'()`, `#f` otherwise.                                                                           |
-| (**cons?** _arg_)                                | Returns `#t` if arg is a cons pair, `#f` otherwise.                                                                     |
+| (**pair?** _arg_)                                | Returns `#t` if arg is a cons pair, `#f` otherwise.                                                                     |
 | (**cons** _lhs rhs_)                             | Returns a pair where first element is lhs and second element is rhs.                                                    |
 | (**car** _pair_)                                 | Returns the first element of pair.                                                                                      |
 | (**cdr** _pair_)                                 | Returns the second element of pair.                                                                                     |
@@ -101,11 +101,12 @@
 
 ### Predicates
 
-| Function             | Description                                                                      |
-| -------------------- | -------------------------------------------------------------------------------- |
-| (**proc?** _arg_)    | Returns `#t` if arg is _closure_ or _native function_, `#f` otherwise.           |
-| (**eq?** _lhs rhs_)  | Returns `#t` if lhs and rhs represent the same object in memory, `#f` otherwise. |
-| (**eqv?** _lhs rhs_) | Returns `#t` if lhs and rhs are equivalent in value, `#f` otherwise.             |
+| Function               | Description                                                                                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| (**procedure?** _arg_) | Returns `#t` if arg is _closure_ or _native function_, `#f` otherwise.                                                                |
+| (**eq?** _lhs rhs_)    | Returns `#t` if lhs and rhs are symbol and are equivalent in value, or represent the same object in memory, `#f` otherwise.           |
+| (**eqv?** _lhs rhs_)   | Returns `#t` if lhs and rhs are symbol or number and are equivalent in value, or represent the same object in memory, `#f` otherwise. |
+| (**equal?** _lhs rhs_) | Returns `#t` if lhs and rhs are equivalent in value, `#f` otherwise.                                                                  |
 
 ### Miscellaneous
 

@@ -38,12 +38,14 @@ CPPFn lispCdr;
 CPPFn lispDis;
 CPPFn lispIsClosure;
 CPPFn lispDisplay;
+CPPFn lispNewline;
 
 CPPFn lispQuit;
 CPPFn lispError;
 
 CPPFn lispEq;
 CPPFn lispEqv;
+CPPFn lispEqual;
 
 CPPFn lispIsProc;
 

@@ -1,6 +1,6 @@
 (defmacro let (binding-pairs . body)
   (define err-msg
-    (str-con "Invalid syntax for let. "
+    (string-append "Invalid syntax for let. "
              "Expected (let ((sym expr)*) expr), but got "
              (->str (cons 'let (cons binding-pairs body))) ". "))
   (define binding-pairs (validate-binding-pairs-- binding-pairs err-msg))
@@ -13,7 +13,7 @@
   (cons (cons 'lambda (cons syms body)) init-exprs))
 
 (defmacro let* (binding-pairs . body)
-  (let ((err-msg (str-con "Invalid syntax for let*. "
+  (let ((err-msg (string-append "Invalid syntax for let*. "
                           "Expected (let* ((sym expr)*) expr), but got "
                           (->str (cons 'let* (cons binding-pairs body))) ". ")))
     (cond ((null? binding-pairs)
@@ -29,7 +29,7 @@
                                 body))))))))
 
 (defmacro letrec (binding-pairs . body)
-  (let ((err-msg (str-con "Invalid syntax for letrec. "
+  (let ((err-msg (string-append "Invalid syntax for letrec. "
                           "Expected (letrec ((sym expr)*) expr), but got "
                           (->str (cons 'letrec (cons binding-pairs body))) ". ")))
     (cond ((null? binding-pairs)

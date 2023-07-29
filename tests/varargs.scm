@@ -3,3 +3,4 @@
 (varargs 1)
 (varargs 1 2)
 (varargs 1 2 3)
+(newline)
