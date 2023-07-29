@@ -106,7 +106,7 @@ const SExpr &runtime::lispStrSub(StackIter params,
   const auto &end = cast<Num>((params + 2)->get()).val;
   std::stringstream ss;
   try {
-    ss << "\"" << str.escaped.substr(pos, end) << "\"";
+    ss << "\"" << str.escaped.substr(pos, end - pos) << "\"";
   } catch (std::out_of_range &ofr) {
     std::stringstream ess;
     ess << "Invalid range to substring for " << str.literal << " (" << pos

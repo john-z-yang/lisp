@@ -75,13 +75,13 @@
 
 ### Strings
 
-| Function                                                    | Description                                                                                                                                 |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| (**string?** _arg_)                                         | Returns `#t` if _arg_ is _string_; otherwise return _#f_.                                                                                   |
-| (**string-length** _arg_)                                   | Returns the length of _arg_.                                                                                                                |
-| (**substring** _str_ _pos_ _len_)                           | Returns a new string that starts at character position _pos_ and spans _len_ characters (or until the end of _str_, whichever comes first). |
-| (**string-append** _str<sub>1</sub>_ ... _str<sub>n</sub>_) | Returns a new string that is the concatenation of _str<sub>1</sub>_, ..., _str<sub>n</sub>_.                                                |
-| (**->str** _arg_)                                           | Returns _arg_ in string representation.                                                                                                     |
+| Function                                                    | Description                                                                                                                      |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| (**string?** _arg_)                                         | Returns `#t` if _arg_ is _string_; otherwise return _#f_.                                                                        |
+| (**string-length** _arg_)                                   | Returns the length of _arg_.                                                                                                     |
+| (**substring** _str_ _start_ _end_)                         | Returns a new string that starts position _start_ and ends at position _end_ (or until the end of _str_, whichever comes first). |
+| (**string-append** _str<sub>1</sub>_ ... _str<sub>n</sub>_) | Returns a new string that is the concatenation of _str<sub>1</sub>_, ..., _str<sub>n</sub>_.                                     |
+| (**->str** _arg_)                                           | Returns _arg_ in string representation.                                                                                          |
 
 ### Pairs and Lists
 
