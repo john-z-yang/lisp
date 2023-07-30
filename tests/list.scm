@@ -39,4 +39,12 @@
          0
          (list))
 )
+(memq 'a '(a b c))
+(memq 'b '(a b c))
+(memq 'a '(b c d))
+(memq (list 'a) '(b (a) c))
+(member (list 'a)
+        '(b (a) c))
+(memq 101 '(100 101 102))
+(memv 101 '(100 101 102))
 (newline)
