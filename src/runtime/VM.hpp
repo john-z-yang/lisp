@@ -38,11 +38,11 @@ private:
   std::vector<CallFrame> callFrames;
   std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> openUpvals;
 
-  const sexpr::SExpr &eval(const sexpr::Fn &main, bool withGC);
+  const sexpr::SExpr &eval(const sexpr::Prototype &main, bool withGC);
 
   CallFrame &callFrame();
   const sexpr::Closure &closure();
-  const sexpr::Fn &fn();
+  const sexpr::Prototype &fn();
   const code::Code &code();
 
   code::InstrPtr &instPtr();
@@ -69,8 +69,8 @@ public:
   void regMacro(const sexpr::Sym &sym);
   bool isMacro(const sexpr::Sym &sym);
 
-  const sexpr::SExpr &evalWithGC(const sexpr::Fn &main);
-  const sexpr::SExpr &eval(const sexpr::Fn &main);
+  const sexpr::SExpr &evalWithGC(const sexpr::Prototype &main);
+  const sexpr::SExpr &eval(const sexpr::Prototype &main);
 };
 } // namespace runtime
 

@@ -24,7 +24,7 @@ public:
     BOOL,
     STR,
     SEXPRS,
-    FUNCTION,
+    PROTO,
     CLOSURE,
     NATIVE_FN
   };

@@ -3,7 +3,7 @@
 
 #include "../runtime/Upvalue.hpp"
 #include "Atom.hpp"
-#include "Fn.hpp"
+#include "Prototype.hpp"
 #include "SExpr.hpp"
 #include <memory>
 #include <vector>
@@ -16,11 +16,11 @@ protected:
   bool equals(const SExpr &other) const override;
 
 public:
-  explicit Closure(const Fn &fnAtom);
-  Closure(const Fn &fnAtom,
+  explicit Closure(const Prototype &fnAtom);
+  Closure(const Prototype &fnAtom,
           const std::vector<std::shared_ptr<runtime::Upvalue>> upvalues);
 
-  const Fn &fn;
+  const Prototype &fn;
   const std::vector<std::shared_ptr<runtime::Upvalue>> upvalues;
 
   void assertArity(const uint8_t arity) const;

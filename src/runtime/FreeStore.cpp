@@ -52,8 +52,8 @@ void FreeStore::trace(const SExpr &sexpr) {
     mark(sexprs.rest);
     return;
   }
-  if (isa<Fn>(sexpr)) {
-    const auto &fnAtom = cast<Fn>(sexpr);
+  if (isa<Prototype>(sexpr)) {
+    const auto &fnAtom = cast<Prototype>(sexpr);
     std::for_each(fnAtom.code.consts.cbegin(), fnAtom.code.consts.cend(),
                   [&](const auto &sexpr) { mark(sexpr); });
     return;

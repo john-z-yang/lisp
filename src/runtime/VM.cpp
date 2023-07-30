@@ -25,7 +25,7 @@ using namespace fn;
 using namespace sexpr;
 using namespace runtime;
 
-const SExpr &VM::eval(const Fn &main, bool withGC) {
+const SExpr &VM::eval(const Prototype &main, bool withGC) {
   stack.push_back(freeStore.alloc<Closure>(main));
   try {
     if (withGC) {
@@ -45,7 +45,7 @@ const SExpr &VM::eval(const Fn &main, bool withGC) {
 
 inline CallFrame &VM::callFrame() { return callFrames.back(); }
 inline const Closure &VM::closure() { return callFrame().closure; }
-inline const Fn &VM::fn() { return closure().fn; }
+inline const Prototype &VM::fn() { return closure().fn; }
 inline const Code &VM::code() { return fn().code; }
 
 inline code::InstrPtr &VM::instPtr() { return callFrame().ip; }
@@ -134,7 +134,7 @@ const SExpr &VM::exec() {
   DISPATCH();
 
 MAKE_CLOSURE : {
-  const auto &fnAtom = cast<Fn>(readConst());
+  const auto &fnAtom = cast<Prototype>(readConst());
   std::vector<std::shared_ptr<Upvalue>> upvalues;
   for (unsigned int i{0}; i < fnAtom.numUpvals; ++i) {
     auto isLocal = readByte();
@@ -355,12 +355,12 @@ void VM::regMacro(const Sym &sym) { globals.regMacro(sym); }
 
 bool VM::isMacro(const Sym &sym) { return globals.isMacro(sym); }
 
-const SExpr &VM::eval(const Fn &main) {
+const SExpr &VM::eval(const Prototype &main) {
   const auto &res = eval(main, false);
   return res;
 }
 
-const SExpr &VM::evalWithGC(const Fn &main) {
+const SExpr &VM::evalWithGC(const Prototype &main) {
   const auto &res = eval(main, true);
   return res;
 }

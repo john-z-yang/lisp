@@ -3,7 +3,7 @@
 
 #include "../code/Code.hpp"
 #include "../runtime/VM.hpp"
-#include "../sexpr/Fn.hpp"
+#include "../sexpr/Prototype.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "../sexpr/SExprs.hpp"
 #include "../sexpr/Sym.hpp"
@@ -104,7 +104,7 @@ private:
 public:
   Compiler(std::vector<std::string> source, runtime::VM &vm);
 
-  const sexpr::Fn &compile();
+  const sexpr::Prototype &compile();
 
   static void verifyLex(const std::string &line, const unsigned int lineNum,
                         unsigned int &openParen, unsigned int &closedParen);

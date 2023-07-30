@@ -1,6 +1,6 @@
 #include "Closure.hpp"
 #include "Cast.cpp"
-#include "Fn.hpp"
+#include "Prototype.hpp"
 #include "SExpr.hpp"
 #include <iomanip>
 #include <sstream>
@@ -26,9 +26,10 @@ bool Closure::equals(const SExpr &other) const {
   return false;
 }
 
-Closure::Closure(const Fn &fnAtom) : Atom(SExpr::Type::CLOSURE), fn(fnAtom) {}
+Closure::Closure(const Prototype &fnAtom)
+    : Atom(SExpr::Type::CLOSURE), fn(fnAtom) {}
 
-Closure::Closure(const Fn &fnAtom,
+Closure::Closure(const Prototype &fnAtom,
                  const std::vector<std::shared_ptr<Upvalue>> upvalues)
     : Atom(SExpr::Type::CLOSURE), fn(fnAtom), upvalues(upvalues) {}
 

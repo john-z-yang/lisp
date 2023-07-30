@@ -471,7 +471,7 @@ void Compiler::execDefMacro(const SExpr &sExpr) {
     def.pushCode(def.pushConst(sym));
     def.pushCode(OpCode::RETURN, curSrcLoc.row);
 
-    vm.eval(vm.freeStore.alloc<Fn>(0, 0, false, def));
+    vm.eval(vm.freeStore.alloc<Prototype>(0, 0, false, def));
     vm.regMacro(sym);
 
     cast<Nil>(last(sExpr));
@@ -562,7 +562,7 @@ const SExpr &Compiler::execMacro(const SExpr &sExpr) {
   fexpr.pushCode(argc);
   fexpr.pushCode(OpCode::RETURN, curSrcLoc.row);
 
-  const auto &res = vm.eval(vm.freeStore.alloc<Fn>(0, 0, false, fexpr));
+  const auto &res = vm.eval(vm.freeStore.alloc<Prototype>(0, 0, false, fexpr));
 
   traverse(res, [&](const auto &sExpr) { srcMap.insert({&sExpr, curSrcLoc}); });
 
@@ -584,7 +584,7 @@ Compiler::Compiler(std::vector<std::string> source, VM &vm)
       argNames(vm.freeStore.alloc<Nil>()), arity(0), variadic(false),
       body(parse()), stackOffset(1) {}
 
-const Fn &Compiler::compile() {
+const Prototype &Compiler::compile() {
   if (variadic) {
     emitCode(OpCode::MAKE_LIST, arity + 1);
   }
@@ -597,7 +597,7 @@ const Fn &Compiler::compile() {
 
   compileRet();
 
-  return vm.freeStore.alloc<Fn>(upValues.size(), arity, variadic, code);
+  return vm.freeStore.alloc<Prototype>(upValues.size(), arity, variadic, code);
 }
 
 void Compiler::verifyLex(const std::string &line, const unsigned int curSrcLoc,
