@@ -25,9 +25,10 @@ endef
 _DEPS = code/Code.hpp \
 	compile/Compiler.hpp \
 	error/RuntimeError.hpp error/SyntaxError.hpp error/TypeError.hpp \
+	fn/CPPFnImpls.hpp \
 	repl/repl.hpp \
-	runtime/Env.hpp runtime/FreeStore.hpp runtime/GCGuard.hpp runtime/CPPFnImpls.hpp runtime/Upvalue.hpp runtime/VM.hpp \
-	sexpr/Atom.hpp sexpr/Bool.hpp sexpr/Closure.hpp sexpr/Fn.hpp sexpr/Num.hpp \
+	runtime/Env.hpp runtime/FreeStore.hpp runtime/GCGuard.hpp  runtime/Upvalue.hpp runtime/VM.hpp \
+	sexpr/Atom.hpp sexpr/Bool.hpp sexpr/Closure.hpp sexpr/Prototype.hpp sexpr/Num.hpp \
 	sexpr/NatFn.hpp sexpr/Nil.hpp sexpr/SExpr.hpp sexpr/SExprs.hpp \
 	sexpr/String.hpp sexpr/Sym.hpp sexpr/Undefined.hpp
 

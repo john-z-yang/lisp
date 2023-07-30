@@ -2,8 +2,8 @@
 #include <iomanip>
 
 using namespace sexpr;
-using namespace error;
 using namespace runtime;
+using namespace error;
 
 RuntimeError::RuntimeError(
     const std::string &msg, Env globals,

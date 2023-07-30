@@ -6,6 +6,7 @@
 #include <string>
 
 using namespace sexpr;
+using namespace fn;
 using namespace runtime;
 
 std::ostream &NatFn::serialize(std::ostream &o) const {

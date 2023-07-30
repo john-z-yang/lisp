@@ -6,8 +6,8 @@
 #define LISP_INT_CACHE_MAX 256.0
 #define LISP_INT_CACHE_MIN -16.0
 
+#include "../fn/CPPFn.hpp"
 #include "../sexpr/SExpr.hpp"
-#include "CPPFn.hpp"
 #include "CallFrame.hpp"
 #include "Env.hpp"
 #include "FreeStore.hpp"
@@ -19,10 +19,16 @@
 #include <unordered_set>
 #include <vector>
 
+namespace fn {
+
+CPPFn apply;
+
+} // namespace fn
+
 namespace runtime {
 
 class VM {
-  friend CPPFn lispApply;
+  friend fn::CPPFn fn::apply;
   friend class RuntimeError;
 
 private:
@@ -32,11 +38,11 @@ private:
   std::vector<CallFrame> callFrames;
   std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> openUpvals;
 
-  const sexpr::SExpr &eval(const sexpr::Fn &main, bool withGC);
+  const sexpr::SExpr &eval(const sexpr::Prototype &main, bool withGC);
 
   CallFrame &callFrame();
   const sexpr::Closure &closure();
-  const sexpr::Fn &fn();
+  const sexpr::Prototype &fn();
   const code::Code &code();
 
   code::InstrPtr &instPtr();
@@ -63,8 +69,8 @@ public:
   void regMacro(const sexpr::Sym &sym);
   bool isMacro(const sexpr::Sym &sym);
 
-  const sexpr::SExpr &evalWithGC(const sexpr::Fn &main);
-  const sexpr::SExpr &eval(const sexpr::Fn &main);
+  const sexpr::SExpr &evalWithGC(const sexpr::Prototype &main);
+  const sexpr::SExpr &eval(const sexpr::Prototype &main);
 };
 } // namespace runtime
 

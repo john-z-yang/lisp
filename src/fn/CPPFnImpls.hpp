@@ -1,18 +1,19 @@
-#ifndef LISP_SRC_RUNTIME_NATFNIMPLS_HPP_
-#define LISP_SRC_RUNTIME_NATFNIMPLS_HPP_
+#ifndef LISP_SRC_FN_CPPFNIMPLS_HPP_
+#define LISP_SRC_FN_CPPFNIMPLS_HPP_
 
+#include "../runtime/VM.hpp"
 #include "../sexpr/Bool.hpp"
 #include "CPPFn.hpp"
-#include "VM.hpp"
 #include <cstddef>
 #include <functional>
 #include <memory>
 #include <vector>
 
-namespace runtime {
+namespace fn {
 
 template <typename T, template <typename> typename Op>
-const sexpr::SExpr &lispCmpOp(StackIter params, const uint8_t argc, VM &vm) {
+const sexpr::SExpr &compare(runtime::StackIter params, const uint8_t argc,
+                            runtime::VM &vm) {
   Op<typename T::ValueType> op;
   typename T::ValueType prev = cast<T>(params->get()).val;
   ++params;
@@ -28,7 +29,8 @@ const sexpr::SExpr &lispCmpOp(StackIter params, const uint8_t argc, VM &vm) {
 }
 
 template <typename T, template <typename> typename Op, auto init>
-const sexpr::SExpr &lispAcum(StackIter params, const uint8_t argc, VM &vm) {
+const sexpr::SExpr &accum(runtime::StackIter params, const uint8_t argc,
+                          runtime::VM &vm) {
   Op<typename T::ValueType> op;
   typename T::ValueType acc = init;
   for (uint8_t i{0}; i < argc; ++i) {
@@ -40,7 +42,8 @@ const sexpr::SExpr &lispAcum(StackIter params, const uint8_t argc, VM &vm) {
 
 template <typename T, template <typename> typename BinOp,
           template <typename> typename UniOp>
-const sexpr::SExpr &lispDim(StackIter params, const uint8_t argc, VM &vm) {
+const sexpr::SExpr &dimi(runtime::StackIter params, const uint8_t argc,
+                         runtime::VM &vm) {
   UniOp<typename T::ValueType> uniOp;
   typename T::ValueType acc = cast<T>(params->get()).val;
   if (argc == 1) {
@@ -56,8 +59,9 @@ const sexpr::SExpr &lispDim(StackIter params, const uint8_t argc, VM &vm) {
 }
 
 template <typename... T>
-const sexpr::SExpr &lispTypePred(StackIter params,
-                                 [[maybe_unused]] const uint8_t argc, VM &vm) {
+const sexpr::SExpr &typePred(runtime::StackIter params,
+                             [[maybe_unused]] const uint8_t argc,
+                             runtime::VM &vm) {
   return vm.freeStore.alloc<sexpr::Bool>((isa<T>(params->get()) || ...));
 }
 
@@ -65,38 +69,33 @@ template <class T> struct inverse {
   constexpr auto operator()(const T &x) const { return 1.0 / x; }
 };
 
-CPPFn lispGenSym;
+CPPFn genSym;
 
-CPPFn lispNumEq;
-CPPFn lispGt;
-CPPFn lispGteq;
-CPPFn lispLt;
-CPPFn lispLteq;
-CPPFn lispAbs;
-CPPFn lispMod;
+CPPFn numAbs;
+CPPFn numMod;
 
-CPPFn lispStrLen;
-CPPFn lispStrSub;
-CPPFn lispStrCon;
-CPPFn lispToStr;
+CPPFn strLen;
+CPPFn strApp;
+CPPFn substr;
+CPPFn toStr;
 
-CPPFn lispCons;
-CPPFn lispCar;
-CPPFn lispCdr;
+CPPFn cons;
+CPPFn car;
+CPPFn cdr;
 
-CPPFn lispDis;
-CPPFn lispDisplay;
-CPPFn lispNewline;
+CPPFn dis;
+CPPFn display;
+CPPFn newline;
 
-CPPFn lispQuit;
-CPPFn lispError;
+CPPFn quit;
+CPPFn error;
 
-CPPFn lispEq;
-CPPFn lispEqv;
-CPPFn lispEqual;
+CPPFn eq;
+CPPFn eqv;
+CPPFn equal;
 
-CPPFn lispApply;
+CPPFn apply;
 
-} // namespace runtime
+} // namespace fn
 
 #endif

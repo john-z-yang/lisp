@@ -1,6 +1,6 @@
 #include "Code.hpp"
 #include "../sexpr/Cast.cpp"
-#include "../sexpr/Fn.hpp"
+#include "../sexpr/Prototype.hpp"
 #include "InstrPtr.hpp"
 #include "OpCode.hpp"
 #include <cstdint>
@@ -89,7 +89,7 @@ std::ostream &code::operator<<(std::ostream &o, const Code &code) {
 
     switch (byte) {
     case OpCode::MAKE_CLOSURE: {
-      const auto &fn = cast<Fn>(code.consts[READ_BYTE()].get());
+      const auto &fn = cast<Prototype>(code.consts[READ_BYTE()].get());
       o << "MAKE_CLOSURE" << fn;
       for (unsigned int i{0}; i < fn.numUpvals; i++) {
         const auto isLocal = unsigned(READ_BYTE());
