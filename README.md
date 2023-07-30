@@ -226,8 +226,9 @@ Bytecodes:
 │   ├── code           # Source for Opcodes / Code Objects
 │   ├── compile        # Source for compiler
 │   ├── error          # Source for runtime/syntax errors
+│   ├── fn             # Source for native functions
 │   ├── repl           # Source for interactive environment
-│   ├── runtime        # Source for VM and native functions
+│   ├── runtime        # Source for VM
 │   └── sexpr          # Source for s-expressions
 └── tests              # Tests
 ```

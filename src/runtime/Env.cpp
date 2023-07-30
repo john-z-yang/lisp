@@ -4,8 +4,8 @@
 #include <memory>
 #include <stdexcept>
 
-using namespace runtime;
 using namespace sexpr;
+using namespace runtime;
 
 void Env::def(const Sym &sym, const SExpr &val) {
   symTable.insert_or_assign(sym, val);

@@ -6,8 +6,8 @@
 #define LISP_INT_CACHE_MAX 256.0
 #define LISP_INT_CACHE_MIN -16.0
 
+#include "../fn/CPPFn.hpp"
 #include "../sexpr/SExpr.hpp"
-#include "CPPFn.hpp"
 #include "CallFrame.hpp"
 #include "Env.hpp"
 #include "FreeStore.hpp"
@@ -19,10 +19,16 @@
 #include <unordered_set>
 #include <vector>
 
+namespace fn {
+
+CPPFn apply;
+
+} // namespace fn
+
 namespace runtime {
 
 class VM {
-  friend CPPFn lispApply;
+  friend fn::CPPFn fn::apply;
   friend class RuntimeError;
 
 private:
