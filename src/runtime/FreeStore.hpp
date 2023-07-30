@@ -69,10 +69,12 @@ template <> inline const sexpr::Undefined &FreeStore::alloc() {
 template <> inline const sexpr::Nil &FreeStore::alloc() {
   return sexpr::Nil::getInstance();
 }
-template <> inline const sexpr::Bool &FreeStore::alloc(bool &&val) {
+template <>
+inline const sexpr::Bool &FreeStore::alloc(sexpr::Bool::ValueType &&val) {
   return sexpr::Bool::getInstance(val);
 }
-template <> inline const sexpr::Num &FreeStore::alloc(double &val) {
+template <>
+inline const sexpr::Num &FreeStore::alloc(sexpr::Num::ValueType &val) {
   if (val >= FREESTORE_INT_CACHE_MIN && val <= FREESTORE_INT_CACHE_MAX &&
       floor(val) == val) {
     return *intCache.at(val - FREESTORE_INT_CACHE_MIN).get();

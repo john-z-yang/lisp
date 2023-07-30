@@ -23,10 +23,12 @@ public:
     bool operator()(const Sym &lhs, const Sym &rhs) const;
   };
 
-  const std::string val;
+  using ValueType = std::string;
+
+  const ValueType val;
   const size_t hash;
 
-  explicit Sym(std::string val);
+  explicit Sym(const ValueType val);
 
   static bool classOf(const SExpr &sExpr);
   static std::string getTypeName();

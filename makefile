@@ -2,7 +2,7 @@ CXX = g++
 CXXFLAGS = -std=c++20 $(CXXFLAGS_ASAN) $(CXXFLAGS_WARN) $(CXXFLAGS_EXTRA)
 CXXFLAGS_ASAN = -fsanitize=address,undefined -g
 CXXFLAGS_WARN = -pedantic -Wall -Wextra -Wno-gnu-label-as-value
-CXXFLAGS_EXTRA =
+CXXFLAGS_EXTRA = -O2
 
 PERCENT = %
 define NEWLINE

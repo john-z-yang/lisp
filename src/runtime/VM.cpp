@@ -3,6 +3,7 @@
 #include "../sexpr/Cast.cpp"
 #include "../sexpr/NatFn.hpp"
 #include "../sexpr/SExprs.hpp"
+#include "../sexpr/String.hpp"
 #include "CPPFnImpls.hpp"
 #include "CallFrame.hpp"
 #include "FreeStore.hpp"
@@ -11,6 +12,7 @@
 #include "StackPtr.hpp"
 #include <algorithm>
 #include <exception>
+#include <functional>
 #include <iomanip>
 #include <memory>
 #include <sstream>
@@ -256,37 +258,41 @@ MAKE_NIL : {
 
 VM::VM() : freeStore(globals, stack, callFrames, openUpvals) {
   globals.def(freeStore.alloc<Sym>("symbol?"),
-              freeStore.alloc<NatFn>(lispIsSym, 1, false));
+              freeStore.alloc<NatFn>(lispTypePred<Sym>, 1, false));
   globals.def(freeStore.alloc<Sym>("gensym"),
               freeStore.alloc<NatFn>(lispGenSym, 0, false));
 
   globals.def(freeStore.alloc<Sym>("number?"),
-              freeStore.alloc<NatFn>(lispIsNum, 1, false));
+              freeStore.alloc<NatFn>(lispTypePred<Num>, 1, false));
   globals.def(freeStore.alloc<Sym>("="),
-              freeStore.alloc<NatFn>(lispNumEq, 1, true));
+              freeStore.alloc<NatFn>(lispCmpOp<Num, std::equal_to>, 1, true));
   globals.def(freeStore.alloc<Sym>(">"),
-              freeStore.alloc<NatFn>(lispGt, 1, true));
-  globals.def(freeStore.alloc<Sym>(">="),
-              freeStore.alloc<NatFn>(lispGteq, 1, true));
+              freeStore.alloc<NatFn>(lispCmpOp<Num, std::greater>, 1, true));
+  globals.def(
+      freeStore.alloc<Sym>(">="),
+      freeStore.alloc<NatFn>(lispCmpOp<Num, std::greater_equal>, 1, true));
   globals.def(freeStore.alloc<Sym>("<"),
-              freeStore.alloc<NatFn>(lispLt, 1, true));
+              freeStore.alloc<NatFn>(lispCmpOp<Num, std::less>, 1, true));
   globals.def(freeStore.alloc<Sym>("<="),
-              freeStore.alloc<NatFn>(lispLteq, 1, true));
+              freeStore.alloc<NatFn>(lispCmpOp<Num, std::less_equal>, 1, true));
   globals.def(freeStore.alloc<Sym>("+"),
-              freeStore.alloc<NatFn>(lispAdd, 1, true));
-  globals.def(freeStore.alloc<Sym>("*"),
-              freeStore.alloc<NatFn>(lispMult, 1, true));
-  globals.def(freeStore.alloc<Sym>("-"),
-              freeStore.alloc<NatFn>(lispSub, 1, true));
-  globals.def(freeStore.alloc<Sym>("/"),
-              freeStore.alloc<NatFn>(lispDiv, 1, true));
+              freeStore.alloc<NatFn>(lispAcum<Num, std::plus, 0>, 1, true));
+  globals.def(
+      freeStore.alloc<Sym>("*"),
+      freeStore.alloc<NatFn>(lispAcum<Num, std::multiplies, 1>, 1, true));
+  globals.def(
+      freeStore.alloc<Sym>("-"),
+      freeStore.alloc<NatFn>(lispDim<Num, std::minus, std::negate>, 1, true));
+  globals.def(
+      freeStore.alloc<Sym>("/"),
+      freeStore.alloc<NatFn>(lispDim<Num, std::divides, inverse>, 1, true));
   globals.def(freeStore.alloc<Sym>("abs"),
               freeStore.alloc<NatFn>(lispAbs, 1, false));
   globals.def(freeStore.alloc<Sym>("modulo"),
               freeStore.alloc<NatFn>(lispMod, 2, false));
 
   globals.def(freeStore.alloc<Sym>("string?"),
-              freeStore.alloc<NatFn>(lispIsStr, 1, false));
+              freeStore.alloc<NatFn>(lispTypePred<String>, 1, false));
   globals.def(freeStore.alloc<Sym>("string-length"),
               freeStore.alloc<NatFn>(lispStrLen, 1, false));
   globals.def(freeStore.alloc<Sym>("substring"),
@@ -295,11 +301,24 @@ VM::VM() : freeStore(globals, stack, callFrames, openUpvals) {
               freeStore.alloc<NatFn>(lispStrCon, 1, true));
   globals.def(freeStore.alloc<Sym>("->str"),
               freeStore.alloc<NatFn>(lispToStr, 1, false));
+  globals.def(
+      freeStore.alloc<Sym>("string=?"),
+      freeStore.alloc<NatFn>(lispCmpOp<String, std::equal_to>, 1, true));
+  globals.def(freeStore.alloc<Sym>("string>?"),
+              freeStore.alloc<NatFn>(lispCmpOp<String, std::greater>, 1, true));
+  globals.def(
+      freeStore.alloc<Sym>("string>=?"),
+      freeStore.alloc<NatFn>(lispCmpOp<String, std::greater_equal>, 1, true));
+  globals.def(freeStore.alloc<Sym>("string<?"),
+              freeStore.alloc<NatFn>(lispCmpOp<String, std::less>, 1, true));
+  globals.def(
+      freeStore.alloc<Sym>("string<=?"),
+      freeStore.alloc<NatFn>(lispCmpOp<String, std::less_equal>, 1, true));
 
   globals.def(freeStore.alloc<Sym>("null?"),
-              freeStore.alloc<NatFn>(lispIsNull, 1, false));
+              freeStore.alloc<NatFn>(lispTypePred<Nil>, 1, false));
   globals.def(freeStore.alloc<Sym>("pair?"),
-              freeStore.alloc<NatFn>(lispIsCons, 1, false));
+              freeStore.alloc<NatFn>(lispTypePred<SExprs>, 1, false));
   globals.def(freeStore.alloc<Sym>("cons"),
               freeStore.alloc<NatFn>(lispCons, 2, false));
   globals.def(freeStore.alloc<Sym>("car"),
@@ -327,7 +346,7 @@ VM::VM() : freeStore(globals, stack, callFrames, openUpvals) {
               freeStore.alloc<NatFn>(lispEqual, 2, false));
 
   globals.def(freeStore.alloc<Sym>("procedure?"),
-              freeStore.alloc<NatFn>(lispIsProc, 1, false));
+              freeStore.alloc<NatFn>(lispTypePred<Closure, NatFn>, 1, false));
 
   globals.def(freeStore.alloc<Sym>("apply"),
               freeStore.alloc<NatFn>(lispApply, 2, true, true));

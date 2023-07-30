@@ -9,8 +9,11 @@
 namespace sexpr {
 
 class Bool final : public Atom {
+public:
+  using ValueType = bool;
+
 protected:
-  explicit Bool(const bool val);
+  explicit Bool(ValueType val);
 
   static Bool _true;
   static Bool _false;
@@ -19,9 +22,9 @@ protected:
   bool equals(const SExpr &other) const override;
 
 public:
-  const bool val;
+  const ValueType val;
 
-  static Bool &getInstance(const bool val);
+  static Bool &getInstance(const ValueType val);
   static bool toBool(const SExpr &sExpr);
   static bool classOf(const SExpr &sExpr);
   static std::string getTypeName();

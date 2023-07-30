@@ -101,7 +101,8 @@ FreeStore::FreeStore(
     : globals(globals), stack(stack), callFrames(callFrames),
       openUpvals(openUpvals), enableGC(false),
       gcHeapSize(FREESTORE_INIT_HEAP_SIZE) {
-  for (double i{FREESTORE_INT_CACHE_MIN}; i <= FREESTORE_INT_CACHE_MAX; i++) {
+  for (Num::ValueType i{FREESTORE_INT_CACHE_MIN}; i <= FREESTORE_INT_CACHE_MAX;
+       i++) {
     intCache.push_back(std::make_unique<Num>(i));
   }
 }
