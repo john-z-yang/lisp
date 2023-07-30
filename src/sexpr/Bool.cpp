@@ -5,7 +5,7 @@
 
 using namespace sexpr;
 
-Bool::Bool(const bool val) : Atom(SExpr::Type::BOOL), val(val) {}
+Bool::Bool(Bool::ValueType val) : Atom(SExpr::Type::BOOL), val(val) {}
 
 Bool Bool::_true(true);
 Bool Bool::_false(false);
@@ -21,7 +21,7 @@ bool Bool::equals(const SExpr &other) const {
   return false;
 }
 
-Bool &Bool::getInstance(const bool val) {
+Bool &Bool::getInstance(const Bool::ValueType val) {
   if (val) {
     return Bool::_true;
   }

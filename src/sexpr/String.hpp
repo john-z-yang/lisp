@@ -8,18 +8,21 @@
 namespace sexpr {
 
 class String final : public Atom {
+public:
+  using ValueType = std::string;
+
 private:
-  static std::string escape(const std::string literal);
+  static ValueType escape(const ValueType literal);
 
 protected:
   std::ostream &serialize(std::ostream &o) const override;
   bool equals(const SExpr &other) const override;
 
 public:
-  explicit String(const std::string literal);
+  explicit String(const ValueType val);
 
-  const std::string literal;
-  const std::string escaped;
+  const ValueType val;
+  const ValueType escaped;
 
   static bool classOf(const SExpr &sExpr);
   static std::string getTypeName();

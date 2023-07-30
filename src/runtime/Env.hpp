@@ -25,15 +25,12 @@ private:
 
 public:
   void def(const sexpr::Sym &sym, const sexpr::SExpr &val);
-
   void set(const sexpr::Sym &sym, const sexpr::SExpr &val);
 
   const SymTable &getSymTable() const;
-
   const sexpr::SExpr &find(const sexpr::Sym &sym);
 
   void regMacro(const sexpr::Sym &sym);
-
   bool isMacro(const sexpr::Sym &sym);
 };
 

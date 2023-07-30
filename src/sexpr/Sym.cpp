@@ -20,8 +20,8 @@ bool Sym::EqualFunction::operator()(const Sym &lhs, const Sym &rhs) const {
   return lhs.hash == rhs.hash;
 }
 
-Sym::Sym(std::string val)
-    : Atom(SExpr::Type::SYM), val(val), hash(std::hash<std::string>()(val)) {}
+Sym::Sym(const ValueType val)
+    : Atom(SExpr::Type::SYM), val(val), hash(std::hash<ValueType>()(val)) {}
 
 bool Sym::classOf(const SExpr &sExpr) { return sExpr.type == SExpr::Type::SYM; }
 

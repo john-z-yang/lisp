@@ -13,9 +13,11 @@ protected:
   bool equals(const SExpr &other) const override;
 
 public:
-  explicit Num(const double val);
+  using ValueType = double;
 
-  const double val;
+  explicit Num(const ValueType val);
+
+  const ValueType val;
 
   static bool classOf(const SExpr &sExpr);
   static std::string getTypeName();

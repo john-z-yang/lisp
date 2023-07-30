@@ -8,7 +8,8 @@
 using namespace sexpr;
 
 std::ostream &Num::serialize(std::ostream &o) const {
-  return o << std::setprecision(std::numeric_limits<double>::max_digits10)
+  return o << std::setprecision(
+                  std::numeric_limits<Num::ValueType>::max_digits10)
            << val;
 }
 
@@ -19,7 +20,7 @@ bool Num::equals(const SExpr &other) const {
   return false;
 }
 
-Num::Num(const double val) : Atom(SExpr::Type::NUM), val(val) {}
+Num::Num(const Num::ValueType val) : Atom(SExpr::Type::NUM), val(val) {}
 
 bool Num::classOf(const SExpr &sExpr) { return sExpr.type == SExpr::Type::NUM; }
 
