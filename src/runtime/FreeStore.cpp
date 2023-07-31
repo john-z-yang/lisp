@@ -21,6 +21,7 @@ void FreeStore::gc() {
 
   black.clear();
 
+  grey.push_back(&closure->get());
   markGlobals();
   markStack();
   markCallFrames();
@@ -95,10 +96,11 @@ void FreeStore::markOpenUpvalues() {
 
 FreeStore::FreeStore(
     Env &globals,
+    std::optional<std::reference_wrapper<const sexpr::Closure>> &closure,
     std::vector<std::reference_wrapper<const sexpr::SExpr>> &stack,
     std::vector<CallFrame> &callFrames,
     std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> &openUpvals)
-    : globals(globals), stack(stack), callFrames(callFrames),
+    : globals(globals), closure(closure), stack(stack), callFrames(callFrames),
       openUpvals(openUpvals), enableGC(false),
       gcHeapSize(FREESTORE_INIT_HEAP_SIZE) {
   for (Num::ValueType i{FREESTORE_INT_CACHE_MIN}; i <= FREESTORE_INT_CACHE_MAX;

@@ -25,6 +25,7 @@ namespace runtime {
 class FreeStore {
 private:
   Env &globals;
+  std::optional<std::reference_wrapper<const sexpr::Closure>> &closure;
   std::vector<std::reference_wrapper<const sexpr::SExpr>> &stack;
   std::vector<CallFrame> &callFrames;
   std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> &openUpvals;
@@ -47,10 +48,12 @@ private:
   void markOpenUpvalues();
 
 public:
-  FreeStore(Env &globals,
-            std::vector<std::reference_wrapper<const sexpr::SExpr>> &stack,
-            std::vector<CallFrame> &callFrames,
-            std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> &openUpvals);
+  FreeStore(
+      Env &globals,
+      std::optional<std::reference_wrapper<const sexpr::Closure>> &closure,
+      std::vector<std::reference_wrapper<const sexpr::SExpr>> &stack,
+      std::vector<CallFrame> &callFrames,
+      std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> &openUpvals);
 
   GCGuard startGC();
   GCGuard pauseGC();
