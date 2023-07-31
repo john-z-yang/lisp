@@ -1,6 +1,8 @@
 #ifndef LISP_SRC_RUNTIME_VM_HPP_
 #define LISP_SRC_RUNTIME_VM_HPP_
 
+#include <functional>
+#include <optional>
 #define LISP_GC_HEAP_GROWTH_FACTOR 2
 #define LISP_GC_INIT_HEAP_SIZE 4096
 #define LISP_INT_CACHE_MAX 256.0
@@ -34,19 +36,15 @@ class VM {
 private:
   Env globals;
 
+  code::InstrPtr ip;
+  runtime::StackPtr bp;
+  std::optional<std::reference_wrapper<const sexpr::Closure>> closure;
+
   std::vector<std::reference_wrapper<const sexpr::SExpr>> stack;
   std::vector<CallFrame> callFrames;
   std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> openUpvals;
 
   const sexpr::SExpr &eval(const sexpr::Prototype &main, bool withGC);
-
-  CallFrame &callFrame();
-  const sexpr::Closure &closure();
-  const sexpr::Prototype &fn();
-  const code::Code &code();
-
-  code::InstrPtr &instPtr();
-  runtime::StackPtr &basePtr();
 
   const sexpr::SExpr &readConst();
   uint8_t readByte();
