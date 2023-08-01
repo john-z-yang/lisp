@@ -7,6 +7,10 @@ SExpr::SExpr(SExpr::Type type) : type(type) {}
 
 SExpr::~SExpr() {}
 
+bool SExpr::classOf([[maybe_unused]] const SExpr &sExpr) { return true; }
+
+std::string SExpr::getTypeName() { return "<S-expression>"; }
+
 std::ostream &sexpr::operator<<(std::ostream &o, const SExpr &sExpr) {
   return sExpr.serialize(o);
 }
