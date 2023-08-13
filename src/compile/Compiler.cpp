@@ -27,20 +27,22 @@ std::vector<Token> Compiler::tokenize(std::vector<std::string> lines) {
   return tokens;
 }
 
-std::vector<Token> Compiler::tokenize(std::string line,
-                                      const unsigned int row) {
+std::vector<Token>
+Compiler::tokenize(std::string line, const unsigned int row) {
   std::vector<Token> tokens;
   std::regex rgx(
-      "\\\"(?:[^\"\\\\]*(?:\\\\.)?)*\\\"|;|\\(|\\)|,@|,|`|'|[^\\s(),@,`']+");
+      "\\\"(?:[^\"\\\\]*(?:\\\\.)?)*\\\"|;|\\(|\\)|,@|,|`|'|[^\\s(),@,`']+"
+  );
   auto begin = std::sregex_iterator(line.cbegin(), line.cend(), rgx);
   auto end = std::sregex_iterator();
   for (std::sregex_iterator i = begin; i != end; ++i) {
     std::smatch match = *i;
-    tokens.push_back(Token{match.str(),
-                           {
-                               row,
-                               (unsigned int)match.position(),
-                           }});
+    tokens.push_back(Token{
+        match.str(),
+        {
+            row,
+            (unsigned int)match.position(),
+        }});
   }
   return tokens;
 }
@@ -81,8 +83,9 @@ const SExpr &Compiler::parseList(TokenIter &it, const TokenIter &end) {
   }
   if (token.str == "'" || token.str == "`" || token.str == "," ||
       token.str == ",@") {
-    const auto &rest = vm.freeStore.alloc<SExprs>(parseList(it, end),
-                                                  vm.freeStore.alloc<Nil>());
+    const auto &rest = vm.freeStore.alloc<SExprs>(
+        parseList(it, end), vm.freeStore.alloc<Nil>()
+    );
     srcMap.insert({&rest, {token.srcLoc.row, token.srcLoc.col}});
     const auto &sExprs = vm.freeStore.alloc<SExprs>(parseAtom(token), rest);
     srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col}});
@@ -159,19 +162,32 @@ const SExpr &Compiler::parseAtom(Token token) {
   return vm.freeStore.alloc<Sym>(token.str);
 }
 
-void Compiler::handleUnexpectedToken(const Token &token,
-                                     const std::string &line) {
+void Compiler::handleUnexpectedToken(
+    const Token &token, const std::string &line
+) {
   std::stringstream ss;
   ss << "Unexpected \"" << token.str << "\".";
   throw SyntaxError(ss.str(), line, token.srcLoc.row, token.srcLoc.col);
 }
 
-Compiler::Compiler(const std::vector<std::string> source, SrcMap sourceLoc,
-                   const SExpr &param, const SExprs &body, Compiler &enclosing,
-                   VM &vm)
-    : vm(vm), enclosing(enclosing), source(source), srcMap(sourceLoc),
-      curSrcLoc({srcMap[&param].row, srcMap[&param].col}), param(param),
-      arity(countArity()), variadic(isVariadic()), body(body), stackOffset(1) {
+Compiler::Compiler(
+    const std::vector<std::string> source,
+    SrcMap sourceLoc,
+    const SExpr &param,
+    const SExprs &body,
+    Compiler &enclosing,
+    VM &vm
+)
+    : vm(vm),
+      enclosing(enclosing),
+      source(source),
+      srcMap(sourceLoc),
+      curSrcLoc({srcMap[&param].row, srcMap[&param].col}),
+      param(param),
+      arity(countArity()),
+      variadic(isVariadic()),
+      body(body),
+      stackOffset(1) {
 
   if (isa<SExprs>(param)) {
     visitEach(cast<SExprs>(param), [this](const auto &sExpr) {
@@ -195,16 +211,17 @@ void Compiler::updateCurSrcLoc(const sexpr::SExprs &sExpr) {
 
 std::optional<const std::size_t> Compiler::resolveLocal(const Sym &sym) {
   auto it =
-      std::find_if(locals.rbegin(), locals.rend(),
-                   [&sym](const auto &local) { return local.symbol == sym; });
+      std::find_if(locals.rbegin(), locals.rend(), [&sym](const auto &local) {
+        return local.symbol == sym;
+      });
   if (it == locals.rend()) {
     return std::nullopt;
   }
   return std::distance(begin(locals), it.base()) - 1;
 }
 
-std::optional<const std::size_t> Compiler::resolveUpvalue(Compiler &caller,
-                                                          const Sym &sym) {
+std::optional<const std::size_t>
+Compiler::resolveUpvalue(Compiler &caller, const Sym &sym) {
   if (!enclosing.has_value()) {
     return std::nullopt;
   }
@@ -220,11 +237,13 @@ std::optional<const std::size_t> Compiler::resolveUpvalue(Compiler &caller,
 }
 
 std::size_t Compiler::addUpvalue(int idx, bool isLocal) {
-  if (auto it = std::find_if(upValues.cbegin(), upValues.cend(),
-                             [idx, isLocal](const auto upValue) {
-                               return upValue.idx == idx &&
-                                      upValue.isLocal == isLocal;
-                             });
+  if (auto it = std::find_if(
+          upValues.cbegin(),
+          upValues.cend(),
+          [idx, isLocal](const auto upValue) {
+            return upValue.idx == idx && upValue.isLocal == isLocal;
+          }
+      );
       it != upValues.end()) {
     return std::distance(upValues.cbegin(), it);
   }
@@ -307,7 +326,8 @@ void Compiler::compileStmt(const SExpr &sExpr) {
               return;
             }
             compileExpr(sExpr);
-          })) {
+          }
+      )) {
     return;
   }
   compileExpr(sExpr);
@@ -330,7 +350,8 @@ void Compiler::compileExpr(const SExpr &sExpr) {
               return;
             }
             compileCall(cast<SExprs>(sExpr));
-          })) {
+          }
+      )) {
     return;
   };
   if (isa<Atom>(sExpr)) {
@@ -342,9 +363,12 @@ void Compiler::compileExpr(const SExpr &sExpr) {
 
 void Compiler::compileAtom(const Atom &atom) {
   if (isa<Nil>(atom)) {
-    throw error::SyntaxError("Expected a non-empty list.",
-                             source[curSrcLoc.row - 1], curSrcLoc.row,
-                             curSrcLoc.col);
+    throw error::SyntaxError(
+        "Expected a non-empty list.",
+        source[curSrcLoc.row - 1],
+        curSrcLoc.row,
+        curSrcLoc.col
+    );
   }
   if (isa<Sym>(atom)) {
     emitSym(cast<Sym>(atom));
@@ -371,13 +395,20 @@ void Compiler::emitLambda(const MatchedSExpr<sexpr::SExpr> matched) {
     const auto &[lambdaParam, lambdaBody] = unpackPartial<SExpr>(matched.get());
 
     if (isa<SExprs>(lambdaParam.get())) {
-      visitEach(lambdaParam.get(),
-                [](const auto &argName) { assertType<Sym>(argName); });
+      visitEach(lambdaParam.get(), [](const auto &argName) {
+        assertType<Sym>(argName);
+      });
       assertType<Sym, Nil>(last(lambdaParam.get()));
     }
 
-    Compiler compiler(source, srcMap, lambdaParam.get(),
-                      cast<SExprs>(lambdaBody.get()), *this, vm);
+    Compiler compiler(
+        source,
+        srcMap,
+        lambdaParam.get(),
+        cast<SExprs>(lambdaBody.get()),
+        *this,
+        vm
+    );
     const auto &function = compiler.compile();
 
     emitCode(OpCode::MAKE_CLOSURE, emitConst(function));
@@ -431,14 +462,23 @@ void Compiler::execDefMacro(const MatchedSExpr<sexpr::SExpr> matched) {
     const auto [row, col] = curSrcLoc;
     throw error::SyntaxError(
         "Invalid syntax for define-macro: must define macros in top level",
-        source[row - 1], row, col);
+        source[row - 1],
+        row,
+        col
+    );
   }
   try {
     const auto &[macroSym, macroArgNames, macroBody] =
         unpackPartial<Sym, SExpr>(matched.get());
 
-    Compiler compiler(source, srcMap, macroArgNames.get(),
-                      cast<SExprs>(macroBody.get()), *this, vm);
+    Compiler compiler(
+        source,
+        srcMap,
+        macroArgNames.get(),
+        cast<SExprs>(macroBody.get()),
+        *this,
+        vm
+    );
     const auto &function = compiler.compile();
 
     Code def;
@@ -551,14 +591,18 @@ const SExpr &Compiler::execMacro(const SExpr &sExpr) {
 
 void Compiler::handleInvalidDef() {
   const auto [row, col] = curSrcLoc;
-  throw error::SyntaxError("Invalid syntax for define: cannot use define as an "
-                           "expression",
-                           source[row - 1], row, col);
+  throw error::SyntaxError(
+      "Invalid syntax for define: cannot use define as an "
+      "expression",
+      source[row - 1],
+      row,
+      col
+  );
 }
 
-void Compiler::handleTypeError(const std::string grammar,
-                               const std::string expected,
-                               const SExpr &actual) {
+void Compiler::handleTypeError(
+    const std::string grammar, const std::string expected, const SExpr &actual
+) {
   std::stringstream ss;
   ss << "Invalid syntax for " << grammar << "." << std::endl
      << "Expected " << expected << ", but got " << actual << ".";
@@ -567,9 +611,14 @@ void Compiler::handleTypeError(const std::string grammar,
 }
 
 Compiler::Compiler(std::vector<std::string> source, VM &vm)
-    : vm(vm), source(source), curSrcLoc({1, 0}),
-      param(vm.freeStore.alloc<Nil>()), arity(0), variadic(false),
-      body(parse()), stackOffset(1) {}
+    : vm(vm),
+      source(source),
+      curSrcLoc({1, 0}),
+      param(vm.freeStore.alloc<Nil>()),
+      arity(0),
+      variadic(false),
+      body(parse()),
+      stackOffset(1) {}
 
 const Prototype &Compiler::compile() {
   if (variadic) {
@@ -582,8 +631,12 @@ const Prototype &Compiler::compile() {
   return vm.freeStore.alloc<Prototype>(upValues.size(), arity, variadic, code);
 }
 
-void Compiler::verifyLex(const std::string &line, const unsigned int curSrcLoc,
-                         unsigned int &openParen, unsigned int &closedParen) {
+void Compiler::verifyLex(
+    const std::string &line,
+    const unsigned int curSrcLoc,
+    unsigned int &openParen,
+    unsigned int &closedParen
+) {
   auto tokens = tokenize(line, curSrcLoc);
   for (auto it = tokens.cbegin(); it != tokens.cend(); ++it) {
     if (openParen == closedParen && it->str == ")") {

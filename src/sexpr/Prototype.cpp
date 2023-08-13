@@ -11,10 +11,17 @@ std::ostream &Prototype::serialize(std::ostream &o) const {
 
 bool Prototype::equals(const SExpr &other) const { return this == &other; }
 
-Prototype::Prototype(const unsigned int numUpvals, const uint8_t arity,
-                     const bool variadic, const code::Code code)
-    : Atom(SExpr::Type::PROTO), numUpvals(numUpvals), arity(arity),
-      variadic(variadic), code(code) {}
+Prototype::Prototype(
+    const unsigned int numUpvals,
+    const uint8_t arity,
+    const bool variadic,
+    const code::Code code
+)
+    : Atom(SExpr::Type::PROTO),
+      numUpvals(numUpvals),
+      arity(arity),
+      variadic(variadic),
+      code(code) {}
 
 std::ostream &Prototype::dissassemble(std::ostream &o) const {
   o << "<Function at " << this << ", arity: " << unsigned(arity)

@@ -17,8 +17,12 @@ private:
   const unsigned int col;
 
 public:
-  SyntaxError(const std::string msg, const std::string line,
-              const unsigned int row, const unsigned int col);
+  SyntaxError(
+      const std::string msg,
+      const std::string line,
+      const unsigned int row,
+      const unsigned int col
+  );
 
   virtual const char *what() const noexcept override;
 };

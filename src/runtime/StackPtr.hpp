@@ -10,6 +10,6 @@ namespace runtime {
 using StackPtr =
     std::vector<std::reference_wrapper<const sexpr::SExpr>>::size_type;
 
-} // namespace runtime
+}
 
 #endif

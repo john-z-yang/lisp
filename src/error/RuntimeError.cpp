@@ -6,9 +6,11 @@ using namespace runtime;
 using namespace error;
 
 RuntimeError::RuntimeError(
-    const std::string &msg, Env globals,
+    const std::string &msg,
+    Env globals,
     std::vector<std::reference_wrapper<const sexpr::SExpr>> stack,
-    std::vector<CallFrame> frames)
+    std::vector<CallFrame> frames
+)
     : _msg(msg), globals(globals), stack(stack), frames(frames) {}
 
 const char *RuntimeError::what() const noexcept { return _msg.c_str(); }

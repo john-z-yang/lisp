@@ -17,16 +17,20 @@ protected:
 
 public:
   NatFn(fn::CPPFn &fn, const uint8_t arity, const bool variadic);
-  NatFn(fn::CPPFn &fn, const uint8_t arity, const bool variadic,
-        const bool abandonsCont);
+  NatFn(
+      fn::CPPFn &fn,
+      const uint8_t arity,
+      const bool variadic,
+      const bool abandonsCont
+  );
 
   fn::CPPFn &fn;
   const uint8_t arity;
   const bool variadic;
   const bool abandonsCont;
 
-  const SExpr &invoke(runtime::StackIter params, const uint8_t argc,
-                      runtime::VM &vm) const;
+  const SExpr &
+  invoke(runtime::StackIter params, const uint8_t argc, runtime::VM &vm) const;
 
   static bool classOf(const SExpr &sExpr);
   static std::string getTypeName();

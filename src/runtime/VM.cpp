@@ -50,8 +50,10 @@ inline const sexpr::SExpr &VM::readConst() {
 inline uint8_t VM::readByte() { return closure->get().fn.code.byteCodes[ip++]; }
 inline uint16_t VM::readShort() {
   ip += 2;
-  return (uint16_t)((closure->get().fn.code.byteCodes[ip - 2] << 8 |
-                     closure->get().fn.code.byteCodes[ip - 1]));
+  return (uint16_t)((
+      closure->get().fn.code.byteCodes[ip - 2] << 8 |
+      closure->get().fn.code.byteCodes[ip - 1]
+  ));
 }
 
 void VM::call(const uint8_t argc) {
@@ -121,10 +123,24 @@ const SExpr &VM::exec() {
 #define DISPATCH() goto *dispatchTable[readByte()]
 
   void *dispatchTable[] = {
-      &&MAKE_CLOSURE,      &&CALL,        &&RETURN,     &&POP_TOP,   &&POP,
-      &&CLOSE_UPVALUE,     &&LOAD_CONST,  &&LOAD_SYM,   &&DEF_SYM,   &&SET_SYM,
-      &&LOAD_UPVALUE,      &&SET_UPVALUE, &&LOAD_STACK, &&SET_STACK, &&JUMP,
-      &&POP_JUMP_IF_FALSE, &&MAKE_LIST,   &&MAKE_NIL};
+      &&MAKE_CLOSURE,
+      &&CALL,
+      &&RETURN,
+      &&POP_TOP,
+      &&POP,
+      &&CLOSE_UPVALUE,
+      &&LOAD_CONST,
+      &&LOAD_SYM,
+      &&DEF_SYM,
+      &&SET_SYM,
+      &&LOAD_UPVALUE,
+      &&SET_UPVALUE,
+      &&LOAD_STACK,
+      &&SET_STACK,
+      &&JUMP,
+      &&POP_JUMP_IF_FALSE,
+      &&MAKE_LIST,
+      &&MAKE_NIL};
 
   call(0);
 
@@ -259,97 +275,155 @@ MAKE_NIL : {
 
 VM::VM()
     : ip(0), bp(0), freeStore(globals, closure, stack, callFrames, openUpvals) {
-  globals.def(freeStore.alloc<Sym>("symbol?"),
-              freeStore.alloc<NatFn>(typePred<Sym>, 1, false));
-  globals.def(freeStore.alloc<Sym>("gensym"),
-              freeStore.alloc<NatFn>(genSym, 0, false));
+  globals.def(
+      freeStore.alloc<Sym>("symbol?"),
+      freeStore.alloc<NatFn>(typePred<Sym>, 1, false)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("gensym"), freeStore.alloc<NatFn>(genSym, 0, false)
+  );
 
-  globals.def(freeStore.alloc<Sym>("number?"),
-              freeStore.alloc<NatFn>(typePred<Num>, 1, false));
-  globals.def(freeStore.alloc<Sym>("="),
-              freeStore.alloc<NatFn>(compare<Num, std::equal_to>, 1, true));
-  globals.def(freeStore.alloc<Sym>(">"),
-              freeStore.alloc<NatFn>(compare<Num, std::greater>, 1, true));
+  globals.def(
+      freeStore.alloc<Sym>("number?"),
+      freeStore.alloc<NatFn>(typePred<Num>, 1, false)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("="),
+      freeStore.alloc<NatFn>(compare<Num, std::equal_to>, 1, true)
+  );
+  globals.def(
+      freeStore.alloc<Sym>(">"),
+      freeStore.alloc<NatFn>(compare<Num, std::greater>, 1, true)
+  );
   globals.def(
       freeStore.alloc<Sym>(">="),
-      freeStore.alloc<NatFn>(compare<Num, std::greater_equal>, 1, true));
-  globals.def(freeStore.alloc<Sym>("<"),
-              freeStore.alloc<NatFn>(compare<Num, std::less>, 1, true));
-  globals.def(freeStore.alloc<Sym>("<="),
-              freeStore.alloc<NatFn>(compare<Num, std::less_equal>, 1, true));
-  globals.def(freeStore.alloc<Sym>("+"),
-              freeStore.alloc<NatFn>(accum<Num, std::plus, 0>, 1, true));
-  globals.def(freeStore.alloc<Sym>("*"),
-              freeStore.alloc<NatFn>(accum<Num, std::multiplies, 1>, 1, true));
+      freeStore.alloc<NatFn>(compare<Num, std::greater_equal>, 1, true)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("<"),
+      freeStore.alloc<NatFn>(compare<Num, std::less>, 1, true)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("<="),
+      freeStore.alloc<NatFn>(compare<Num, std::less_equal>, 1, true)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("+"),
+      freeStore.alloc<NatFn>(accum<Num, std::plus, 0>, 1, true)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("*"),
+      freeStore.alloc<NatFn>(accum<Num, std::multiplies, 1>, 1, true)
+  );
   globals.def(
       freeStore.alloc<Sym>("-"),
-      freeStore.alloc<NatFn>(dimi<Num, std::minus, std::negate>, 1, true));
+      freeStore.alloc<NatFn>(dimi<Num, std::minus, std::negate>, 1, true)
+  );
   globals.def(
       freeStore.alloc<Sym>("/"),
-      freeStore.alloc<NatFn>(dimi<Num, std::divides, inverse>, 1, true));
-  globals.def(freeStore.alloc<Sym>("abs"),
-              freeStore.alloc<NatFn>(numAbs, 1, false));
-  globals.def(freeStore.alloc<Sym>("modulo"),
-              freeStore.alloc<NatFn>(numMod, 2, false));
+      freeStore.alloc<NatFn>(dimi<Num, std::divides, inverse>, 1, true)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("abs"), freeStore.alloc<NatFn>(numAbs, 1, false)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("modulo"), freeStore.alloc<NatFn>(numMod, 2, false)
+  );
 
-  globals.def(freeStore.alloc<Sym>("string?"),
-              freeStore.alloc<NatFn>(typePred<String>, 1, false));
-  globals.def(freeStore.alloc<Sym>("string-length"),
-              freeStore.alloc<NatFn>(strLen, 1, false));
-  globals.def(freeStore.alloc<Sym>("substring"),
-              freeStore.alloc<NatFn>(substr, 3, false));
-  globals.def(freeStore.alloc<Sym>("string-append"),
-              freeStore.alloc<NatFn>(strApp, 1, true));
-  globals.def(freeStore.alloc<Sym>("->str"),
-              freeStore.alloc<NatFn>(toStr, 1, false));
-  globals.def(freeStore.alloc<Sym>("string=?"),
-              freeStore.alloc<NatFn>(compare<String, std::equal_to>, 1, true));
-  globals.def(freeStore.alloc<Sym>("string>?"),
-              freeStore.alloc<NatFn>(compare<String, std::greater>, 1, true));
+  globals.def(
+      freeStore.alloc<Sym>("string?"),
+      freeStore.alloc<NatFn>(typePred<String>, 1, false)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("string-length"),
+      freeStore.alloc<NatFn>(strLen, 1, false)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("substring"),
+      freeStore.alloc<NatFn>(substr, 3, false)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("string-append"),
+      freeStore.alloc<NatFn>(strApp, 1, true)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("->str"), freeStore.alloc<NatFn>(toStr, 1, false)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("string=?"),
+      freeStore.alloc<NatFn>(compare<String, std::equal_to>, 1, true)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("string>?"),
+      freeStore.alloc<NatFn>(compare<String, std::greater>, 1, true)
+  );
   globals.def(
       freeStore.alloc<Sym>("string>=?"),
-      freeStore.alloc<NatFn>(compare<String, std::greater_equal>, 1, true));
-  globals.def(freeStore.alloc<Sym>("string<?"),
-              freeStore.alloc<NatFn>(compare<String, std::less>, 1, true));
+      freeStore.alloc<NatFn>(compare<String, std::greater_equal>, 1, true)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("string<?"),
+      freeStore.alloc<NatFn>(compare<String, std::less>, 1, true)
+  );
   globals.def(
       freeStore.alloc<Sym>("string<=?"),
-      freeStore.alloc<NatFn>(compare<String, std::less_equal>, 1, true));
+      freeStore.alloc<NatFn>(compare<String, std::less_equal>, 1, true)
+  );
 
-  globals.def(freeStore.alloc<Sym>("null?"),
-              freeStore.alloc<NatFn>(typePred<Nil>, 1, false));
-  globals.def(freeStore.alloc<Sym>("pair?"),
-              freeStore.alloc<NatFn>(typePred<SExprs>, 1, false));
-  globals.def(freeStore.alloc<Sym>("cons"),
-              freeStore.alloc<NatFn>(cons, 2, false));
-  globals.def(freeStore.alloc<Sym>("car"),
-              freeStore.alloc<NatFn>(car, 1, false));
-  globals.def(freeStore.alloc<Sym>("cdr"),
-              freeStore.alloc<NatFn>(cdr, 1, false));
+  globals.def(
+      freeStore.alloc<Sym>("null?"),
+      freeStore.alloc<NatFn>(typePred<Nil>, 1, false)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("pair?"),
+      freeStore.alloc<NatFn>(typePred<SExprs>, 1, false)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("cons"), freeStore.alloc<NatFn>(cons, 2, false)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("car"), freeStore.alloc<NatFn>(car, 1, false)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("cdr"), freeStore.alloc<NatFn>(cdr, 1, false)
+  );
 
-  globals.def(freeStore.alloc<Sym>("dis"),
-              freeStore.alloc<NatFn>(dis, 1, false));
-  globals.def(freeStore.alloc<Sym>("display"),
-              freeStore.alloc<NatFn>(display, 1, false));
-  globals.def(freeStore.alloc<Sym>("newline"),
-              freeStore.alloc<NatFn>(newline, 0, false));
+  globals.def(
+      freeStore.alloc<Sym>("dis"), freeStore.alloc<NatFn>(dis, 1, false)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("display"), freeStore.alloc<NatFn>(display, 1, false)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("newline"), freeStore.alloc<NatFn>(newline, 0, false)
+  );
 
-  globals.def(freeStore.alloc<Sym>("quit"),
-              freeStore.alloc<NatFn>(quit, 0, false));
-  globals.def(freeStore.alloc<Sym>("error"),
-              freeStore.alloc<NatFn>(fn::error, 1, false));
+  globals.def(
+      freeStore.alloc<Sym>("quit"), freeStore.alloc<NatFn>(quit, 0, false)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("error"), freeStore.alloc<NatFn>(fn::error, 1, false)
+  );
 
-  globals.def(freeStore.alloc<Sym>("eq?"),
-              freeStore.alloc<NatFn>(eq, 2, false));
-  globals.def(freeStore.alloc<Sym>("eqv?"),
-              freeStore.alloc<NatFn>(eqv, 2, false));
-  globals.def(freeStore.alloc<Sym>("equal?"),
-              freeStore.alloc<NatFn>(equal, 2, false));
+  globals.def(
+      freeStore.alloc<Sym>("eq?"), freeStore.alloc<NatFn>(eq, 2, false)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("eqv?"), freeStore.alloc<NatFn>(eqv, 2, false)
+  );
+  globals.def(
+      freeStore.alloc<Sym>("equal?"), freeStore.alloc<NatFn>(equal, 2, false)
+  );
 
-  globals.def(freeStore.alloc<Sym>("procedure?"),
-              freeStore.alloc<NatFn>(typePred<Closure, NatFn>, 1, false));
+  globals.def(
+      freeStore.alloc<Sym>("procedure?"),
+      freeStore.alloc<NatFn>(typePred<Closure, NatFn>, 1, false)
+  );
 
-  globals.def(freeStore.alloc<Sym>("apply"),
-              freeStore.alloc<NatFn>(apply, 2, true, true));
+  globals.def(
+      freeStore.alloc<Sym>("apply"),
+      freeStore.alloc<NatFn>(apply, 2, true, true)
+  );
 }
 
 void VM::regMacro(const Sym &sym) { globals.regMacro(sym); }

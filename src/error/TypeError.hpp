@@ -14,8 +14,11 @@ private:
   std::string _msg;
 
 public:
-  TypeError(const std::string &msg, const std::string expected,
-            const sexpr::SExpr &actual);
+  TypeError(
+      const std::string &msg,
+      const std::string expected,
+      const sexpr::SExpr &actual
+  );
 
   virtual const char *what() const noexcept override;
 

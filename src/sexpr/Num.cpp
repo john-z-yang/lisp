@@ -9,7 +9,8 @@ using namespace sexpr;
 
 std::ostream &Num::serialize(std::ostream &o) const {
   return o << std::setprecision(
-                  std::numeric_limits<Num::ValueType>::max_digits10)
+                  std::numeric_limits<Num::ValueType>::max_digits10
+              )
            << val;
 }
 

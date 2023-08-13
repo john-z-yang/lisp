@@ -22,8 +22,9 @@ using namespace sexpr;
 using namespace compile;
 using namespace runtime;
 
-bool getConsoleInput(std::vector<std::string> &lines, std::string prompt,
-                     std::string wrap) {
+bool getConsoleInput(
+    std::vector<std::string> &lines, std::string prompt, std::string wrap
+) {
   auto openParen = 0U;
   auto closedParen = 0U;
   std::string line;
@@ -31,7 +32,8 @@ bool getConsoleInput(std::vector<std::string> &lines, std::string prompt,
     line = std::string(buf);
     free(buf);
     line = std::regex_replace(
-        line, std::regex("(\\\\\"|\"(?:\\\\\"|[^\"])*\")|(;.*$)"), "$1");
+        line, std::regex("(\\\\\"|\"(?:\\\\\"|[^\"])*\")|(;.*$)"), "$1"
+    );
     if (lines.empty() && line.empty()) {
       continue;
     }
@@ -51,7 +53,8 @@ bool getFileInput(std::istream &in, std::vector<std::string> &lines) {
   std::string line;
   while (getline(in, line)) {
     line = std::regex_replace(
-        line, std::regex("(\\\\\"|\"(?:\\\\\"|[^\"])*\")|(;.*$)"), "$1");
+        line, std::regex("(\\\\\"|\"(?:\\\\\"|[^\"])*\")|(;.*$)"), "$1"
+    );
     Compiler::verifyLex(line, lines.size() + 1, openParen, closedParen);
     lines.push_back(line + " ");
   }

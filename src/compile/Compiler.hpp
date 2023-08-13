@@ -57,8 +57,8 @@ private:
   static bool isNum(const std::string s);
   static std::vector<Token> tokenize(std::vector<std::string> lines);
   static std::vector<Token> tokenize(std::string line, const unsigned int row);
-  static void handleUnexpectedToken(const Token &token,
-                                    const std::string &line);
+  static void
+  handleUnexpectedToken(const Token &token, const std::string &line);
 
   const sexpr::SExprs &parse();
   const sexpr::SExpr &parseLists(TokenIter &it, const TokenIter &end);
@@ -90,19 +90,24 @@ private:
       return std::tuple_cat(
           std::tuple<const MatchedSExpr<First>>(MatchedSExpr<First>(
               cast<First>(sExprs.first),
-              [this, &sExprs]() { updateCurSrcLoc(sExprs); })),
-          unpack<Rest...>(sExprs.rest));
+              [this, &sExprs]() { updateCurSrcLoc(sExprs); }
+          )),
+          unpack<Rest...>(sExprs.rest)
+      );
     } else {
       assertType<sexpr::Nil>(sExprs.rest);
-      return std::tuple<const MatchedSExpr<First>>(
-          MatchedSExpr<First>(cast<First>(sExprs.first),
-                              [this, &sExprs]() { updateCurSrcLoc(sExprs); }));
+      return std::tuple<const MatchedSExpr<First>>(MatchedSExpr<First>(
+          cast<First>(sExprs.first),
+          [this, &sExprs]() { updateCurSrcLoc(sExprs); }
+      ));
     }
   }
 
   template <typename First, typename... Rest>
-  std::tuple<const MatchedSExpr<First>, const MatchedSExpr<Rest>...,
-             const MatchedSExpr<sexpr::SExpr>>
+  std::tuple<
+      const MatchedSExpr<First>,
+      const MatchedSExpr<Rest>...,
+      const MatchedSExpr<sexpr::SExpr>>
   unpackPartial(const sexpr::SExpr &sExpr) {
     const auto &sExprs = sexpr::cast<sexpr::SExprs>(sExpr);
     updateCurSrcLoc(sExprs);
@@ -110,14 +115,20 @@ private:
       return std::tuple_cat(
           std::tuple<const MatchedSExpr<First>>(MatchedSExpr<First>(
               cast<First>(sExprs.first),
-              [this, &sExprs]() { updateCurSrcLoc(sExprs); })),
-          unpackPartial<Rest...>(sExprs.rest));
+              [this, &sExprs]() { updateCurSrcLoc(sExprs); }
+          )),
+          unpackPartial<Rest...>(sExprs.rest)
+      );
     } else {
       return std::tuple<const MatchedSExpr<First>, MatchedSExpr<sexpr::SExpr>>(
-          MatchedSExpr<First>(cast<First>(sExprs.first),
-                              [this, &sExprs]() { updateCurSrcLoc(sExprs); }),
+          MatchedSExpr<First>(
+              cast<First>(sExprs.first),
+              [this, &sExprs]() { updateCurSrcLoc(sExprs); }
+          ),
           MatchedSExpr<sexpr::SExpr>(
-              sExprs.rest, [this, &sExprs]() { updateCurSrcLoc(sExprs); }));
+              sExprs.rest, [this, &sExprs]() { updateCurSrcLoc(sExprs); }
+          )
+      );
     }
   }
 
@@ -136,13 +147,13 @@ private:
 
   bool matchForm(
       const sexpr::SExpr &sExpr,
-      std::initializer_list<
-          std::tuple<const sexpr::Sym &,
-                     const std::function<void(MatchedSExpr<sexpr::SExpr>)>>>
-          rules,
-      std::optional<const std::function<void(MatchedSExpr<sexpr::Sym>,
-                                             MatchedSExpr<sexpr::SExpr>)>>
-          wildCardHandler = std::nullopt) {
+      std::initializer_list<std::tuple<
+          const sexpr::Sym &,
+          const std::function<void(MatchedSExpr<sexpr::SExpr>)>>> rules,
+      std::optional<const std::function<
+          void(MatchedSExpr<sexpr::Sym>, MatchedSExpr<sexpr::SExpr>)>>
+          wildCardHandler = std::nullopt
+  ) {
     if (!check<sexpr::Sym>(sExpr)) {
       return false;
     }
@@ -160,14 +171,19 @@ private:
     return false;
   }
 
-  Compiler(const std::vector<std::string> source, SrcMap sourceLoc,
-           const sexpr::SExpr &param, const sexpr::SExprs &body,
-           Compiler &enclosing, runtime::VM &vm);
+  Compiler(
+      const std::vector<std::string> source,
+      SrcMap sourceLoc,
+      const sexpr::SExpr &param,
+      const sexpr::SExprs &body,
+      Compiler &enclosing,
+      runtime::VM &vm
+  );
 
   void updateCurSrcLoc(const sexpr::SExprs &sExpr);
   std::optional<const std::size_t> resolveLocal(const sexpr::Sym &sym);
-  std::optional<const std::size_t> resolveUpvalue(Compiler &caller,
-                                                  const sexpr::Sym &sym);
+  std::optional<const std::size_t>
+  resolveUpvalue(Compiler &caller, const sexpr::Sym &sym);
   std::size_t addUpvalue(int idx, bool isLocal);
   bool isVariadic();
   uint8_t countArity();
@@ -204,16 +220,23 @@ private:
   const sexpr::SExpr &execMacro(const sexpr::SExpr &macro);
 
   void handleInvalidDef();
-  void handleTypeError(const std::string grammar, const std::string expected,
-                       const sexpr::SExpr &actual);
+  void handleTypeError(
+      const std::string grammar,
+      const std::string expected,
+      const sexpr::SExpr &actual
+  );
 
 public:
   Compiler(std::vector<std::string> source, runtime::VM &vm);
 
   const sexpr::Prototype &compile();
 
-  static void verifyLex(const std::string &line, const unsigned int lineNum,
-                        unsigned int &openParen, unsigned int &closedParen);
+  static void verifyLex(
+      const std::string &line,
+      const unsigned int lineNum,
+      unsigned int &openParen,
+      unsigned int &closedParen
+  );
 };
 
 } // namespace compile

@@ -9,6 +9,6 @@ namespace runtime {
 using StackIter =
     std::vector<std::reference_wrapper<const sexpr::SExpr>>::iterator;
 
-} // namespace runtime
+}
 
 #endif

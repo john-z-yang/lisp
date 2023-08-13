@@ -12,8 +12,8 @@
 namespace fn {
 
 template <typename T, template <typename> typename Op>
-const sexpr::SExpr &compare(runtime::StackIter params, const uint8_t argc,
-                            runtime::VM &vm) {
+const sexpr::SExpr &
+compare(runtime::StackIter params, const uint8_t argc, runtime::VM &vm) {
   Op<typename T::ValueType> op;
   typename T::ValueType prev = cast<T>(params->get()).val;
   ++params;
@@ -29,8 +29,8 @@ const sexpr::SExpr &compare(runtime::StackIter params, const uint8_t argc,
 }
 
 template <typename T, template <typename> typename Op, auto init>
-const sexpr::SExpr &accum(runtime::StackIter params, const uint8_t argc,
-                          runtime::VM &vm) {
+const sexpr::SExpr &
+accum(runtime::StackIter params, const uint8_t argc, runtime::VM &vm) {
   Op<typename T::ValueType> op;
   typename T::ValueType acc = init;
   for (uint8_t i{0}; i < argc; ++i) {
@@ -40,10 +40,14 @@ const sexpr::SExpr &accum(runtime::StackIter params, const uint8_t argc,
   return vm.freeStore.alloc<T>(acc);
 }
 
-template <typename T, template <typename> typename BinOp,
-          template <typename> typename UniOp>
-const sexpr::SExpr &dimi(runtime::StackIter params, const uint8_t argc,
-                         runtime::VM &vm) {
+template <
+    typename T,
+    template <typename>
+    typename BinOp,
+    template <typename>
+    typename UniOp>
+const sexpr::SExpr &
+dimi(runtime::StackIter params, const uint8_t argc, runtime::VM &vm) {
   UniOp<typename T::ValueType> uniOp;
   typename T::ValueType acc = cast<T>(params->get()).val;
   if (argc == 1) {
@@ -59,9 +63,11 @@ const sexpr::SExpr &dimi(runtime::StackIter params, const uint8_t argc,
 }
 
 template <typename... T>
-const sexpr::SExpr &typePred(runtime::StackIter params,
-                             [[maybe_unused]] const uint8_t argc,
-                             runtime::VM &vm) {
+const sexpr::SExpr &typePred(
+    runtime::StackIter params,
+    [[maybe_unused]] const uint8_t argc,
+    runtime::VM &vm
+) {
   return vm.freeStore.alloc<sexpr::Bool>((isa<T>(params->get()) || ...));
 }
 

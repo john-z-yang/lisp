@@ -12,8 +12,12 @@ protected:
   bool equals(const SExpr &other) const override;
 
 public:
-  Prototype(const unsigned int numUpvals, const uint8_t arity,
-            const bool variadic, const code::Code code);
+  Prototype(
+      const unsigned int numUpvals,
+      const uint8_t arity,
+      const bool variadic,
+      const code::Code code
+  );
 
   const unsigned int numUpvals;
   const uint8_t arity;
