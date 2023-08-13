@@ -7,6 +7,7 @@
 #include "Grammar.hpp"
 #include "SrcLoc.hpp"
 #include <optional>
+#include <ostream>
 #include <regex>
 #include <sstream>
 
@@ -114,7 +115,7 @@ const SExpr &Compiler::parseSexprs(TokenIter &it, const TokenIter &end) {
     it += 1;
     const auto &rest = parseList(it, end);
     if (it == end) {
-      handleSyntaxError(dotGrammer, "datum", rest);
+      handleTypeError(dotGrammer, "datum", rest);
     }
     it += 1;
     const auto &sExprs = vm.freeStore.alloc<SExprs>(first, rest);
@@ -169,37 +170,33 @@ Compiler::Compiler(const std::vector<std::string> source, SrcMap sourceLoc,
                    const SExpr &param, const SExprs &body, Compiler &enclosing,
                    VM &vm)
     : vm(vm), enclosing(enclosing), source(source), srcMap(sourceLoc),
-      curSrcLoc({srcMap[&param].row, srcMap[&param].col}), argNames(param),
+      curSrcLoc({srcMap[&param].row, srcMap[&param].col}), param(param),
       arity(countArity()), variadic(isVariadic()), body(body), stackOffset(1) {
+
   if (isa<SExprs>(param)) {
-    visitEach(cast<SExprs>(param), [&](const auto &sExpr) {
+    visitEach(cast<SExprs>(param), [this](const auto &sExpr) {
       const auto &sym = cast<Sym>(sExpr);
       locals.push_back({sym, stackOffset, false});
       stackOffset += 1;
     });
   }
 
-  const auto &lastParam = last(argNames);
+  const auto &lastParam = last(param);
 
   if (isa<Sym>(lastParam)) {
     locals.push_back({cast<Sym>(lastParam), stackOffset, false});
     stackOffset += 1;
-  } else if (!isa<Nil>(lastParam)) {
-    handleSyntaxError(lambdaGrammar, Nil::getTypeName(), lastParam);
   }
 }
 
-void Compiler::updateCurSrcLoc(const sexpr::SExpr &sExpr) {
-  if (isa<Atom>(sExpr)) {
-    return;
-  }
+void Compiler::updateCurSrcLoc(const sexpr::SExprs &sExpr) {
   curSrcLoc = srcMap[&sExpr];
 }
 
 std::optional<const std::size_t> Compiler::resolveLocal(const Sym &sym) {
   auto it =
       std::find_if(locals.rbegin(), locals.rend(),
-                   [&](const auto &local) { return local.symbol == sym; });
+                   [&sym](const auto &local) { return local.symbol == sym; });
   if (it == locals.rend()) {
     return std::nullopt;
   }
@@ -224,7 +221,7 @@ std::optional<const std::size_t> Compiler::resolveUpvalue(Compiler &caller,
 
 std::size_t Compiler::addUpvalue(int idx, bool isLocal) {
   if (auto it = std::find_if(upValues.cbegin(), upValues.cend(),
-                             [=](const auto upValue) {
+                             [idx, isLocal](const auto upValue) {
                                return upValue.idx == idx &&
                                       upValue.isLocal == isLocal;
                              });
@@ -235,14 +232,13 @@ std::size_t Compiler::addUpvalue(int idx, bool isLocal) {
   return upValues.size() - 1;
 }
 
-bool Compiler::isVariadic() { return isa<Sym>(last(argNames)); }
+bool Compiler::isVariadic() { return isa<Sym>(last(param)); }
 
 uint8_t Compiler::countArity() {
-  if (isa<Nil>(argNames) || isa<Sym>(argNames)) {
+  if (isa<Nil>(param) || isa<Sym>(param)) {
     return 0;
   }
-  return visitEach(cast<SExprs>(argNames),
-                   [&]([[maybe_unused]] const auto &sExpr) {});
+  return visitEach(cast<SExprs>(param), [](const auto &) {});
 }
 
 code::InstrPtr Compiler::emitConst(const sexpr::SExpr &sExpr) {
@@ -251,28 +247,21 @@ code::InstrPtr Compiler::emitConst(const sexpr::SExpr &sExpr) {
 
 void Compiler::patchJump(const code::InstrPtr idx) { code.patchJump(idx); }
 
-const SExpr &Compiler::at(const unsigned int n, const SExpr &sExpr) {
-  updateCurSrcLoc(sExpr);
-  if (n == 0) {
-    return sExpr;
-  }
-  return at(n - 1, cast<SExprs>(sExpr).rest);
-}
-
 const SExpr &Compiler::last(const SExpr &sExpr) {
-  updateCurSrcLoc(sExpr);
   if (isa<Atom>(sExpr)) {
     return sExpr;
   }
-  return last(cast<SExprs>(sExpr).rest);
+  const auto &sExprs = cast<SExprs>(sExpr);
+  updateCurSrcLoc(sExprs);
+  return last(sExprs.rest);
 }
 
 unsigned int Compiler::visitEach(const SExpr &sExpr, Visitor visitor) {
   if (isa<Atom>(sExpr)) {
     return 0;
   }
-  updateCurSrcLoc(sExpr);
   const auto &sExprs = cast<SExprs>(sExpr);
+  updateCurSrcLoc(sExprs);
   visitor(sExprs.first);
   return 1 + visitEach(sExprs.rest, visitor);
 }
@@ -286,122 +275,121 @@ void Compiler::traverse(const SExpr &sExpr, Visitor visitor) {
   visitor(sExpr);
 }
 
+void Compiler::compileStmts(const SExpr &sExpr) {
+  emitCode(OpCode::MAKE_NIL);
+  visitEach(sExpr, [this](const auto &sExpr) {
+    stackOffset += 1;
+    compileStmt(sExpr);
+  });
+}
+
+void Compiler::compileExprs(const SExpr &sExpr) {
+  emitCode(OpCode::MAKE_NIL);
+  visitEach(sExpr, [this](const auto &sExpr) {
+    emitCode(OpCode::POP_TOP);
+    compileExpr(sExpr);
+  });
+}
+
 void Compiler::compileStmt(const SExpr &sExpr) {
-  if (isa<SExprs>(sExpr)) {
-    const auto &sExprs = cast<SExprs>(sExpr);
-    if (isa<Sym>(sExprs.first)) {
-      const auto &sym = cast<Sym>(sExprs.first);
-      if (sym.val == "begin") {
-        emitCode(OpCode::MAKE_NIL);
-        visitEach(sExprs.rest, [&](const auto &sExpr) {
-          stackOffset += 1;
-          this->compileStmt(sExpr);
-        });
-        return;
-      } else if (sym.val == "define") {
-        compileDef(sExpr);
-        return;
-      } else if (sym.val == "defmacro") {
-        execDefMacro(sExpr);
-        return;
-      } else if (vm.isMacro(sym)) {
-        compileStmt(execMacro(sExpr));
-        return;
-      }
-    }
+  if (matchForm(
+          sExpr,
+          {
+              {DEFINE_SYM, [this](const auto &matched) { emitDef(matched); }},
+              {DEFMACRO_SYM,
+               [this](const auto &matched) { execDefMacro(matched); }},
+              {BEGIN_SYM,
+               [this](const auto &matched) { compileStmts(matched.get()); }},
+          },
+          [this, &sExpr](const auto &sym, const auto) {
+            if (vm.isMacro(sym.get())) {
+              compileStmt(execMacro(sExpr));
+              return;
+            }
+            compileExpr(sExpr);
+          })) {
+    return;
   }
   compileExpr(sExpr);
 }
 
 void Compiler::compileExpr(const SExpr &sExpr) {
+  if (matchForm(
+          sExpr,
+          {{DEFINE_SYM, [this](const auto &) { handleInvalidDef(); }},
+           {DEFMACRO_SYM, [this](const auto &) { handleInvalidDef(); }},
+           {QUOTE_SYM, [this](const auto &matched) { emitQuote(matched); }},
+           {SET_SYM, [this](const auto &matched) { emitSet(matched); }},
+           {IF_SYM, [this](const auto &matched) { emitIf(matched); }},
+           {LAMBDA_SYM, [this](const auto &matched) { emitLambda(matched); }},
+           {BEGIN_SYM,
+            [this](const auto &matched) { compileExprs(matched.get()); }}},
+          [this, &sExpr](const auto sym, const auto) {
+            if (vm.isMacro(sym.get())) {
+              compileExpr(execMacro(sExpr));
+              return;
+            }
+            compileCall(cast<SExprs>(sExpr));
+          })) {
+    return;
+  };
   if (isa<Atom>(sExpr)) {
-    const auto &atom = cast<Atom>(sExpr);
-    compileAtom(atom);
+    compileAtom(cast<Atom>(sExpr));
     return;
   }
-  updateCurSrcLoc(sExpr);
-  const auto &sExprs = cast<SExprs>(sExpr);
-  if (isa<Sym>(sExprs.first)) {
-    const auto &sym = cast<Sym>(sExprs.first);
-    if (sym.val == "begin") {
-      emitCode(OpCode::MAKE_NIL);
-      visitEach(sExprs.rest, [&](const auto &sExpr) {
-        emitCode(OpCode::POP_TOP);
-        this->compileExpr(sExpr);
-      });
-      return;
-    } else if (sym.val == "quote") {
-      compileQuote(sExpr);
-      return;
-    } else if (sym.val == "set!") {
-      compileSet(sExpr);
-      return;
-    } else if (sym.val == "if") {
-      compileIf(sExpr);
-      return;
-    } else if (sym.val == "lambda") {
-      compileLambda(sExpr);
-      return;
-    } else if (sym.val == "define" || sym.val == "defmacro") {
-      const auto [row, col] = curSrcLoc;
-      throw error::SyntaxError(
-          "Invalid syntax for define: cannot use define as an expression",
-          source[row - 1], row, col);
-    } else if (vm.isMacro(sym)) {
-      compileExpr(execMacro(sExpr));
-      return;
-    }
-  }
-  compileCall(sExprs);
-}
-
-void Compiler::compileLambda(const SExpr &sExpr) {
-  try {
-    const auto &lamArgNames = cast<SExprs>(at(lambdaArgPos, sExpr)).first;
-    const auto &lamBody = cast<SExprs>(at(lambdaBodyPos, sExpr));
-
-    Compiler compiler(source, srcMap, lamArgNames, lamBody, *this, vm);
-    const auto &function = compiler.compile();
-
-    cast<Nil>(last(sExpr));
-
-    emitCode(OpCode::MAKE_CLOSURE, emitConst(function));
-
-    for (const auto &upValue : compiler.upValues) {
-      emitCode(upValue.isLocal ? 1 : 0, upValue.idx);
-    }
-  } catch (error::TypeError &te) {
-    handleSyntaxError(lambdaGrammar, te.expected, te.actual);
-  }
-}
-
-void Compiler::compileCall(const SExprs &sExprs) {
-  compileExpr(sExprs.first);
-  const auto argc = visitEach(
-      sExprs.rest, [&](const auto &sExpr) { this->compileExpr(sExpr); });
-
-  try {
-    cast<Nil>(last(sExprs));
-  } catch (error::TypeError &te) {
-    handleSyntaxError(callGrammar, te.expected, te.actual);
-  }
-  emitCode(OpCode::CALL, argc);
+  compileCall(cast<SExprs>(sExpr));
 }
 
 void Compiler::compileAtom(const Atom &atom) {
-  if (isa<Sym>(atom)) {
-    compileSym(cast<Sym>(atom));
-    return;
-  }
   if (isa<Nil>(atom)) {
     throw error::SyntaxError("Expected a non-empty list.",
                              source[curSrcLoc.row - 1], curSrcLoc.row,
                              curSrcLoc.col);
   }
+  if (isa<Sym>(atom)) {
+    emitSym(cast<Sym>(atom));
+    return;
+  }
   emitCode(OpCode::LOAD_CONST, emitConst(atom));
 }
 
-void Compiler::compileSym(const Sym &sym) {
+void Compiler::compileCall(const SExprs &sExprs) {
+  compileExpr(sExprs.first);
+  const auto argc =
+      visitEach(sExprs.rest, [this](const auto &sExpr) { compileExpr(sExpr); });
+
+  try {
+    cast<Nil>(last(sExprs));
+  } catch (error::TypeError &te) {
+    handleTypeError(callGrammar, te.expected, te.actual);
+  }
+  emitCode(OpCode::CALL, argc);
+}
+
+void Compiler::emitLambda(const MatchedSExpr<sexpr::SExpr> matched) {
+  try {
+    const auto &[lambdaParam, lambdaBody] = unpackPartial<SExpr>(matched.get());
+
+    if (isa<SExprs>(lambdaParam.get())) {
+      visitEach(lambdaParam.get(),
+                [](const auto &argName) { assertType<Sym>(argName); });
+      assertType<Sym, Nil>(last(lambdaParam.get()));
+    }
+
+    Compiler compiler(source, srcMap, lambdaParam.get(),
+                      cast<SExprs>(lambdaBody.get()), *this, vm);
+    const auto &function = compiler.compile();
+
+    emitCode(OpCode::MAKE_CLOSURE, emitConst(function));
+    for (const auto &upValue : compiler.upValues) {
+      emitCode(upValue.isLocal ? 1 : 0, upValue.idx);
+    }
+  } catch (error::TypeError &te) {
+    handleTypeError(lambdaGrammar, te.expected, te.actual);
+  }
+}
+
+void Compiler::emitSym(const sexpr::Sym &sym) {
   if (const auto idx = resolveLocal(sym); idx.has_value()) {
     emitCode(OpCode::LOAD_STACK, (uint8_t)locals[*idx].stackOffset);
     return;
@@ -413,36 +401,32 @@ void Compiler::compileSym(const Sym &sym) {
   emitCode(OpCode::LOAD_SYM, emitConst(sym));
 }
 
-void Compiler::compileQuote(const SExpr &sExpr) {
+void Compiler::emitQuote(const MatchedSExpr<sexpr::SExpr> matched) {
   try {
-    const auto &expr = cast<SExprs>(at(quoteArgPos, sExpr)).first;
-    emitCode(OpCode::LOAD_CONST, emitConst(expr));
-    cast<Nil>(at(quoteNilPos, sExpr));
+    const auto &[expr] = unpack<SExpr>(matched.get());
+
+    emitCode(OpCode::LOAD_CONST, emitConst(expr.get()));
   } catch (error::TypeError &te) {
-    handleSyntaxError(quoteGrammar, te.expected, te.actual);
+    handleTypeError(quoteGrammar, te.expected, te.actual);
   }
 }
 
-void Compiler::compileDef(const SExpr &sExpr) {
+void Compiler::emitDef(const MatchedSExpr<sexpr::SExpr> matched) {
   try {
-    const auto &sym = cast<Sym>(cast<SExprs>(at(defSymPos, sExpr)).first);
-    const auto &expr = cast<SExprs>(at(defSExprPos, sExpr)).first;
+    const auto &[sym, expr] = unpack<Sym, SExpr>(matched.get());
 
-    compileExpr(expr);
-
-    cast<Nil>(at(defNilPos, sExpr));
-
+    compileExpr(expr.get());
     if (enclosing.has_value()) {
-      locals.push_back({sym, stackOffset, false});
+      locals.push_back({sym.get(), stackOffset, false});
     } else {
-      emitCode(OpCode::DEF_SYM, emitConst(sym));
+      emitCode(OpCode::DEF_SYM, emitConst(sym.get()));
     }
   } catch (error::TypeError &te) {
-    handleSyntaxError(defGrammar, te.expected, te.actual);
+    handleTypeError(defGrammar, te.expected, te.actual);
   }
 }
 
-void Compiler::execDefMacro(const SExpr &sExpr) {
+void Compiler::execDefMacro(const MatchedSExpr<sexpr::SExpr> matched) {
   if (enclosing.has_value()) {
     const auto [row, col] = curSrcLoc;
     throw error::SyntaxError(
@@ -450,11 +434,11 @@ void Compiler::execDefMacro(const SExpr &sExpr) {
         source[row - 1], row, col);
   }
   try {
-    const auto &sym = cast<Sym>(cast<SExprs>(at(defMacroSymPos, sExpr)).first);
-    const auto &argNames = cast<SExprs>(at(defMacroArgPos, sExpr)).first;
-    const auto &body = cast<SExprs>(at(defMacroBodyPos, sExpr));
+    const auto &[macroSym, macroArgNames, macroBody] =
+        unpackPartial<Sym, SExpr>(matched.get());
 
-    Compiler compiler(source, srcMap, argNames, body, *this, vm);
+    Compiler compiler(source, srcMap, macroArgNames.get(),
+                      cast<SExprs>(macroBody.get()), *this, vm);
     const auto &function = compiler.compile();
 
     Code def;
@@ -468,69 +452,63 @@ void Compiler::execDefMacro(const SExpr &sExpr) {
     }
 
     def.pushCode(OpCode::DEF_SYM, curSrcLoc.row);
-    def.pushCode(def.pushConst(sym));
+    def.pushCode(def.pushConst(macroSym.get()));
     def.pushCode(OpCode::RETURN, curSrcLoc.row);
 
     vm.eval(vm.freeStore.alloc<Prototype>(0, 0, false, def));
-    vm.regMacro(sym);
+    vm.regMacro(macroSym.get());
 
-    cast<Nil>(last(sExpr));
     emitCode(OpCode::MAKE_NIL);
+    assertType<Nil>(last(macroBody.get()));
   } catch (error::TypeError &te) {
-    handleSyntaxError(defMacroGrammar, te.expected, te.actual);
+    handleTypeError(defMacroGrammar, te.expected, te.actual);
   }
 }
 
-void Compiler::compileSet(const SExpr &sExpr) {
+void Compiler::emitSet(const MatchedSExpr<sexpr::SExpr> matched) {
   try {
-    const auto &sym = cast<Sym>(cast<SExprs>(at(setSymPos, sExpr)).first);
-    const auto &expr = cast<SExprs>(at(setSExprPos, sExpr)).first;
+    const auto &[sym, expr] = unpack<Sym, SExpr>(matched.get());
 
-    compileExpr(expr);
-
-    cast<Nil>(at(setNilPos, sExpr));
-
-    if (const auto idx = resolveLocal(sym); idx.has_value()) {
+    compileExpr(expr.get());
+    if (const auto idx = resolveLocal(sym.get()); idx.has_value()) {
       emitCode(OpCode::SET_STACK, locals[*idx].stackOffset);
       return;
     }
-    if (const auto idx = resolveUpvalue(*this, sym); idx.has_value()) {
+    if (const auto idx = resolveUpvalue(*this, sym.get()); idx.has_value()) {
       emitCode(OpCode::SET_UPVALUE, (uint8_t)*idx);
       return;
     }
-    emitCode(OpCode::SET_SYM, emitConst(sym));
+    emitCode(OpCode::SET_SYM, emitConst(sym.get()));
   } catch (error::TypeError &te) {
-    handleSyntaxError(setGrammar, te.expected, te.actual);
+    handleTypeError(setGrammar, te.expected, te.actual);
   }
 }
 
-void Compiler::compileIf(const SExpr &sExpr) {
+void Compiler::emitIf(const MatchedSExpr<sexpr::SExpr> matched) {
   try {
-    const auto &test = cast<SExprs>(at(ifTestPos, sExpr)).first;
-    compileExpr(test);
+    const auto &[test, conseq, alt] =
+        unpack<SExpr, SExpr, SExpr>(matched.get());
+
+    compileExpr(test.get());
     const auto jifIdx =
         emitCode(OpCode::POP_JUMP_IF_FALSE, UINT8_MAX, UINT8_MAX) + 1;
 
-    const auto &conseq = cast<SExprs>(at(ifConseqPos, sExpr)).first;
-    compileExpr(conseq);
+    compileExpr(conseq.get());
     const auto jIdx = emitCode(OpCode::JUMP, UINT8_MAX, UINT8_MAX) + 1;
     patchJump(jifIdx);
 
-    const auto &alt = cast<SExprs>(at(ifAltPos, sExpr)).first;
-    compileExpr(alt);
+    compileExpr(alt.get());
     patchJump(jIdx);
-
-    cast<Nil>(at(ifNilPos, sExpr));
   } catch (error::TypeError &te) {
-    handleSyntaxError(ifGrammar, te.expected, te.actual);
+    handleTypeError(ifGrammar, te.expected, te.actual);
   }
 }
 
-void Compiler::compileRet() {
+void Compiler::emitRet() {
   try {
     cast<Nil>(last(body));
   } catch (error::TypeError &te) {
-    handleSyntaxError(lambdaGrammar, te.expected, te.actual);
+    handleTypeError(lambdaGrammar, te.expected, te.actual);
   }
 
   emitCode(OpCode::SET_STACK, 0);
@@ -553,7 +531,7 @@ const SExpr &Compiler::execMacro(const SExpr &sExpr) {
   fexpr.pushCode(OpCode::LOAD_SYM, curSrcLoc.row);
   fexpr.pushCode(fexpr.pushConst(sExprs.first));
 
-  const auto argc = visitEach(sExprs.rest, [&](const auto &sExpr) {
+  const auto argc = visitEach(sExprs.rest, [this, &fexpr](const auto &sExpr) {
     fexpr.pushCode(OpCode::LOAD_CONST, curSrcLoc.row);
     fexpr.pushCode(fexpr.pushConst(sExpr));
   });
@@ -564,14 +542,23 @@ const SExpr &Compiler::execMacro(const SExpr &sExpr) {
 
   const auto &res = vm.eval(vm.freeStore.alloc<Prototype>(0, 0, false, fexpr));
 
-  traverse(res, [&](const auto &sExpr) { srcMap.insert({&sExpr, curSrcLoc}); });
+  traverse(res, [this](const auto &sExpr) {
+    srcMap.insert({&sExpr, curSrcLoc});
+  });
 
   return res;
 }
 
-void Compiler::handleSyntaxError(const std::string grammar,
-                                 const std::string expected,
-                                 const SExpr &actual) {
+void Compiler::handleInvalidDef() {
+  const auto [row, col] = curSrcLoc;
+  throw error::SyntaxError("Invalid syntax for define: cannot use define as an "
+                           "expression",
+                           source[row - 1], row, col);
+}
+
+void Compiler::handleTypeError(const std::string grammar,
+                               const std::string expected,
+                               const SExpr &actual) {
   std::stringstream ss;
   ss << "Invalid syntax for " << grammar << "." << std::endl
      << "Expected " << expected << ", but got " << actual << ".";
@@ -581,7 +568,7 @@ void Compiler::handleSyntaxError(const std::string grammar,
 
 Compiler::Compiler(std::vector<std::string> source, VM &vm)
     : vm(vm), source(source), curSrcLoc({1, 0}),
-      argNames(vm.freeStore.alloc<Nil>()), arity(0), variadic(false),
+      param(vm.freeStore.alloc<Nil>()), arity(0), variadic(false),
       body(parse()), stackOffset(1) {}
 
 const Prototype &Compiler::compile() {
@@ -589,13 +576,8 @@ const Prototype &Compiler::compile() {
     emitCode(OpCode::MAKE_LIST, arity + 1);
   }
 
-  emitCode(OpCode::MAKE_NIL);
-  visitEach(body, [&](const auto &sExpr) {
-    stackOffset += 1;
-    this->compileStmt(sExpr);
-  });
-
-  compileRet();
+  compileStmts(body);
+  emitRet();
 
   return vm.freeStore.alloc<Prototype>(upValues.size(), arity, variadic, code);
 }
