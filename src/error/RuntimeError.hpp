@@ -18,9 +18,12 @@ private:
   const std::vector<runtime::CallFrame> frames;
 
 public:
-  RuntimeError(const std::string &msg, runtime::Env globals,
-               std::vector<std::reference_wrapper<const sexpr::SExpr>> stack,
-               std::vector<runtime::CallFrame> frames);
+  RuntimeError(
+      const std::string &msg,
+      runtime::Env globals,
+      std::vector<std::reference_wrapper<const sexpr::SExpr>> stack,
+      std::vector<runtime::CallFrame> frames
+  );
 
   virtual const char *what() const noexcept override;
 };

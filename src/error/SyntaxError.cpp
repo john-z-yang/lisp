@@ -5,8 +5,12 @@
 
 using namespace error;
 
-SyntaxError::SyntaxError(const std::string msg, const std::string line,
-                         const unsigned int row, const unsigned int col)
+SyntaxError::SyntaxError(
+    const std::string msg,
+    const std::string line,
+    const unsigned int row,
+    const unsigned int col
+)
     : _msg(msg), line(line), row(row), col(col) {}
 
 const char *SyntaxError::what() const noexcept { return _msg.c_str(); }

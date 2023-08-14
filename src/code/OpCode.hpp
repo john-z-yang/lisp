@@ -26,6 +26,6 @@ enum OpCode : uint8_t {
   MAKE_NIL = 0x11,
 };
 
-} // namespace code
+}
 
 #endif

@@ -9,3 +9,4 @@ repos:
     rev: 336fdd7c3cab698ead0b1c95157b9e74d3906b62
     hooks:
       - id: clang-format
+        args: ["-i", "--style=file:.clang-format"]

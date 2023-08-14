@@ -53,7 +53,8 @@ public:
       std::optional<std::reference_wrapper<const sexpr::Closure>> &closure,
       std::vector<std::reference_wrapper<const sexpr::SExpr>> &stack,
       std::vector<CallFrame> &callFrames,
-      std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> &openUpvals);
+      std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> &openUpvals
+  );
 
   GCGuard startGC();
   GCGuard pauseGC();

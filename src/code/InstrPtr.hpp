@@ -7,6 +7,6 @@ namespace code {
 
 using InstrPtr = std::vector<uint8_t>::size_type;
 
-} // namespace code
+}
 
 #endif

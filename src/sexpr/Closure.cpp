@@ -19,9 +19,12 @@ bool Closure::equals(const SExpr &other) const {
       return false;
     }
     return std::equal(
-        upvalues.cbegin(), upvalues.cend(), closure.upvalues.cbegin(),
+        upvalues.cbegin(),
+        upvalues.cend(),
+        closure.upvalues.cbegin(),
         closure.upvalues.cend(),
-        [](const auto &self, const auto &other) { return *self == *other; });
+        [](const auto &self, const auto &other) { return *self == *other; }
+    );
   }
   return false;
 }
@@ -29,8 +32,10 @@ bool Closure::equals(const SExpr &other) const {
 Closure::Closure(const Prototype &fnAtom)
     : Atom(SExpr::Type::CLOSURE), fn(fnAtom) {}
 
-Closure::Closure(const Prototype &fnAtom,
-                 const std::vector<std::shared_ptr<Upvalue>> upvalues)
+Closure::Closure(
+    const Prototype &fnAtom,
+    const std::vector<std::shared_ptr<Upvalue>> upvalues
+)
     : Atom(SExpr::Type::CLOSURE), fn(fnAtom), upvalues(upvalues) {}
 
 void Closure::assertArity(const uint8_t argc) const {

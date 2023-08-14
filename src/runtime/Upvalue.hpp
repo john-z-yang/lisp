@@ -22,8 +22,10 @@ private:
   bool isOpen() const;
 
 public:
-  Upvalue(const StackPtr stackPos,
-          std::vector<std::reference_wrapper<const sexpr::SExpr>> &stack);
+  Upvalue(
+      const StackPtr stackPos,
+      std::vector<std::reference_wrapper<const sexpr::SExpr>> &stack
+  );
 
   void close();
 

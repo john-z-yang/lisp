@@ -1,8 +1,6 @@
 #ifndef LISP_SRC_RUNTIME_VM_HPP_
 #define LISP_SRC_RUNTIME_VM_HPP_
 
-#include <functional>
-#include <optional>
 #define LISP_GC_HEAP_GROWTH_FACTOR 2
 #define LISP_GC_INIT_HEAP_SIZE 4096
 #define LISP_INT_CACHE_MAX 256.0
@@ -16,7 +14,9 @@
 #include "StackIter.hpp"
 #include "Upvalue.hpp"
 #include <deque>
+#include <functional>
 #include <memory>
+#include <optional>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -25,7 +25,7 @@ namespace fn {
 
 CPPFn apply;
 
-} // namespace fn
+}
 
 namespace runtime {
 

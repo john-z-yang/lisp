@@ -16,12 +16,19 @@ std::ostream &NatFn::serialize(std::ostream &o) const {
 bool NatFn::equals(const SExpr &other) const { return this == &other; }
 
 NatFn::NatFn(CPPFn &fn, const uint8_t arity, const bool variadic)
-    : Atom(SExpr::Type::NATIVE_FN), fn(fn), arity(arity), variadic(variadic),
+    : Atom(SExpr::Type::NATIVE_FN),
+      fn(fn),
+      arity(arity),
+      variadic(variadic),
       abandonsCont(false) {}
 
-NatFn::NatFn(CPPFn &fn, const uint8_t arity, const bool variadic,
-             const bool abandonsCont)
-    : Atom(SExpr::Type::NATIVE_FN), fn(fn), arity(arity), variadic(variadic),
+NatFn::NatFn(
+    CPPFn &fn, const uint8_t arity, const bool variadic, const bool abandonsCont
+)
+    : Atom(SExpr::Type::NATIVE_FN),
+      fn(fn),
+      arity(arity),
+      variadic(variadic),
       abandonsCont(abandonsCont) {}
 
 const SExpr &NatFn::invoke(StackIter params, const uint8_t argc, VM &vm) const {

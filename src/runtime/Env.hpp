@@ -10,14 +10,16 @@
 namespace runtime {
 
 class Env {
-  using SymTable =
-      std::unordered_map<std::reference_wrapper<const sexpr::Sym>,
-                         std::reference_wrapper<const sexpr::SExpr>,
-                         sexpr::Sym::HashFunction, sexpr::Sym::EqualFunction>;
+  using SymTable = std::unordered_map<
+      std::reference_wrapper<const sexpr::Sym>,
+      std::reference_wrapper<const sexpr::SExpr>,
+      sexpr::Sym::HashFunction,
+      sexpr::Sym::EqualFunction>;
 
-  using Macros =
-      std::unordered_set<std::reference_wrapper<const sexpr::Sym>,
-                         sexpr::Sym::HashFunction, sexpr::Sym::EqualFunction>;
+  using Macros = std::unordered_set<
+      std::reference_wrapper<const sexpr::Sym>,
+      sexpr::Sym::HashFunction,
+      sexpr::Sym::EqualFunction>;
 
 private:
   SymTable symTable;

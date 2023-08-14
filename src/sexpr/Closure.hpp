@@ -17,8 +17,10 @@ protected:
 
 public:
   explicit Closure(const Prototype &fnAtom);
-  Closure(const Prototype &fnAtom,
-          const std::vector<std::shared_ptr<runtime::Upvalue>> upvalues);
+  Closure(
+      const Prototype &fnAtom,
+      const std::vector<std::shared_ptr<runtime::Upvalue>> upvalues
+  );
 
   const Prototype &fn;
   const std::vector<std::shared_ptr<runtime::Upvalue>> upvalues;

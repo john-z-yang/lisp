@@ -1,2 +1,8 @@
 Language: Cpp
 BasedOnStyle: LLVM
+AlignAfterOpenBracket: BlockIndent
+AllowAllArgumentsOnNextLine: true
+BinPackArguments: false
+BinPackParameters: false
+FixNamespaceComments: true
+PackConstructorInitializers: NextLine
