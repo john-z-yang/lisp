@@ -34,8 +34,6 @@ class VM {
   friend class RuntimeError;
 
 private:
-  Env globals;
-
   code::InstrPtr ip;
   runtime::StackPtr bp;
   std::optional<std::reference_wrapper<const sexpr::Closure>> closure;
@@ -43,8 +41,6 @@ private:
   std::vector<std::reference_wrapper<const sexpr::SExpr>> stack;
   std::vector<CallFrame> callFrames;
   std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> openUpvals;
-
-  const sexpr::SExpr &eval(const sexpr::Prototype &main, bool withGC);
 
   const sexpr::SExpr &readConst();
   uint8_t readByte();
@@ -63,13 +59,12 @@ public:
   VM();
 
   FreeStore freeStore;
+  Env env;
 
-  void regMacro(const sexpr::Sym &sym);
-  bool isMacro(const sexpr::Sym &sym);
-
-  const sexpr::SExpr &evalWithGC(const sexpr::Prototype &main);
-  const sexpr::SExpr &eval(const sexpr::Prototype &main);
+  const sexpr::SExpr &
+  eval(const sexpr::Prototype &main, bool disableGC = false);
 };
+
 } // namespace runtime
 
 #endif

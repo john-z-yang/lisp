@@ -76,7 +76,7 @@ int execFile(const std::string filePath, VM &vm) {
     if (getFileInput(fs, lines)) {
       Compiler compiler(lines, vm);
       const auto &main = compiler.compile();
-      vm.evalWithGC(main);
+      vm.eval(main);
     }
   } catch (error::SyntaxError &se) {
     std::cerr << "In \"" << filePath << "\"" << std::endl << se << std::endl;
@@ -126,7 +126,7 @@ int repl::repl() {
       if (getConsoleInput(lines, "lisp> ", "  ... ")) {
         Compiler compiler(lines, vm);
         const auto &main = compiler.compile();
-        const auto &res = vm.evalWithGC(main);
+        const auto &res = vm.eval(main);
         if (!isa<Nil>(res)) {
           std::cout << res << std::endl;
         }
