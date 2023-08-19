@@ -101,7 +101,6 @@ void VM::reset() {
 }
 
 const SExpr &VM::exec() {
-#define DISPATCH() goto *dispatchTable[readByte()]
 
   void *dispatchTable[] = {
       &&MAKE_CLOSURE,
@@ -126,7 +125,7 @@ const SExpr &VM::exec() {
 
   call(0);
 
-  DISPATCH();
+  goto *dispatchTable[readByte()];
 
 MAKE_CLOSURE : {
   const auto &fnAtom = cast<Prototype>(readConst());
@@ -142,9 +141,11 @@ MAKE_CLOSURE : {
   }
   stack.push_back(freeStore.alloc<Closure>(fnAtom, upvalues));
 }
-  DISPATCH();
+  goto *dispatchTable[readByte()];
+
 CALL : { call(readByte()); }
-  DISPATCH();
+  goto *dispatchTable[readByte()];
+
 RETURN : {
   if (callFrames.size() == 1) [[unlikely]] {
     const auto res = stack.back();
@@ -156,11 +157,14 @@ RETURN : {
   closure = callFrames.back().closure;
   callFrames.pop_back();
 }
-  DISPATCH();
+  goto *dispatchTable[readByte()];
+
 POP_TOP : { stack.pop_back(); }
-  DISPATCH();
+  goto *dispatchTable[readByte()];
+
 POP : { stack.erase(stack.end() - readByte(), stack.end()); }
-  DISPATCH();
+  goto *dispatchTable[readByte()];
+
 CLOSE_UPVALUE : {
   auto it = openUpvals.find(bp + readByte());
   if (it != openUpvals.end()) [[unlikely]] {
@@ -168,9 +172,11 @@ CLOSE_UPVALUE : {
     openUpvals.erase(it);
   }
 }
-  DISPATCH();
+  goto *dispatchTable[readByte()];
+
 LOAD_CONST : { stack.push_back(readConst()); }
-  DISPATCH();
+  goto *dispatchTable[readByte()];
+
 LOAD_SYM : {
   const auto &sym = cast<Sym>(readConst());
   stack.push_back(env.load(sym));
@@ -180,48 +186,57 @@ LOAD_SYM : {
     throw std::invalid_argument(ss.str());
   }
 }
-  DISPATCH();
+  goto *dispatchTable[readByte()];
+
 DEF_MACRO : {
   const auto &sym = cast<Sym>(readConst());
   env.defMacro(sym, stack.back());
 }
-  DISPATCH();
+  goto *dispatchTable[readByte()];
+
 DEF_SYM : {
   env.def(cast<Sym>(readConst()), stack.back());
   stack.back() = freeStore.alloc<Nil>();
 }
-  DISPATCH();
+  goto *dispatchTable[readByte()];
+
 SET_SYM : {
   env.set(cast<Sym>(readConst()), stack.back());
   stack.back() = freeStore.alloc<Nil>();
 }
-  DISPATCH();
+  goto *dispatchTable[readByte()];
+
 LOAD_UPVALUE : {
   stack.push_back(closure->get().upvalues[readByte()]->get());
   if (isa<Undefined>(stack.back())) [[unlikely]] {
     throw std::invalid_argument("Access of an undefined upvalue.");
   }
 }
-  DISPATCH();
+  goto *dispatchTable[readByte()];
+
 SET_UPVALUE : {
   closure->get().upvalues[readByte()]->set(stack.back());
   stack.back() = freeStore.alloc<Nil>();
 }
-  DISPATCH();
+  goto *dispatchTable[readByte()];
+
 LOAD_STACK : {
   stack.push_back(stack[bp + readByte()]);
   if (isa<Undefined>(stack.back())) [[unlikely]] {
     throw std::invalid_argument("Access of an undefined local.");
   }
 }
-  DISPATCH();
+  goto *dispatchTable[readByte()];
+
 SET_STACK : {
   stack[bp + readByte()] = stack.back();
   stack.back() = freeStore.alloc<Nil>();
 }
-  DISPATCH();
+  goto *dispatchTable[readByte()];
+
 JUMP : { ip += readShort(); }
-  DISPATCH();
+  goto *dispatchTable[readByte()];
+
 POP_JUMP_IF_FALSE : {
   auto offset = readShort();
   if (!Bool::toBool(stack.back())) {
@@ -229,7 +244,8 @@ POP_JUMP_IF_FALSE : {
   }
   stack.pop_back();
 }
-  DISPATCH();
+  goto *dispatchTable[readByte()];
+
 MAKE_LIST : {
   auto gcGuard = freeStore.pauseGC();
 
@@ -238,11 +254,10 @@ MAKE_LIST : {
   stack.erase(start, stack.end());
   stack.push_back(list);
 }
-  DISPATCH();
-MAKE_NIL : { stack.push_back(freeStore.alloc<Nil>()); }
-  DISPATCH();
+  goto *dispatchTable[readByte()];
 
-#undef DISPATCH
+MAKE_NIL : { stack.push_back(freeStore.alloc<Nil>()); }
+  goto *dispatchTable[readByte()];
 }
 
 VM::VM()
