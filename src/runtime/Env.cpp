@@ -36,13 +36,16 @@ void Env::defMacro(const Sym &sym, const SExpr &macro) {
   regMacro(sym);
 }
 
-void Env::defNatFns(
-    const std::initializer_list<
-        std::tuple<const sexpr::Sym &, const sexpr::NatFn &>> natives
+void Env::defNatFn(const sexpr::Sym &sym, const sexpr::NatFn &natFn) {
+  def(sym, natFn);
+  regNative(sym);
+}
+
+void Env::defNatFns(const std::initializer_list<
+                    std::tuple<const sexpr::Sym &, const sexpr::NatFn &>> natFns
 ) {
-  for (const auto &[sym, natFn] : natives) {
-    def(sym, natFn);
-    regNative(sym);
+  for (const auto &[sym, natFn] : natFns) {
+    defNatFn(sym, natFn);
   }
 }
 
@@ -59,15 +62,6 @@ const SExpr &Env::load(const Sym &sym) {
   auto it = symTable.find(sym);
   if (it == symTable.end()) [[unlikely]] {
     throw std::invalid_argument("Symbol \"" + sym.val + "\" is not defined.");
-  }
-  return it->second;
-}
-
-std::optional<const std::reference_wrapper<const sexpr::SExpr>>
-Env::find(const sexpr::Sym &sym) {
-  auto it = symTable.find(sym);
-  if (it == symTable.end()) {
-    return std::nullopt;
   }
   return it->second;
 }

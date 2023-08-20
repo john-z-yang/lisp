@@ -36,14 +36,13 @@ private:
 public:
   void def(const sexpr::Sym &sym, const sexpr::SExpr &val);
   void defMacro(const sexpr::Sym &sym, const sexpr::SExpr &val);
+  void defNatFn(const sexpr::Sym &sym, const sexpr::NatFn &natFn);
+
   void defNatFns(const std::initializer_list<
-                 std::tuple<const sexpr::Sym &, const sexpr::NatFn &>> natives);
+                 std::tuple<const sexpr::Sym &, const sexpr::NatFn &>> natFns);
 
   void set(const sexpr::Sym &sym, const sexpr::SExpr &val);
-
   const sexpr::SExpr &load(const sexpr::Sym &sym);
-  std::optional<const std::reference_wrapper<const sexpr::SExpr>>
-  find(const sexpr::Sym &sym);
 
   bool isMacro(const sexpr::Sym &sym);
   bool isNatFn(const sexpr::Sym &sym);
