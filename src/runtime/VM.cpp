@@ -25,30 +25,11 @@ using namespace fn;
 using namespace sexpr;
 using namespace runtime;
 
-const SExpr &VM::eval(const Prototype &main, bool withGC) {
-  closure = freeStore.alloc<Closure>(main);
-  stack.push_back(closure->get());
-  try {
-    if (withGC) {
-      auto gcGuard = freeStore.startGC();
-      return exec();
-    }
-    return exec();
-  } catch (std::exception &e) {
-    std::stringstream ss;
-    ss << "Runtime error: " << e.what();
-    const auto re = error::RuntimeError(ss.str(), globals, stack, callFrames);
-    reset();
-    throw re;
-  }
-  return freeStore.alloc<Nil>();
-}
-
-inline const sexpr::SExpr &VM::readConst() {
+const sexpr::SExpr &VM::readConst() {
   return closure->get().fn.code.consts[readByte()].get();
 }
-inline uint8_t VM::readByte() { return closure->get().fn.code.byteCodes[ip++]; }
-inline uint16_t VM::readShort() {
+uint8_t VM::readByte() { return closure->get().fn.code.byteCodes[ip++]; }
+uint16_t VM::readShort() {
   ip += 2;
   return (uint16_t)((
       closure->get().fn.code.byteCodes[ip - 2] << 8 |
@@ -120,7 +101,6 @@ void VM::reset() {
 }
 
 const SExpr &VM::exec() {
-#define DISPATCH() goto *dispatchTable[readByte()]
 
   void *dispatchTable[] = {
       &&MAKE_CLOSURE,
@@ -131,6 +111,7 @@ const SExpr &VM::exec() {
       &&CLOSE_UPVALUE,
       &&LOAD_CONST,
       &&LOAD_SYM,
+      &&DEF_MACRO,
       &&DEF_SYM,
       &&SET_SYM,
       &&LOAD_UPVALUE,
@@ -144,7 +125,7 @@ const SExpr &VM::exec() {
 
   call(0);
 
-  DISPATCH();
+  goto *dispatchTable[readByte()];
 
 MAKE_CLOSURE : {
   const auto &fnAtom = cast<Prototype>(readConst());
@@ -160,13 +141,13 @@ MAKE_CLOSURE : {
   }
   stack.push_back(freeStore.alloc<Closure>(fnAtom, upvalues));
 }
-  DISPATCH();
-CALL : {
-  call(readByte());
-  DISPATCH();
-}
+  goto *dispatchTable[readByte()];
+
+CALL : { call(readByte()); }
+  goto *dispatchTable[readByte()];
+
 RETURN : {
-  if (callFrames.size() == 1) {
+  if (callFrames.size() == 1) [[unlikely]] {
     const auto res = stack.back();
     reset();
     return res;
@@ -175,267 +156,214 @@ RETURN : {
   bp = callFrames.back().bp;
   closure = callFrames.back().closure;
   callFrames.pop_back();
-  DISPATCH();
 }
-POP_TOP : {
-  stack.pop_back();
-  DISPATCH();
-}
-POP : {
-  stack.erase(stack.end() - readByte(), stack.end());
-  DISPATCH();
-}
+  goto *dispatchTable[readByte()];
+
+POP_TOP : { stack.pop_back(); }
+  goto *dispatchTable[readByte()];
+
+POP : { stack.erase(stack.end() - readByte(), stack.end()); }
+  goto *dispatchTable[readByte()];
+
 CLOSE_UPVALUE : {
   auto it = openUpvals.find(bp + readByte());
-  if (it != openUpvals.end()) {
+  if (it != openUpvals.end()) [[unlikely]] {
     it->second->close();
     openUpvals.erase(it);
   }
-  DISPATCH();
 }
-LOAD_CONST : {
-  stack.push_back(readConst());
-  DISPATCH();
-}
+  goto *dispatchTable[readByte()];
+
+LOAD_CONST : { stack.push_back(readConst()); }
+  goto *dispatchTable[readByte()];
+
 LOAD_SYM : {
   const auto &sym = cast<Sym>(readConst());
-  stack.push_back(globals.find(sym));
+  stack.push_back(env.load(sym));
   if (isa<Undefined>(stack.back())) [[unlikely]] {
     std::stringstream ss;
     ss << "Access of an undefined global: " << sym << ".";
     throw std::invalid_argument(ss.str());
   }
-  DISPATCH();
 }
+  goto *dispatchTable[readByte()];
+
+DEF_MACRO : {
+  const auto &sym = cast<Sym>(readConst());
+  env.defMacro(sym, stack.back());
+}
+  goto *dispatchTable[readByte()];
+
 DEF_SYM : {
-  globals.def(cast<Sym>(readConst()), stack.back());
+  env.def(cast<Sym>(readConst()), stack.back());
   stack.back() = freeStore.alloc<Nil>();
-  DISPATCH();
 }
+  goto *dispatchTable[readByte()];
+
 SET_SYM : {
-  globals.set(cast<Sym>(readConst()), stack.back());
+  env.set(cast<Sym>(readConst()), stack.back());
   stack.back() = freeStore.alloc<Nil>();
-  DISPATCH();
 }
+  goto *dispatchTable[readByte()];
+
 LOAD_UPVALUE : {
   stack.push_back(closure->get().upvalues[readByte()]->get());
   if (isa<Undefined>(stack.back())) [[unlikely]] {
     throw std::invalid_argument("Access of an undefined upvalue.");
   }
-  DISPATCH();
 }
+  goto *dispatchTable[readByte()];
+
 SET_UPVALUE : {
   closure->get().upvalues[readByte()]->set(stack.back());
   stack.back() = freeStore.alloc<Nil>();
-  DISPATCH();
 }
+  goto *dispatchTable[readByte()];
+
 LOAD_STACK : {
   stack.push_back(stack[bp + readByte()]);
   if (isa<Undefined>(stack.back())) [[unlikely]] {
     throw std::invalid_argument("Access of an undefined local.");
   }
-  DISPATCH();
 }
+  goto *dispatchTable[readByte()];
+
 SET_STACK : {
   stack[bp + readByte()] = stack.back();
   stack.back() = freeStore.alloc<Nil>();
-  DISPATCH();
 }
-JUMP : {
-  ip += readShort();
-  DISPATCH();
-}
+  goto *dispatchTable[readByte()];
+
+JUMP : { ip += readShort(); }
+  goto *dispatchTable[readByte()];
+
 POP_JUMP_IF_FALSE : {
   auto offset = readShort();
   if (!Bool::toBool(stack.back())) {
     ip += offset;
   }
   stack.pop_back();
-  DISPATCH();
 }
+  goto *dispatchTable[readByte()];
+
 MAKE_LIST : {
-  {
-    auto gcGuard = freeStore.pauseGC();
+  auto gcGuard = freeStore.pauseGC();
 
-    const auto start = stack.begin() + bp + readByte();
-    const auto &list = makeList(start);
-    stack.erase(start, stack.end());
-    stack.push_back(list);
-  }
-
-  DISPATCH();
+  const auto start = stack.begin() + bp + readByte();
+  const auto &list = makeList(start);
+  stack.erase(start, stack.end());
+  stack.push_back(list);
 }
-MAKE_NIL : {
-  stack.push_back(freeStore.alloc<Nil>());
-  DISPATCH();
-}
+  goto *dispatchTable[readByte()];
 
-#undef DISPATCH
+MAKE_NIL : { stack.push_back(freeStore.alloc<Nil>()); }
+  goto *dispatchTable[readByte()];
 }
 
 VM::VM()
-    : ip(0), bp(0), freeStore(globals, closure, stack, callFrames, openUpvals) {
-  globals.def(
-      freeStore.alloc<Sym>("symbol?"),
-      freeStore.alloc<NatFn>(typePred<Sym>, 1, false)
+    : ip(0), bp(0), freeStore(env, closure, stack, callFrames, openUpvals) {
+  env.defNatFns(
+      {{freeStore.alloc<Sym>("symbol?"),
+        freeStore.alloc<NatFn>(typePred<Sym>, 1, false)},
+       {freeStore.alloc<Sym>("gensym"),
+        freeStore.alloc<NatFn>(genSym, 0, false)}}
   );
-  globals.def(
-      freeStore.alloc<Sym>("gensym"), freeStore.alloc<NatFn>(genSym, 0, false)
+  env.defNatFns(
+      {{freeStore.alloc<Sym>("number?"),
+        freeStore.alloc<NatFn>(typePred<Num>, 1, false)},
+       {freeStore.alloc<Sym>("="),
+        freeStore.alloc<NatFn>(compare<Num, std::equal_to>, 1, true)},
+       {freeStore.alloc<Sym>(">"),
+        freeStore.alloc<NatFn>(compare<Num, std::greater>, 1, true)},
+       {freeStore.alloc<Sym>(">="),
+        freeStore.alloc<NatFn>(compare<Num, std::greater_equal>, 1, true)},
+       {freeStore.alloc<Sym>("<"),
+        freeStore.alloc<NatFn>(compare<Num, std::less>, 1, true)},
+       {freeStore.alloc<Sym>("<="),
+        freeStore.alloc<NatFn>(compare<Num, std::less_equal>, 1, true)},
+       {freeStore.alloc<Sym>("+"),
+        freeStore.alloc<NatFn>(accum<Num, std::plus, 0>, 1, true)},
+       {freeStore.alloc<Sym>("*"),
+        freeStore.alloc<NatFn>(accum<Num, std::multiplies, 1>, 1, true)},
+       {freeStore.alloc<Sym>("-"),
+        freeStore.alloc<NatFn>(dimi<Num, std::minus, std::negate>, 1, true)},
+       {freeStore.alloc<Sym>("/"),
+        freeStore.alloc<NatFn>(dimi<Num, std::divides, inverse>, 1, true)},
+       {freeStore.alloc<Sym>("abs"), freeStore.alloc<NatFn>(numAbs, 1, false)},
+       {freeStore.alloc<Sym>("modulo"),
+        freeStore.alloc<NatFn>(numMod, 2, false)}}
   );
-
-  globals.def(
-      freeStore.alloc<Sym>("number?"),
-      freeStore.alloc<NatFn>(typePred<Num>, 1, false)
+  env.defNatFns(
+      {{freeStore.alloc<Sym>("string?"),
+        freeStore.alloc<NatFn>(typePred<String>, 1, false)},
+       {freeStore.alloc<Sym>("string-length"),
+        freeStore.alloc<NatFn>(strLen, 1, false)},
+       {freeStore.alloc<Sym>("substring"),
+        freeStore.alloc<NatFn>(substr, 3, false)},
+       {freeStore.alloc<Sym>("string-append"),
+        freeStore.alloc<NatFn>(strApp, 1, true)},
+       {freeStore.alloc<Sym>("->str"), freeStore.alloc<NatFn>(toStr, 1, false)},
+       {freeStore.alloc<Sym>("string=?"),
+        freeStore.alloc<NatFn>(compare<String, std::equal_to>, 1, true)},
+       {freeStore.alloc<Sym>("string>?"),
+        freeStore.alloc<NatFn>(compare<String, std::greater>, 1, true)},
+       {freeStore.alloc<Sym>("string>=?"),
+        freeStore.alloc<NatFn>(compare<String, std::greater_equal>, 1, true)},
+       {freeStore.alloc<Sym>("string<?"),
+        freeStore.alloc<NatFn>(compare<String, std::less>, 1, true)},
+       {freeStore.alloc<Sym>("string<=?"),
+        freeStore.alloc<NatFn>(compare<String, std::less_equal>, 1, true)}}
   );
-  globals.def(
-      freeStore.alloc<Sym>("="),
-      freeStore.alloc<NatFn>(compare<Num, std::equal_to>, 1, true)
+  env.defNatFns({
+      {freeStore.alloc<Sym>("null?"),
+       freeStore.alloc<NatFn>(typePred<Nil>, 1, false)},
+      {freeStore.alloc<Sym>("pair?"),
+       freeStore.alloc<NatFn>(typePred<SExprs>, 1, false)},
+      {freeStore.alloc<Sym>("cons"), freeStore.alloc<NatFn>(cons, 2, false)},
+      {freeStore.alloc<Sym>("car"), freeStore.alloc<NatFn>(car, 1, false)},
+      {freeStore.alloc<Sym>("cdr"), freeStore.alloc<NatFn>(cdr, 1, false)},
+  });
+  env.defNatFns(
+      {{freeStore.alloc<Sym>("display"),
+        freeStore.alloc<NatFn>(display, 1, false)},
+       {freeStore.alloc<Sym>("newline"),
+        freeStore.alloc<NatFn>(newline, 0, false)}}
   );
-  globals.def(
-      freeStore.alloc<Sym>(">"),
-      freeStore.alloc<NatFn>(compare<Num, std::greater>, 1, true)
+  env.defNatFns(
+      {{freeStore.alloc<Sym>("quit"), freeStore.alloc<NatFn>(quit, 0, false)},
+       {freeStore.alloc<Sym>("error"),
+        freeStore.alloc<NatFn>(fn::error, 1, false)}}
   );
-  globals.def(
-      freeStore.alloc<Sym>(">="),
-      freeStore.alloc<NatFn>(compare<Num, std::greater_equal>, 1, true)
+  env.defNatFns(
+      {{freeStore.alloc<Sym>("eq?"), freeStore.alloc<NatFn>(eq, 2, false)},
+       {freeStore.alloc<Sym>("eqv?"), freeStore.alloc<NatFn>(eqv, 2, false)},
+       {freeStore.alloc<Sym>("equal?"),
+        freeStore.alloc<NatFn>(equal, 2, false)}}
   );
-  globals.def(
-      freeStore.alloc<Sym>("<"),
-      freeStore.alloc<NatFn>(compare<Num, std::less>, 1, true)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("<="),
-      freeStore.alloc<NatFn>(compare<Num, std::less_equal>, 1, true)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("+"),
-      freeStore.alloc<NatFn>(accum<Num, std::plus, 0>, 1, true)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("*"),
-      freeStore.alloc<NatFn>(accum<Num, std::multiplies, 1>, 1, true)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("-"),
-      freeStore.alloc<NatFn>(dimi<Num, std::minus, std::negate>, 1, true)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("/"),
-      freeStore.alloc<NatFn>(dimi<Num, std::divides, inverse>, 1, true)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("abs"), freeStore.alloc<NatFn>(numAbs, 1, false)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("modulo"), freeStore.alloc<NatFn>(numMod, 2, false)
-  );
-
-  globals.def(
-      freeStore.alloc<Sym>("string?"),
-      freeStore.alloc<NatFn>(typePred<String>, 1, false)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("string-length"),
-      freeStore.alloc<NatFn>(strLen, 1, false)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("substring"),
-      freeStore.alloc<NatFn>(substr, 3, false)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("string-append"),
-      freeStore.alloc<NatFn>(strApp, 1, true)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("->str"), freeStore.alloc<NatFn>(toStr, 1, false)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("string=?"),
-      freeStore.alloc<NatFn>(compare<String, std::equal_to>, 1, true)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("string>?"),
-      freeStore.alloc<NatFn>(compare<String, std::greater>, 1, true)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("string>=?"),
-      freeStore.alloc<NatFn>(compare<String, std::greater_equal>, 1, true)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("string<?"),
-      freeStore.alloc<NatFn>(compare<String, std::less>, 1, true)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("string<=?"),
-      freeStore.alloc<NatFn>(compare<String, std::less_equal>, 1, true)
-  );
-
-  globals.def(
-      freeStore.alloc<Sym>("null?"),
-      freeStore.alloc<NatFn>(typePred<Nil>, 1, false)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("pair?"),
-      freeStore.alloc<NatFn>(typePred<SExprs>, 1, false)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("cons"), freeStore.alloc<NatFn>(cons, 2, false)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("car"), freeStore.alloc<NatFn>(car, 1, false)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("cdr"), freeStore.alloc<NatFn>(cdr, 1, false)
-  );
-
-  globals.def(
-      freeStore.alloc<Sym>("dis"), freeStore.alloc<NatFn>(dis, 1, false)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("display"), freeStore.alloc<NatFn>(display, 1, false)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("newline"), freeStore.alloc<NatFn>(newline, 0, false)
-  );
-
-  globals.def(
-      freeStore.alloc<Sym>("quit"), freeStore.alloc<NatFn>(quit, 0, false)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("error"), freeStore.alloc<NatFn>(fn::error, 1, false)
-  );
-
-  globals.def(
-      freeStore.alloc<Sym>("eq?"), freeStore.alloc<NatFn>(eq, 2, false)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("eqv?"), freeStore.alloc<NatFn>(eqv, 2, false)
-  );
-  globals.def(
-      freeStore.alloc<Sym>("equal?"), freeStore.alloc<NatFn>(equal, 2, false)
-  );
-
-  globals.def(
-      freeStore.alloc<Sym>("procedure?"),
-      freeStore.alloc<NatFn>(typePred<Closure, NatFn>, 1, false)
-  );
-
-  globals.def(
-      freeStore.alloc<Sym>("apply"),
-      freeStore.alloc<NatFn>(apply, 2, true, true)
-  );
+  env.defNatFns({
+      {freeStore.alloc<Sym>("procedure?"),
+       freeStore.alloc<NatFn>(typePred<Closure, NatFn>, 1, false)},
+      {freeStore.alloc<Sym>("apply"),
+       freeStore.alloc<NatFn>(apply, 2, true, true)},
+      {freeStore.alloc<Sym>("dis"), freeStore.alloc<NatFn>(dis, 1, false)},
+  });
 }
 
-void VM::regMacro(const Sym &sym) { globals.regMacro(sym); }
-
-bool VM::isMacro(const Sym &sym) { return globals.isMacro(sym); }
-
-const SExpr &VM::eval(const Prototype &main) {
-  const auto &res = eval(main, false);
-  return res;
-}
-
-const SExpr &VM::evalWithGC(const Prototype &main) {
-  const auto &res = eval(main, true);
-  return res;
+const SExpr &VM::eval(const Prototype &main, bool disableGC) {
+  closure = freeStore.alloc<Closure>(main);
+  stack.push_back(closure->get());
+  try {
+    if (disableGC) {
+      return exec();
+    }
+    auto gcGuard = freeStore.startGC();
+    return exec();
+  } catch (std::exception &e) {
+    std::stringstream ss;
+    ss << "Runtime error: " << e.what();
+    const auto re = error::RuntimeError(ss.str(), env, stack, callFrames);
+    reset();
+    throw re;
+  }
+  return freeStore.alloc<Nil>();
 }

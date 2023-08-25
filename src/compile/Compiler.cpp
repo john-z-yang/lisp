@@ -321,7 +321,7 @@ void Compiler::compileStmt(const SExpr &sExpr) {
                [this](const auto &matched) { compileStmts(matched.get()); }},
           },
           [this, &sExpr](const auto &sym, const auto) {
-            if (vm.isMacro(sym.get())) {
+            if (vm.env.isMacro(sym.get())) {
               compileStmt(execMacro(sExpr));
               return;
             }
@@ -345,7 +345,7 @@ void Compiler::compileExpr(const SExpr &sExpr) {
            {BEGIN_SYM,
             [this](const auto &matched) { compileExprs(matched.get()); }}},
           [this, &sExpr](const auto sym, const auto) {
-            if (vm.isMacro(sym.get())) {
+            if (vm.env.isMacro(sym.get())) {
               compileExpr(execMacro(sExpr));
               return;
             }
@@ -421,6 +421,10 @@ void Compiler::emitLambda(const MatchedSExpr<sexpr::SExpr> matched) {
 }
 
 void Compiler::emitSym(const sexpr::Sym &sym) {
+  if (vm.env.isNatFn(sym)) {
+    emitCode(OpCode::LOAD_CONST, emitConst(vm.env.load(sym)));
+    return;
+  }
   if (const auto idx = resolveLocal(sym); idx.has_value()) {
     emitCode(OpCode::LOAD_STACK, (uint8_t)locals[*idx].stackOffset);
     return;
@@ -491,12 +495,11 @@ void Compiler::execDefMacro(const MatchedSExpr<sexpr::SExpr> matched) {
       def.pushCode(upValue.idx);
     }
 
-    def.pushCode(OpCode::DEF_SYM, curSrcLoc.row);
+    def.pushCode(OpCode::DEF_MACRO, curSrcLoc.row);
     def.pushCode(def.pushConst(macroSym.get()));
     def.pushCode(OpCode::RETURN, curSrcLoc.row);
 
-    vm.eval(vm.freeStore.alloc<Prototype>(0, 0, false, def));
-    vm.regMacro(macroSym.get());
+    vm.eval(vm.freeStore.alloc<Prototype>(0, 0, false, def), true);
 
     emitCode(OpCode::MAKE_NIL);
     assertType<Nil>(last(macroBody.get()));
@@ -564,23 +567,24 @@ void Compiler::emitRet() {
 }
 
 const SExpr &Compiler::execMacro(const SExpr &sExpr) {
-  Code fexpr;
+  Code fExpr;
 
   const auto &sExprs = cast<SExprs>(sExpr);
 
-  fexpr.pushCode(OpCode::LOAD_SYM, curSrcLoc.row);
-  fexpr.pushCode(fexpr.pushConst(sExprs.first));
+  fExpr.pushCode(OpCode::LOAD_SYM, curSrcLoc.row);
+  fExpr.pushCode(fExpr.pushConst(sExprs.first));
 
-  const auto argc = visitEach(sExprs.rest, [this, &fexpr](const auto &sExpr) {
-    fexpr.pushCode(OpCode::LOAD_CONST, curSrcLoc.row);
-    fexpr.pushCode(fexpr.pushConst(sExpr));
+  const auto argc = visitEach(sExprs.rest, [this, &fExpr](const auto &sExpr) {
+    fExpr.pushCode(OpCode::LOAD_CONST, curSrcLoc.row);
+    fExpr.pushCode(fExpr.pushConst(sExpr));
   });
 
-  fexpr.pushCode(OpCode::CALL, curSrcLoc.row);
-  fexpr.pushCode(argc);
-  fexpr.pushCode(OpCode::RETURN, curSrcLoc.row);
+  fExpr.pushCode(OpCode::CALL, curSrcLoc.row);
+  fExpr.pushCode(argc);
+  fExpr.pushCode(OpCode::RETURN, curSrcLoc.row);
 
-  const auto &res = vm.eval(vm.freeStore.alloc<Prototype>(0, 0, false, fexpr));
+  const auto &res =
+      vm.eval(vm.freeStore.alloc<Prototype>(0, 0, false, fExpr), true);
 
   traverse(res, [this](const auto &sExpr) {
     srcMap.insert({&sExpr, curSrcLoc});
