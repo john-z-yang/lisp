@@ -28,12 +28,7 @@ Bool &Bool::getInstance(const Bool::ValueType val) {
   return Bool::_false;
 }
 
-bool Bool::toBool(const SExpr &sExpr) {
-  if (&sExpr == &_false) {
-    return false;
-  }
-  return true;
-}
+bool Bool::toBool(const SExpr &sExpr) { return &sExpr != &_false; }
 
 bool Bool::classOf(const SExpr &sExpr) {
   return sExpr.type == SExpr::Type::BOOL;
