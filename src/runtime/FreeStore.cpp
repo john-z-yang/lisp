@@ -130,7 +130,7 @@ FreeStore::FreeStore(
       gcHeapSize(FREESTORE_INIT_HEAP_SIZE) {
   for (Num::ValueType i{FREESTORE_INT_CACHE_MIN}; i <= FREESTORE_INT_CACHE_MAX;
        i++) {
-    intCache.push_back(std::make_unique<Num>(i));
+    numCache.push_back(std::make_unique<Num>(i));
   }
 }
 

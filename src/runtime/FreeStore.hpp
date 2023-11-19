@@ -34,7 +34,7 @@ private:
   size_t gcHeapSize;
 
   std::vector<std::unique_ptr<const sexpr::SExpr>> heap;
-  std::vector<std::unique_ptr<const sexpr::Num>> intCache;
+  std::vector<std::unique_ptr<const sexpr::Num>> numCache;
 
   std::unordered_set<const sexpr::SExpr *> black;
   std::deque<const sexpr::SExpr *> grey;
@@ -81,7 +81,7 @@ template <>
 inline const sexpr::Num &FreeStore::alloc(sexpr::Num::ValueType &val) {
   if (val >= FREESTORE_INT_CACHE_MIN && val <= FREESTORE_INT_CACHE_MAX &&
       floor(val) == val) {
-    return *intCache.at(val - FREESTORE_INT_CACHE_MIN).get();
+    return *numCache.at(val - FREESTORE_INT_CACHE_MIN).get();
   }
   gc();
   auto unique = std::make_unique<const sexpr::Num>(val);
