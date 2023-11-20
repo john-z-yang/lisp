@@ -17,13 +17,13 @@ public:
   TypeError(
       const std::string &msg,
       const std::string expected,
-      const sexpr::SExpr &actual
+      const sexpr::SExpr *actual
   );
 
   virtual const char *what() const noexcept override;
 
   const std::string expected;
-  const sexpr::SExpr &actual;
+  const sexpr::SExpr *actual;
 };
 
 std::ostream &operator<<(std::ostream &o, const TypeError &pe);

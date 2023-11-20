@@ -5,23 +5,22 @@ using namespace sexpr;
 using namespace runtime;
 
 Upvalue::Upvalue(
-    const StackPtr stackPos,
-    std::vector<std::reference_wrapper<const sexpr::SExpr>> &stack
+    const StackPtr stackPos, std::vector<const sexpr::SExpr *> &stack
 )
     : stackPos(stackPos), stack(stack) {}
 
 bool Upvalue::isOpen() const { return !ref.has_value(); }
 
-void Upvalue::close() { ref = stack[stackPos].get(); }
+void Upvalue::close() { ref = stack[stackPos]; }
 
-const SExpr &Upvalue::get() const {
+const SExpr *Upvalue::get() const {
   if (isOpen()) {
     return stack[stackPos];
   }
-  return ref->get();
+  return ref.value();
 }
 
-void Upvalue::set(const SExpr &sexpr) {
+void Upvalue::set(const SExpr *sexpr) {
   if (isOpen()) {
     stack[stackPos] = sexpr;
     return;

@@ -6,7 +6,7 @@
 namespace compile {
 
 struct Local {
-  const sexpr::Sym &symbol;
+  const sexpr::Sym *symbol;
   const uint8_t stackOffset;
   bool isCaptured;
 };

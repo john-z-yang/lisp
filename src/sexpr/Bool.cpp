@@ -21,17 +21,17 @@ bool Bool::equals(const SExpr &other) const {
   return false;
 }
 
-Bool &Bool::getInstance(const Bool::ValueType val) {
+Bool *Bool::getInstance(const Bool::ValueType val) {
   if (val) {
-    return Bool::_true;
+    return &Bool::_true;
   }
-  return Bool::_false;
+  return &Bool::_false;
 }
 
-bool Bool::toBool(const SExpr &sExpr) { return &sExpr != &_false; }
+bool Bool::toBool(const SExpr *sExpr) { return sExpr != &_false; }
 
-bool Bool::classOf(const SExpr &sExpr) {
-  return sExpr.type == SExpr::Type::BOOL;
+bool Bool::classOf(const SExpr *sExpr) {
+  return sExpr->type == SExpr::Type::BOOL;
 }
 
 std::string Bool::getTypeName() { return "<Boolean>"; }

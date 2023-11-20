@@ -14,14 +14,14 @@ class RuntimeError : public std::exception {
 private:
   std::string _msg;
   const runtime::Env globals;
-  const std::vector<std::reference_wrapper<const sexpr::SExpr>> stack;
+  const std::vector<const sexpr::SExpr *> stack;
   const std::vector<runtime::CallFrame> frames;
 
 public:
   RuntimeError(
       const std::string &msg,
       runtime::Env globals,
-      std::vector<std::reference_wrapper<const sexpr::SExpr>> stack,
+      std::vector<const sexpr::SExpr *> stack,
       std::vector<runtime::CallFrame> frames
   );
 

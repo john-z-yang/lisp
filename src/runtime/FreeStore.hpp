@@ -25,8 +25,8 @@ namespace runtime {
 class FreeStore {
 private:
   Env &globals;
-  std::optional<std::reference_wrapper<const sexpr::Closure>> &closure;
-  std::vector<std::reference_wrapper<const sexpr::SExpr>> &stack;
+  std::optional<const sexpr::Closure *> &closure;
+  std::vector<const sexpr::SExpr *> &stack;
   std::vector<CallFrame> &callFrames;
   std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> &openUpvals;
 
@@ -40,8 +40,8 @@ private:
   std::deque<const sexpr::SExpr *> grey;
 
   void gc();
-  void mark(const sexpr::SExpr &sexpr);
-  void trace(const sexpr::SExpr &sexpr);
+  void mark(const sexpr::SExpr *sexpr);
+  void trace(const sexpr::SExpr *sexpr);
   void markGlobals();
   void markStack();
   void markCallFrames();
@@ -50,8 +50,8 @@ private:
 public:
   FreeStore(
       Env &globals,
-      std::optional<std::reference_wrapper<const sexpr::Closure>> &closure,
-      std::vector<std::reference_wrapper<const sexpr::SExpr>> &stack,
+      std::optional<const sexpr::Closure *> &closure,
+      std::vector<const sexpr::SExpr *> &stack,
       std::vector<CallFrame> &callFrames,
       std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> &openUpvals
   );
@@ -59,37 +59,37 @@ public:
   GCGuard startGC();
   GCGuard pauseGC();
 
-  template <typename T, typename... Args> const T &alloc(Args &&...args) {
+  template <typename T, typename... Args> const T *alloc(Args &&...args) {
     gc();
     auto unique = std::make_unique<const T>(std::forward<Args>(args)...);
     const auto &ref = *unique.get();
     heap.emplace_back(std::move(unique));
-    return ref;
+    return &ref;
   }
 };
-template <> inline const sexpr::Undefined &FreeStore::alloc() {
+template <> inline const sexpr::Undefined *FreeStore::alloc() {
   return sexpr::Undefined::getInstance();
 }
-template <> inline const sexpr::Nil &FreeStore::alloc() {
+template <> inline const sexpr::Nil *FreeStore::alloc() {
   return sexpr::Nil::getInstance();
 }
 template <>
-inline const sexpr::Bool &FreeStore::alloc(sexpr::Bool::ValueType &&val) {
+inline const sexpr::Bool *FreeStore::alloc(sexpr::Bool::ValueType &&val) {
   return sexpr::Bool::getInstance(val);
 }
 template <>
-inline const sexpr::Num &FreeStore::alloc(sexpr::Num::ValueType &val) {
+inline const sexpr::Num *FreeStore::alloc(sexpr::Num::ValueType &val) {
   if (val >= FREESTORE_INT_CACHE_MIN && val <= FREESTORE_INT_CACHE_MAX &&
       floor(val) == val) {
-    return *numCache.at(val - FREESTORE_INT_CACHE_MIN).get();
+    return numCache.at(val - FREESTORE_INT_CACHE_MIN).get();
   }
   gc();
   auto unique = std::make_unique<const sexpr::Num>(val);
   const auto &ref = *unique;
   heap.emplace_back(std::move(unique));
-  return ref;
+  return &ref;
 }
-template <> inline const sexpr::Num &FreeStore::alloc(double &&val) {
+template <> inline const sexpr::Num *FreeStore::alloc(double &&val) {
   return alloc<sexpr::Num>(val);
 }
 

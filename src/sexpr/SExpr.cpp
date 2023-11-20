@@ -7,7 +7,7 @@ SExpr::SExpr(SExpr::Type type) : type(type) {}
 
 SExpr::~SExpr() {}
 
-bool SExpr::classOf([[maybe_unused]] const SExpr &sExpr) { return true; }
+bool SExpr::classOf([[maybe_unused]] const SExpr *sExpr) { return true; }
 
 std::string SExpr::getTypeName() { return "<S-expression>"; }
 

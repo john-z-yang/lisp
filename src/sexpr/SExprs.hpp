@@ -16,12 +16,12 @@ protected:
   bool equals(const SExpr &other) const override;
 
 public:
-  const SExpr &first;
-  const SExpr &rest;
+  const SExpr *first;
+  const SExpr *rest;
 
-  SExprs(const SExpr &first, const SExpr &rest);
+  SExprs(const SExpr *first, const SExpr *rest);
 
-  static bool classOf(const SExpr &sExpr);
+  static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();
 };
 

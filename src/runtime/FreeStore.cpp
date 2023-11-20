@@ -21,7 +21,7 @@ void FreeStore::gc() {
 
   black.clear();
 
-  grey.push_back(&closure->get());
+  grey.push_back(closure.value());
   markGlobals();
   markStack();
   markCallFrames();
@@ -31,7 +31,7 @@ void FreeStore::gc() {
     const auto sexpr = grey.front();
     black.emplace(sexpr);
     grey.pop_front();
-    trace(*sexpr);
+    trace(sexpr);
   }
 
   std::erase_if(heap, [&](const auto &unique) {
@@ -41,34 +41,34 @@ void FreeStore::gc() {
   gcHeapSize = heap.size() * FREESTORE_HEAP_GROWTH_FACTOR;
 }
 
-void FreeStore::mark(const SExpr &sexpr) {
-  if (!black.contains(&sexpr)) {
-    grey.push_back(&sexpr);
+void FreeStore::mark(const SExpr *sexpr) {
+  if (!black.contains(sexpr)) {
+    grey.push_back(sexpr);
   }
 }
 
-void FreeStore::trace(const SExpr &sexpr) {
+void FreeStore::trace(const SExpr *sexpr) {
   if (isa<SExprs>(sexpr)) {
-    const auto &sexprs = cast<SExprs>(sexpr);
-    mark(sexprs.first);
-    mark(sexprs.rest);
+    const auto sexprs = cast<SExprs>(sexpr);
+    mark(sexprs->first);
+    mark(sexprs->rest);
     return;
   }
   if (isa<Prototype>(sexpr)) {
-    const auto &fnAtom = cast<Prototype>(sexpr);
+    const auto fnAtom = cast<Prototype>(sexpr);
     std::for_each(
-        fnAtom.code.consts.cbegin(),
-        fnAtom.code.consts.cend(),
+        fnAtom->code.consts.cbegin(),
+        fnAtom->code.consts.cend(),
         [&](const auto &sexpr) { mark(sexpr); }
     );
     return;
   }
   if (isa<Closure>(sexpr)) {
-    const auto &closureAtom = cast<Closure>(sexpr);
-    mark(closureAtom.fn);
+    const auto closureAtom = cast<Closure>(sexpr);
+    mark(closureAtom->proto);
     std::for_each(
-        closureAtom.upvalues.cbegin(),
-        closureAtom.upvalues.cend(),
+        closureAtom->upvalues.cbegin(),
+        closureAtom->upvalues.cend(),
         [&](const auto &upvalue) { mark(upvalue->get()); }
     );
     return;
@@ -81,8 +81,8 @@ void FreeStore::markGlobals() {
       globals.getSymTable().cend(),
       [&](const auto &it) {
         const auto &[sym, sexpr] = it;
-        grey.push_back(&sym.get());
-        grey.push_back(&sexpr.get());
+        grey.push_back(sym);
+        grey.push_back(sexpr);
       }
   );
 }
@@ -92,7 +92,7 @@ void FreeStore::markStack() {
       stack.cbegin(),
       stack.cend(),
       std::back_inserter(grey),
-      [](const auto &sexpr) { return &sexpr.get(); }
+      [](const auto &sexpr) { return sexpr; }
   );
 }
 
@@ -101,7 +101,7 @@ void FreeStore::markCallFrames() {
       callFrames.cbegin(),
       callFrames.cend(),
       std::back_inserter(grey),
-      [](const auto &callFrame) { return &callFrame.closure; }
+      [](const auto &callFrame) { return callFrame.closure; }
   );
 }
 
@@ -110,14 +110,14 @@ void FreeStore::markOpenUpvalues() {
       openUpvals.cbegin(),
       openUpvals.cend(),
       std::back_inserter(grey),
-      [](const auto &it) { return &it.second->get(); }
+      [](const auto &it) { return it.second->get(); }
   );
 }
 
 FreeStore::FreeStore(
     Env &globals,
-    std::optional<std::reference_wrapper<const sexpr::Closure>> &closure,
-    std::vector<std::reference_wrapper<const sexpr::SExpr>> &stack,
+    std::optional<const sexpr::Closure *> &closure,
+    std::vector<const sexpr::SExpr *> &stack,
     std::vector<CallFrame> &callFrames,
     std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> &openUpvals
 )

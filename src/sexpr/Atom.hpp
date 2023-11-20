@@ -9,7 +9,7 @@ class Atom : public SExpr {
 public:
   explicit Atom(SExpr::Type type);
 
-  static bool classOf(const SExpr &sExpr);
+  static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();
 };
 

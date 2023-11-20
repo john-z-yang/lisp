@@ -17,7 +17,7 @@ InstrPtr Code::pushCode(const uint8_t code, const unsigned int lineNum) {
   return byteCodes.size() - 1;
 }
 
-uint8_t Code::pushConst(const SExpr &sExpr) {
+uint8_t Code::pushConst(const SExpr *sExpr) {
   consts.push_back(sExpr);
   return consts.size() - 1;
 }
@@ -89,9 +89,9 @@ std::ostream &code::operator<<(std::ostream &o, const Code &code) {
 
     switch (byte) {
     case OpCode::MAKE_CLOSURE: {
-      const auto &fn = cast<Prototype>(code.consts[READ_BYTE()].get());
+      const auto fn = cast<Prototype>(code.consts[READ_BYTE()]);
       o << "MAKE_CLOSURE" << fn;
-      for (unsigned int i{0}; i < fn.numUpvals; i++) {
+      for (unsigned int i{0}; i < fn->numUpvals; i++) {
         const auto isLocal = unsigned(READ_BYTE());
         const auto idx = unsigned(READ_BYTE());
         o << std::endl

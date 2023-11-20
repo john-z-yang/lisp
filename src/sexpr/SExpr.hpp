@@ -38,7 +38,7 @@ public:
   SExpr(const SExpr &&) = delete;
   SExpr &operator=(const SExpr &) = delete;
 
-  static bool classOf(const SExpr &sExpr);
+  static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();
 };
 

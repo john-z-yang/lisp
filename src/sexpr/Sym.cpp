@@ -14,15 +14,17 @@ bool Sym::equals(const SExpr &other) const {
   return false;
 }
 
-size_t Sym::HashFunction::operator()(const Sym &sym) const { return sym.hash; }
+size_t Sym::HashFunction::operator()(const Sym *sym) const { return sym->hash; }
 
-bool Sym::EqualFunction::operator()(const Sym &lhs, const Sym &rhs) const {
-  return lhs.hash == rhs.hash;
+bool Sym::EqualFunction::operator()(const Sym *lhs, const Sym *rhs) const {
+  return lhs->hash == rhs->hash;
 }
 
 Sym::Sym(const ValueType val)
     : Atom(SExpr::Type::SYM), val(val), hash(std::hash<ValueType>()(val)) {}
 
-bool Sym::classOf(const SExpr &sExpr) { return sExpr.type == SExpr::Type::SYM; }
+bool Sym::classOf(const SExpr *sExpr) {
+  return sExpr->type == SExpr::Type::SYM;
+}
 
 std::string Sym::getTypeName() { return "<Symbol>"; }

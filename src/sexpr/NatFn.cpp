@@ -31,7 +31,7 @@ NatFn::NatFn(
       variadic(variadic),
       abandonsCont(abandonsCont) {}
 
-const SExpr &NatFn::invoke(StackIter params, const uint8_t argc, VM &vm) const {
+const SExpr *NatFn::invoke(StackIter params, const uint8_t argc, VM &vm) const {
   if ((!variadic && argc != arity) || (variadic && argc < arity)) {
     std::stringstream ss;
     ss << "Invalid number of arguments. Expected " << unsigned(arity);
@@ -44,8 +44,8 @@ const SExpr &NatFn::invoke(StackIter params, const uint8_t argc, VM &vm) const {
   return fn(params, argc, vm);
 }
 
-bool NatFn::classOf(const SExpr &sExpr) {
-  return sExpr.type == SExpr::Type::NATIVE_FN;
+bool NatFn::classOf(const SExpr *sExpr) {
+  return sExpr->type == SExpr::Type::NATIVE_FN;
 }
 
 std::string NatFn::getTypeName() { return "<Native function>"; }

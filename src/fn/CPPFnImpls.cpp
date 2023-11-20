@@ -18,7 +18,7 @@ using namespace fn;
 using namespace runtime;
 
 long genSymCnt = 0;
-const SExpr &fn::genSym(
+const SExpr *fn::genSym(
     [[maybe_unused]] StackIter params,
     [[maybe_unused]] const uint8_t argc,
     VM &vm
@@ -29,97 +29,97 @@ const SExpr &fn::genSym(
   return vm.freeStore.alloc<Sym>(ss.str());
 }
 
-const SExpr &
+const SExpr *
 fn::numAbs(StackIter params, [[maybe_unused]] const uint8_t argc, VM &vm) {
-  return vm.freeStore.alloc<Num>(abs(cast<Num>(params->get()).val));
+  return vm.freeStore.alloc<Num>(abs(cast<Num>(*params)->val));
 }
-const SExpr &
+const SExpr *
 fn::numMod(StackIter params, [[maybe_unused]] const uint8_t argc, VM &vm) {
-  const auto lhs = cast<Num>(params->get()).val;
+  const auto lhs = cast<Num>(*params)->val;
   ++params;
-  const auto rhs = cast<Num>(params->get()).val;
+  const auto rhs = cast<Num>(*params)->val;
   return vm.freeStore.alloc<Num>(std::fmod(lhs, rhs));
 }
 
-const SExpr &
+const SExpr *
 fn::strLen(StackIter params, [[maybe_unused]] const uint8_t argc, VM &vm) {
-  return vm.freeStore.alloc<Num>(cast<String>(params->get()).escaped.size());
+  return vm.freeStore.alloc<Num>(cast<String>(*params)->escaped.size());
 }
-const SExpr &fn::strApp(StackIter params, const uint8_t argc, VM &vm) {
+const SExpr *fn::strApp(StackIter params, const uint8_t argc, VM &vm) {
   std::stringstream ss;
   ss << "\"";
   for (uint8_t i{0}; i < argc; ++i) {
-    ss << cast<String>(params->get()).escaped;
+    ss << cast<String>(*params)->escaped;
     ++params;
   }
   ss << "\"";
   return vm.freeStore.alloc<String>(ss.str());
 }
-const SExpr &
+const SExpr *
 fn::substr(StackIter params, [[maybe_unused]] const uint8_t argc, VM &vm) {
-  const auto &str = cast<String>(params->get());
-  const auto &pos = cast<Num>((params + 1)->get()).val;
-  const auto &end = cast<Num>((params + 2)->get()).val;
+  const auto str = cast<String>(*params);
+  const auto &pos = cast<Num>(*(params + 1))->val;
+  const auto &end = cast<Num>(*(params + 2))->val;
   std::stringstream ss;
   try {
-    ss << "\"" << str.escaped.substr(pos, end - pos) << "\"";
+    ss << "\"" << str->escaped.substr(pos, end - pos) << "\"";
   } catch (std::out_of_range &ofr) {
     std::stringstream ess;
-    ess << "Invalid range to substring for " << str.val << " (" << pos << ", "
+    ess << "Invalid range to substring for " << str->val << " (" << pos << ", "
         << end << ")";
     throw std::invalid_argument(ess.str());
   }
   return vm.freeStore.alloc<String>(ss.str());
 }
-const SExpr &fn::toStr(StackIter params, const uint8_t argc, VM &vm) {
-  if (isa<String>(params->get())) {
-    return params->get();
+const SExpr *fn::toStr(StackIter params, const uint8_t argc, VM &vm) {
+  if (isa<String>(*params)) {
+    return *params;
   }
   std::stringstream ss;
   ss << "\"";
   for (uint8_t i{0}; i < argc; ++i) {
-    ss << params->get();
+    ss << **params;
     ++params;
   }
   ss << "\"";
   return vm.freeStore.alloc<String>(ss.str());
 }
 
-const SExpr &
+const SExpr *
 fn::cons(StackIter params, [[maybe_unused]] const uint8_t argc, VM &vm) {
-  return vm.freeStore.alloc<SExprs>(params->get(), *(params + 1));
+  return vm.freeStore.alloc<SExprs>(*params, *(params + 1));
 }
-const SExpr &fn::car(
+const SExpr *fn::car(
     StackIter params,
     [[maybe_unused]] const uint8_t argc,
     [[maybe_unused]] VM &vm
 ) {
-  return cast<SExprs>(params->get()).first;
+  return cast<SExprs>(*params)->first;
 }
-const SExpr &fn::cdr(
+const SExpr *fn::cdr(
     StackIter params,
     [[maybe_unused]] const uint8_t argc,
     [[maybe_unused]] VM &vm
 ) {
-  return cast<SExprs>(params->get()).rest;
+  return cast<SExprs>(*params)->rest;
 }
 
-const SExpr &
+const SExpr *
 fn::dis(StackIter params, [[maybe_unused]] const uint8_t argc, VM &vm) {
-  cast<Closure>(params->get()).dissassemble(std::cout);
+  cast<Closure>(*params)->dissassemble(std::cout);
   return vm.freeStore.alloc<Nil>();
 }
-const SExpr &
+const SExpr *
 fn::display(StackIter params, [[maybe_unused]] const uint8_t argc, VM &vm) {
-  if (isa<String>(params->get())) {
-    const auto &stringAtom = cast<String>(params->get());
-    std::cout << stringAtom.escaped;
+  if (isa<String>(*params)) {
+    const auto &stringAtom = cast<String>(*params);
+    std::cout << stringAtom->escaped;
   } else {
-    std::cout << params->get();
+    std::cout << **params;
   }
   return vm.freeStore.alloc<Nil>();
 }
-const SExpr &fn::newline(
+const SExpr *fn::newline(
     [[maybe_unused]] StackIter params,
     [[maybe_unused]] const uint8_t argc,
     VM &vm
@@ -128,7 +128,7 @@ const SExpr &fn::newline(
   return vm.freeStore.alloc<Nil>();
 }
 
-const SExpr &fn::quit(
+const SExpr *fn::quit(
     [[maybe_unused]] StackIter params,
     [[maybe_unused]] const uint8_t argc,
     [[maybe_unused]] VM &vm
@@ -136,43 +136,43 @@ const SExpr &fn::quit(
   std::cout << "Farewell." << std::endl;
   exit(0);
 }
-const SExpr &fn::error(
+const SExpr *fn::error(
     StackIter params,
     [[maybe_unused]] const uint8_t argc,
     [[maybe_unused]] VM &vm
 ) {
   std::stringstream ss;
-  ss << params->get();
+  ss << *params;
   throw std::runtime_error(ss.str());
 }
 
-const SExpr &
+const SExpr *
 fn::eq(StackIter params, [[maybe_unused]] const uint8_t argc, VM &vm) {
-  const auto &lhs = params->get();
-  const auto &rhs = (params + 1)->get();
+  const auto lhs = *params;
+  const auto rhs = *(params + 1);
   if (isa<Sym>(lhs)) {
-    return vm.freeStore.alloc<Bool>(lhs == rhs);
+    return vm.freeStore.alloc<Bool>(*lhs == *rhs);
   }
-  return vm.freeStore.alloc<Bool>(&lhs == &rhs);
-}
-const SExpr &
-fn::eqv(StackIter params, [[maybe_unused]] const uint8_t argc, VM &vm) {
-  const auto &lhs = params->get();
-  const auto &rhs = (params + 1)->get();
-  if (isa<Sym>(lhs) || isa<Num>(lhs)) {
-    return vm.freeStore.alloc<Bool>(lhs == rhs);
-  }
-  return vm.freeStore.alloc<Bool>(&lhs == &rhs);
-}
-const SExpr &
-fn::equal(StackIter params, [[maybe_unused]] const uint8_t argc, VM &vm) {
-  const auto &lhs = params->get();
-  const auto &rhs = (params + 1)->get();
   return vm.freeStore.alloc<Bool>(lhs == rhs);
 }
+const SExpr *
+fn::eqv(StackIter params, [[maybe_unused]] const uint8_t argc, VM &vm) {
+  const auto lhs = *params;
+  const auto rhs = *(params + 1);
+  if (isa<Sym>(lhs) || isa<Num>(lhs)) {
+    return vm.freeStore.alloc<Bool>(*lhs == *rhs);
+  }
+  return vm.freeStore.alloc<Bool>(lhs == rhs);
+}
+const SExpr *
+fn::equal(StackIter params, [[maybe_unused]] const uint8_t argc, VM &vm) {
+  const auto lhs = *params;
+  const auto rhs = *(params + 1);
+  return vm.freeStore.alloc<Bool>(*lhs == *rhs);
+}
 
-const SExpr &fn::apply(StackIter params, const uint8_t argc, VM &vm) {
-  const auto &newArgs = (params + argc - 1)->get();
+const SExpr *fn::apply(StackIter params, const uint8_t argc, VM &vm) {
+  const auto newArgs = *(params + argc - 1);
 
   vm.stack.erase(params + argc - 1);
   vm.stack.erase(params - 1);

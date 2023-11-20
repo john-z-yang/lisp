@@ -75,7 +75,7 @@ int execFile(const std::string filePath, VM &vm) {
   try {
     if (getFileInput(fs, lines)) {
       Compiler compiler(lines, vm);
-      const auto &main = compiler.compile();
+      const auto main = compiler.compile();
       vm.eval(main);
     }
   } catch (error::SyntaxError &se) {
@@ -125,10 +125,10 @@ int repl::repl() {
     try {
       if (getConsoleInput(lines, "lisp> ", "  ... ")) {
         Compiler compiler(lines, vm);
-        const auto &main = compiler.compile();
-        const auto &res = vm.eval(main);
+        const auto main = compiler.compile();
+        const auto res = vm.eval(main);
         if (!isa<Nil>(res)) {
-          std::cout << res << std::endl;
+          std::cout << *res << std::endl;
         }
       } else {
         std::cout << std::endl << "Farewell." << std::endl;

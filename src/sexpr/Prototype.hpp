@@ -26,7 +26,7 @@ public:
 
   std::ostream &dissassemble(std::ostream &o) const;
 
-  static bool classOf(const SExpr &sExpr);
+  static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();
 };
 

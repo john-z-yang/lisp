@@ -15,12 +15,12 @@ protected:
 public:
   class HashFunction {
   public:
-    size_t operator()(const Sym &sym) const;
+    size_t operator()(const Sym *sym) const;
   };
 
   class EqualFunction {
   public:
-    bool operator()(const Sym &lhs, const Sym &rhs) const;
+    bool operator()(const Sym *lhs, const Sym *rhs) const;
   };
 
   using ValueType = std::string;
@@ -30,7 +30,7 @@ public:
 
   explicit Sym(const ValueType val);
 
-  static bool classOf(const SExpr &sExpr);
+  static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();
 };
 

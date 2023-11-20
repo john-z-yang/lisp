@@ -36,24 +36,24 @@ class VM {
 private:
   code::InstrPtr ip;
   runtime::StackPtr bp;
-  std::optional<std::reference_wrapper<const sexpr::Closure>> closure;
+  std::optional<const sexpr::Closure *> closure;
 
-  std::vector<std::reference_wrapper<const sexpr::SExpr>> stack;
+  std::vector<const sexpr::SExpr *> stack;
   std::vector<CallFrame> callFrames;
   std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> openUpvals;
 
-  const sexpr::SExpr &readConst();
+  const sexpr::SExpr *readConst();
   uint8_t readByte();
   uint16_t readShort();
 
   void call(const uint8_t argc);
   std::shared_ptr<Upvalue> captureUpvalue(StackPtr pos);
-  const sexpr::SExpr &peak(StackPtr distance);
-  const sexpr::SExpr &makeList(StackIter start);
-  unsigned int unpackList(const sexpr::SExpr &sexpr);
+  const sexpr::SExpr *peak(StackPtr distance);
+  const sexpr::SExpr *makeList(StackIter start);
+  unsigned int unpackList(const sexpr::SExpr *sexpr);
   void reset();
 
-  const sexpr::SExpr &exec();
+  const sexpr::SExpr *exec();
 
 public:
   VM();
@@ -61,8 +61,8 @@ public:
   FreeStore freeStore;
   Env env;
 
-  const sexpr::SExpr &
-  eval(const sexpr::Prototype &main, bool disableGC = false);
+  const sexpr::SExpr *
+  eval(const sexpr::Prototype *main, bool disableGC = false);
 };
 
 } // namespace runtime
