@@ -8,6 +8,8 @@ using namespace sexpr;
 
 Nil::Nil() : Atom(SExpr::Type::NIL) {}
 
+void Nil::fixupAddrs(const runtime::BreakTable &) {}
+
 std::ostream &Nil::serialize(std::ostream &o) const { return o << "()"; }
 
 bool Nil::equals(const SExpr &other) const { return isa<Nil>(other); }

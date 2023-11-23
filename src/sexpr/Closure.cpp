@@ -2,6 +2,7 @@
 #include "Cast.cpp"
 #include "Prototype.hpp"
 #include "SExpr.hpp"
+#include "Upvalue.hpp"
 #include <iomanip>
 #include <sstream>
 
@@ -23,19 +24,25 @@ bool Closure::equals(const SExpr &other) const {
         upvalues.cend(),
         closure.upvalues.cbegin(),
         closure.upvalues.cend(),
-        [](const auto &self, const auto &other) { return *self == *other; }
+        [](const auto &self, const auto &other) {
+          return std::as_const(*self) == std::as_const(*other);
+        }
     );
   }
   return false;
 }
 
-Closure::Closure(const Prototype *proto)
-    : Atom(SExpr::Type::CLOSURE), proto(proto) {}
+Closure::Closure(Prototype *proto) : Atom(SExpr::Type::CLOSURE), proto(proto) {}
 
-Closure::Closure(
-    const Prototype *proto, const std::vector<std::shared_ptr<Upvalue>> upvalues
-)
+Closure::Closure(Prototype *proto, const std::vector<Upvalue *> upvalues)
     : Atom(SExpr::Type::CLOSURE), proto(proto), upvalues(upvalues) {}
+
+void Closure::fixupAddrs(const runtime::BreakTable &breakTable) {
+  proto = cast<Prototype>(breakTable.get(proto));
+  for (auto &upvalue : upvalues) {
+    upvalue = cast<Upvalue>(breakTable.get(upvalue));
+  }
+}
 
 void Closure::assertArity(const uint8_t argc) const {
   if ((!proto->variadic && proto->arity != argc) ||
@@ -52,7 +59,7 @@ void Closure::assertArity(const uint8_t argc) const {
 
 std::ostream &Closure::dissassemble(std::ostream &o) const {
   const unsigned int PADDING_WIDTH = 4;
-  o << "<Closure at " << this << ">, instance of:" << std::endl
+  o << "<Closure (ID: " << id << ")>, instance of:" << std::endl
     << std::setw(PADDING_WIDTH) << "";
   proto->dissassemble(o);
   return o;

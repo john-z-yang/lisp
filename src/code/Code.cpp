@@ -3,11 +3,14 @@
 #include "../sexpr/Prototype.hpp"
 #include "InstrPtr.hpp"
 #include "OpCode.hpp"
+#include <algorithm>
 #include <cstdint>
 #include <iomanip>
+#include <utility>
 
 using namespace code;
 using namespace sexpr;
+using namespace runtime;
 
 InstrPtr Code::pushCode(const uint8_t code) { return pushCode(code, 0); }
 
@@ -17,7 +20,7 @@ InstrPtr Code::pushCode(const uint8_t code, const unsigned int lineNum) {
   return byteCodes.size() - 1;
 }
 
-uint8_t Code::pushConst(const SExpr *sExpr) {
+uint8_t Code::pushConst(SExpr *sExpr) {
   consts.push_back(sExpr);
   return consts.size() - 1;
 }
@@ -26,6 +29,12 @@ void Code::patchJump(const InstrPtr idx) {
   const uint16_t offset = byteCodes.size() - idx - 2;
   byteCodes[idx] = (offset >> 8) & 0xFF;
   byteCodes[idx + 1] = offset & 0xFF;
+}
+
+void Code::fixupAddrs(const BreakTable &breakTable) {
+  for (auto &consta : consts) {
+    consta = breakTable.get(consta);
+  }
 }
 
 std::ostream &code::operator<<(std::ostream &o, const Code &code) {
@@ -46,7 +55,7 @@ std::ostream &code::operator<<(std::ostream &o, const Code &code) {
   } while (false)
 #define DIS_CONST_OP(name)                                                     \
   do {                                                                         \
-    o << #name << code.consts[READ_BYTE()];                                    \
+    o << #name << std::as_const(*code.consts[READ_BYTE()]);                    \
   } while (false)
 
   const unsigned int PADDING_WIDTH = 4;
@@ -55,7 +64,7 @@ std::ostream &code::operator<<(std::ostream &o, const Code &code) {
     if (i != 0) {
       o << ", ";
     }
-    o << co;
+    o << std::as_const(*co);
     i += 1;
   }
 
@@ -90,7 +99,7 @@ std::ostream &code::operator<<(std::ostream &o, const Code &code) {
     switch (byte) {
     case OpCode::MAKE_CLOSURE: {
       const auto fn = cast<Prototype>(code.consts[READ_BYTE()]);
-      o << "MAKE_CLOSURE" << fn;
+      o << "MAKE_CLOSURE" << std::as_const(*fn);
       for (unsigned int i{0}; i < fn->numUpvals; i++) {
         const auto isLocal = unsigned(READ_BYTE());
         const auto idx = unsigned(READ_BYTE());
@@ -126,6 +135,10 @@ std::ostream &code::operator<<(std::ostream &o, const Code &code) {
     }
     case OpCode::LOAD_SYM: {
       DIS_CONST_OP(LOAD_SYM);
+      break;
+    }
+    case OpCode::DEF_MACRO: {
+      DIS_CONST_OP(DEF_MACRO);
       break;
     }
     case OpCode::DEF_SYM: {

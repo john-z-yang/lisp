@@ -15,8 +15,8 @@ template <typename T> bool isa(const SExpr &f) { return T::classOf(&f); }
 template <typename T> void assertType(const SExpr *f) {
   if (!isa<T>(f)) {
     std::stringstream ss;
-    ss << "Mismatched types. Expected " << T::getTypeName() << ", but got " << f
-       << ".";
+    ss << "Mismatched types. Expected " << T::getTypeName() << ", but got "
+       << std::as_const(*f) << ".";
     throw error::TypeError(ss.str(), T::getTypeName(), f);
   }
 }
@@ -33,7 +33,8 @@ void assertType(const SExpr *f) {
     ([&typeName] { typeName += ", " + Rest::getTypeName(); }(), ...);
     typeName += ")";
     std::stringstream ss;
-    ss << "Mismatched types. Expected " << typeName << ", but got " << f << ".";
+    ss << "Mismatched types. Expected " << typeName << ", but got "
+       << std::as_const(f) << ".";
     throw error::TypeError(ss.str(), typeName, f);
   }
 }
@@ -43,12 +44,21 @@ void assertType(const SExpr &f) {
   return assertType<First, Next, Rest...>(&f);
 }
 
-template <typename T> const T *cast(const SExpr *f) {
+template <typename T> T *cast(SExpr *f) {
   assertType<T>(f);
-  return static_cast<const T *>(f);
+  return static_cast<T *>(f);
 }
 
-template <typename T> const T &cast(const SExpr &f) { return *cast<T>(&f); }
+template <typename T> T &cast(SExpr &f) { return *cast<T>(&f); }
+
+template <typename T> const T *cast(const SExpr *f) {
+  assertType<const T>(f);
+  return static_cast<T *>(f);
+}
+
+template <typename T> const T &cast(const SExpr &f) {
+  return *cast<const T>(&f);
+}
 
 } // namespace sexpr
 

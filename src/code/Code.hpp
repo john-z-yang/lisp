@@ -14,15 +14,17 @@ class Code {
 
 public:
   std::vector<uint8_t> byteCodes;
-  std::vector<const sexpr::SExpr *> consts;
+  std::vector<sexpr::SExpr *> consts;
 
   std::vector<unsigned int> lineNums;
 
   InstrPtr pushCode(const uint8_t code);
   InstrPtr pushCode(const uint8_t code, const unsigned int lineNum);
-  uint8_t pushConst(const sexpr::SExpr *sExpr);
+  uint8_t pushConst(sexpr::SExpr *sExpr);
 
   void patchJump(const InstrPtr idx);
+
+  void fixupAddrs(const runtime::BreakTable &breakTable);
 };
 
 std::ostream &operator<<(std::ostream &o, const Code &code);

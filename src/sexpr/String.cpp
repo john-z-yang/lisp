@@ -24,6 +24,8 @@ bool String::equals(const SExpr &other) const {
 String::String(const String::ValueType literal)
     : Atom(SExpr::Type::STR), val(literal), escaped(escape(literal)) {}
 
+void String::fixupAddrs(const runtime::BreakTable &) {}
+
 bool String::classOf(const SExpr *sExpr) {
   return sExpr->type == SExpr::Type::STR;
 }

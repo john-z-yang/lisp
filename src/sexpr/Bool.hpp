@@ -24,8 +24,10 @@ protected:
 public:
   const ValueType val;
 
+  void fixupAddrs(const runtime::BreakTable &breakTable) override;
+
   static Bool *getInstance(const ValueType val);
-  static bool toBool(const SExpr *sExpr);
+  static bool toBool(SExpr *sExpr);
   static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();
 };

@@ -7,7 +7,7 @@
 
 namespace runtime {
 
-using StackPtr = std::vector<const sexpr::SExpr *>::size_type;
+using StackPtr = std::vector<sexpr::SExpr *>::size_type;
 
 }
 

@@ -16,6 +16,8 @@ protected:
   static Nil instance;
 
 public:
+  void fixupAddrs(const runtime::BreakTable &breakTable) override;
+
   static Nil *getInstance();
   static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();

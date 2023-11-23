@@ -21,6 +21,8 @@ bool Bool::equals(const SExpr &other) const {
   return false;
 }
 
+void Bool::fixupAddrs(const runtime::BreakTable &) {}
+
 Bool *Bool::getInstance(const Bool::ValueType val) {
   if (val) {
     return &Bool::_true;
@@ -28,7 +30,7 @@ Bool *Bool::getInstance(const Bool::ValueType val) {
   return &Bool::_false;
 }
 
-bool Bool::toBool(const SExpr *sExpr) { return sExpr != &_false; }
+bool Bool::toBool(SExpr *sExpr) { return sExpr != &_false; }
 
 bool Bool::classOf(const SExpr *sExpr) {
   return sExpr->type == SExpr::Type::BOOL;

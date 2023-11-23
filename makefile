@@ -27,10 +27,12 @@ _DEPS = code/Code.hpp \
 	error/RuntimeError.hpp error/SyntaxError.hpp error/TypeError.hpp \
 	fn/CPPFnImpls.hpp \
 	repl/repl.hpp \
-	runtime/Env.hpp runtime/FreeStore.hpp runtime/GCGuard.hpp  runtime/Upvalue.hpp runtime/VM.hpp \
-	sexpr/Atom.hpp sexpr/Bool.hpp sexpr/Closure.hpp sexpr/Prototype.hpp sexpr/Num.hpp \
-	sexpr/NatFn.hpp sexpr/Nil.hpp sexpr/SExpr.hpp sexpr/SExprs.hpp \
-	sexpr/String.hpp sexpr/Sym.hpp sexpr/Undefined.hpp
+	runtime/Env.hpp runtime/Heap.hpp runtime/GCGuard.hpp \
+	runtime/VM.hpp runtime/BreakTable.hpp\
+	sexpr/Atom.hpp sexpr/Bool.hpp sexpr/Closure.hpp sexpr/Prototype.hpp \
+	sexpr/Num.hpp sexpr/NatFn.hpp sexpr/Nil.hpp sexpr/SExpr.hpp \
+	sexpr/SExprs.hpp sexpr/String.hpp sexpr/Sym.hpp sexpr/Undefined.hpp \
+	sexpr/Upvalue.hpp
 
 
 DEPS = $(addprefix $(SRCDIR)/,$(_DEPS))

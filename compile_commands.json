@@ -172,12 +172,12 @@
       "-O2",
       "-c",
       "-o",
-      "bin/runtime_FreeStore.o",
-      "src/runtime/FreeStore.cpp"
+      "bin/runtime_Heap.o",
+      "src/runtime/Heap.cpp"
     ],
     "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/runtime/FreeStore.cpp",
-    "output": "/Users/john/workspace/lisp/bin/runtime_FreeStore.o"
+    "file": "/Users/john/workspace/lisp/src/runtime/Heap.cpp",
+    "output": "/Users/john/workspace/lisp/bin/runtime_Heap.o"
   },
   {
     "arguments": [
@@ -212,12 +212,12 @@
       "-O2",
       "-c",
       "-o",
-      "bin/runtime_Upvalue.o",
-      "src/runtime/Upvalue.cpp"
+      "bin/runtime_VM.o",
+      "src/runtime/VM.cpp"
     ],
     "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/runtime/Upvalue.cpp",
-    "output": "/Users/john/workspace/lisp/bin/runtime_Upvalue.o"
+    "file": "/Users/john/workspace/lisp/src/runtime/VM.cpp",
+    "output": "/Users/john/workspace/lisp/bin/runtime_VM.o"
   },
   {
     "arguments": [
@@ -232,12 +232,12 @@
       "-O2",
       "-c",
       "-o",
-      "bin/runtime_VM.o",
-      "src/runtime/VM.cpp"
+      "bin/runtime_BreakTable.o",
+      "src/runtime/BreakTable.cpp"
     ],
     "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/runtime/VM.cpp",
-    "output": "/Users/john/workspace/lisp/bin/runtime_VM.o"
+    "file": "/Users/john/workspace/lisp/src/runtime/BreakTable.cpp",
+    "output": "/Users/john/workspace/lisp/bin/runtime_BreakTable.o"
   },
   {
     "arguments": [
@@ -478,6 +478,26 @@
     "directory": "/Users/john/workspace/lisp",
     "file": "/Users/john/workspace/lisp/src/sexpr/Undefined.cpp",
     "output": "/Users/john/workspace/lisp/bin/sexpr_Undefined.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++20",
+      "-fsanitize=address,undefined",
+      "-g",
+      "-pedantic",
+      "-Wall",
+      "-Wextra",
+      "-Wno-gnu-label-as-value",
+      "-O2",
+      "-c",
+      "-o",
+      "bin/sexpr_Upvalue.o",
+      "src/sexpr/Upvalue.cpp"
+    ],
+    "directory": "/Users/john/workspace/lisp",
+    "file": "/Users/john/workspace/lisp/src/sexpr/Upvalue.cpp",
+    "output": "/Users/john/workspace/lisp/bin/sexpr_Upvalue.o"
   },
   {
     "arguments": [

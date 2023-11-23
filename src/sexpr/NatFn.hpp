@@ -16,20 +16,23 @@ protected:
   bool equals(const SExpr &other) const override;
 
 public:
-  NatFn(fn::CPPFn &fn, const uint8_t arity, const bool variadic);
   NatFn(
-      fn::CPPFn &fn,
+      fn::CPPFn *fn,
+      std::string name,
       const uint8_t arity,
       const bool variadic,
-      const bool abandonsCont
+      const bool abandonsCont = false
   );
 
-  fn::CPPFn &fn;
-  const uint8_t arity;
-  const bool variadic;
-  const bool abandonsCont;
+  fn::CPPFn *fn;
+  std::string name;
+  uint8_t arity;
+  bool variadic;
+  bool abandonsCont;
 
-  const SExpr *
+  void fixupAddrs(const runtime::BreakTable &breakTable) override;
+
+  SExpr *
   invoke(runtime::StackIter params, const uint8_t argc, runtime::VM &vm) const;
 
   static bool classOf(const SExpr *sExpr);

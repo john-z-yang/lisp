@@ -17,7 +17,9 @@ public:
 
   explicit Num(const ValueType val);
 
-  const ValueType val;
+  ValueType val;
+
+  void fixupAddrs(const runtime::BreakTable &breakTable) override;
 
   static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();

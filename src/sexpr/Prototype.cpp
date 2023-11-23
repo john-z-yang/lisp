@@ -6,7 +6,7 @@
 using namespace sexpr;
 
 std::ostream &Prototype::serialize(std::ostream &o) const {
-  return o << "<Function at " << this << ">";
+  return o << "<Function (ID: " << id << ")>";
 }
 
 bool Prototype::equals(const SExpr &other) const { return this == &other; }
@@ -23,14 +23,18 @@ Prototype::Prototype(
       variadic(variadic),
       code(code) {}
 
+void Prototype::fixupAddrs(const runtime::BreakTable &breakTable) {
+  code.fixupAddrs(breakTable);
+}
+
 std::ostream &Prototype::dissassemble(std::ostream &o) const {
-  o << "<Function at " << this << ", arity: " << unsigned(arity)
+  o << "<Function (ID: " << id << "), arity: " << unsigned(arity)
     << ", upvalues: " << numUpvals << ">" << std::endl
     << code << std::endl;
   for (auto i = code.consts.cbegin(); i != code.consts.end(); ++i) {
     if (isa<Prototype>(*i)) {
-      const auto fnAtom = cast<Prototype>(*i);
-      fnAtom->dissassemble(o);
+      const auto proto = cast<Prototype>(*i);
+      proto->dissassemble(o);
     }
   }
   return o;

@@ -3,12 +3,25 @@
 
 using namespace runtime;
 
-GCGuard::GCGuard(bool &enableGC, bool gcState)
-    : prevGCState(enableGC), gcStateRef(enableGC) {
-  enableGC = gcState;
+GCGuard::GCGuard(Heap &heap)
+    : heap(heap), prevGCState(heap.enableGC), released(false) {
+  heap.enableGC = false;
 }
 
 GCGuard::GCGuard(GCGuard &&other)
-    : prevGCState(other.prevGCState), gcStateRef(other.gcStateRef) {}
+    : heap(other.heap),
+      prevGCState(other.prevGCState),
+      released(other.released) {
+  other.released = true;
+}
 
-GCGuard::~GCGuard() { gcStateRef = prevGCState; }
+void GCGuard::release() {
+  if (released) {
+    return;
+  }
+  heap.enableGC = prevGCState;
+  released = true;
+  heap.gc();
+}
+
+GCGuard::~GCGuard() { release(); }

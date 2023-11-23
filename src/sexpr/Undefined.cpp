@@ -14,6 +14,8 @@ bool Undefined::equals(const SExpr &other) const {
   return isa<Undefined>(other);
 }
 
+void Undefined::fixupAddrs(const runtime::BreakTable &) {}
+
 Undefined Undefined::instance;
 
 Undefined *Undefined::getInstance() { return &instance; }

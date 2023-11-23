@@ -21,8 +21,10 @@ protected:
 public:
   explicit String(const ValueType val);
 
-  const ValueType val;
-  const ValueType escaped;
+  ValueType val;
+  ValueType escaped;
+
+  void fixupAddrs(const runtime::BreakTable &breakTable) override;
 
   static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();

@@ -23,6 +23,8 @@ bool Num::equals(const SExpr &other) const {
 
 Num::Num(const Num::ValueType val) : Atom(SExpr::Type::NUM), val(val) {}
 
+void Num::fixupAddrs(const runtime::BreakTable &) {}
+
 bool Num::classOf(const SExpr *sExpr) {
   return sExpr->type == SExpr::Type::NUM;
 }

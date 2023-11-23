@@ -1,5 +1,6 @@
 #include "RuntimeError.hpp"
 #include <iomanip>
+#include <utility>
 
 using namespace sexpr;
 using namespace runtime;
@@ -8,7 +9,7 @@ using namespace error;
 RuntimeError::RuntimeError(
     const std::string &msg,
     Env globals,
-    std::vector<const sexpr::SExpr *> stack,
+    std::vector<sexpr::SExpr *> stack,
     std::vector<CallFrame> frames
 )
     : _msg(msg), globals(globals), stack(stack), frames(frames) {}
@@ -16,6 +17,8 @@ RuntimeError::RuntimeError(
 const char *RuntimeError::what() const noexcept { return _msg.c_str(); }
 
 std::ostream &error::operator<<(std::ostream &o, const RuntimeError &re) {
+  o << "Runtime error: " << re.what() << std::endl;
+
   std::unordered_map<const SExpr *, const Sym *> sExprSyms;
   for (const auto &p : re.globals.getSymTable()) {
     sExprSyms.insert({p.second, p.first});
@@ -44,12 +47,12 @@ std::ostream &error::operator<<(std::ostream &o, const RuntimeError &re) {
   for (unsigned int idx = 0; const auto &sexpr : re.stack) {
     o << std::endl
       << std::setw(PADDING_WIDTH) << "" << std::setw(IDX_WIDTH) << std::left
-      << idx << *sexpr;
+      << idx << std::as_const(*sexpr);
     idx += 1;
     auto it = sExprSyms.find(sexpr);
     if (it != sExprSyms.end()) {
-      o << " (" << it->second << ")";
+      o << " (" << std::as_const(*it->second) << ")";
     }
   }
-  return o << std::endl << re.what();
+  return o << std::endl;
 }

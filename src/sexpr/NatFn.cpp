@@ -10,28 +10,28 @@ using namespace fn;
 using namespace runtime;
 
 std::ostream &NatFn::serialize(std::ostream &o) const {
-  return o << "<Native function>";
+  return o << "<Native function: " << name << ">";
 }
 
 bool NatFn::equals(const SExpr &other) const { return this == &other; }
 
-NatFn::NatFn(CPPFn &fn, const uint8_t arity, const bool variadic)
-    : Atom(SExpr::Type::NATIVE_FN),
-      fn(fn),
-      arity(arity),
-      variadic(variadic),
-      abandonsCont(false) {}
-
 NatFn::NatFn(
-    CPPFn &fn, const uint8_t arity, const bool variadic, const bool abandonsCont
+    fn::CPPFn *fn,
+    std::string name,
+    const uint8_t arity,
+    const bool variadic,
+    const bool abandonsCont
 )
     : Atom(SExpr::Type::NATIVE_FN),
       fn(fn),
+      name(name),
       arity(arity),
       variadic(variadic),
       abandonsCont(abandonsCont) {}
 
-const SExpr *NatFn::invoke(StackIter params, const uint8_t argc, VM &vm) const {
+void NatFn::fixupAddrs(const runtime::BreakTable &) {}
+
+SExpr *NatFn::invoke(StackIter params, const uint8_t argc, VM &vm) const {
   if ((!variadic && argc != arity) || (variadic && argc < arity)) {
     std::stringstream ss;
     ss << "Invalid number of arguments. Expected " << unsigned(arity);

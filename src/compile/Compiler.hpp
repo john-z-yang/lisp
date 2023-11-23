@@ -2,6 +2,7 @@
 #define LISP_SRC_COMPILE_COMPILER_HPP_
 
 #include "../code/Code.hpp"
+#include "../runtime/GCGuard.hpp"
 #include "../runtime/VM.hpp"
 #include "../sexpr/Cast.cpp"
 #include "../sexpr/Prototype.hpp"
@@ -31,22 +32,23 @@ const sexpr::Sym DEFMACRO_SYM("defmacro");
 
 class Compiler {
 private:
-  using SrcMap = std::unordered_map<const sexpr::SExpr *, SrcLoc>;
+  using SrcMap = std::unordered_map<sexpr::SExpr *, SrcLoc>;
   using TokenIter = std::vector<Token>::const_iterator;
-  using Visitor = std::function<void(const sexpr::SExpr *)>;
+  using Visitor = std::function<void(sexpr::SExpr *)>;
 
   runtime::VM &vm;
+  std::optional<runtime::GCGuard> gcGuard;
   const std::optional<std::reference_wrapper<Compiler>> enclosing;
 
   std::vector<std::string> source;
   SrcMap srcMap;
   SrcLoc curSrcLoc;
 
-  const sexpr::SExpr *param;
+  sexpr::SExpr *param;
   const uint8_t arity;
   const bool variadic;
 
-  const sexpr::SExprs *body;
+  sexpr::SExprs *body;
 
   std::vector<Local> locals;
   std::vector<Upvalue> upValues;
@@ -60,22 +62,22 @@ private:
   static void
   handleUnexpectedToken(const Token &token, const std::string &line);
 
-  const sexpr::SExprs *parse();
-  const sexpr::SExpr *parseLists(TokenIter &it, const TokenIter &end);
-  const sexpr::SExpr *parseList(TokenIter &it, const TokenIter &end);
-  const sexpr::SExpr *parseElem(TokenIter &it, const TokenIter &end);
-  const sexpr::SExpr *parseSexprs(TokenIter &it, const TokenIter &end);
-  const sexpr::SExpr *parseAtom(Token token);
+  sexpr::SExprs *parse();
+  sexpr::SExpr *parseLists(TokenIter &it, const TokenIter &end);
+  sexpr::SExpr *parseList(TokenIter &it, const TokenIter &end);
+  sexpr::SExpr *parseElem(TokenIter &it, const TokenIter &end);
+  sexpr::SExpr *parseSexprs(TokenIter &it, const TokenIter &end);
+  sexpr::SExpr *parseAtom(Token token);
 
   template <typename T> class MatchedSExpr {
   private:
-    const T *sExpr;
+    T *sExpr;
     const std::function<void()> callBack;
 
   public:
-    MatchedSExpr(const T *sExpr, const std::function<void()> callBack)
+    MatchedSExpr(T *sExpr, const std::function<void()> callBack)
         : sExpr(sExpr), callBack(callBack) {}
-    const T *get() const {
+    T *get() const {
       callBack();
       return sExpr;
     }
@@ -83,7 +85,7 @@ private:
 
   template <typename First, typename... Rest>
   std::tuple<const MatchedSExpr<First>, const MatchedSExpr<Rest>...>
-  unpack(const sexpr::SExpr *sExpr) {
+  unpack(sexpr::SExpr *sExpr) {
     const auto sExprs = sexpr::cast<sexpr::SExprs>(sExpr);
     updateCurSrcLoc(sExprs);
     if constexpr (sizeof...(Rest) != 0) {
@@ -108,7 +110,7 @@ private:
       const MatchedSExpr<First>,
       const MatchedSExpr<Rest>...,
       const MatchedSExpr<sexpr::SExpr>>
-  unpackPartial(const sexpr::SExpr *sExpr) {
+  unpackPartial(sexpr::SExpr *sExpr) {
     const auto sExprs = sexpr::cast<sexpr::SExprs>(sExpr);
     updateCurSrcLoc(sExprs);
     if constexpr (sizeof...(Rest) != 0) {
@@ -132,8 +134,7 @@ private:
     }
   }
 
-  template <typename First, typename... Rest>
-  bool check(const sexpr::SExpr *sExpr) {
+  template <typename First, typename... Rest> bool check(sexpr::SExpr *sExpr) {
     if (!isa<sexpr::SExprs>(sExpr)) {
       return false;
     }
@@ -146,9 +147,9 @@ private:
   }
 
   bool matchForm(
-      const sexpr::SExpr *sExpr,
+      sexpr::SExpr *sExpr,
       std::initializer_list<std::tuple<
-          const sexpr::Sym *,
+          const sexpr::Sym &,
           const std::function<void(MatchedSExpr<sexpr::SExpr>)>>> rules,
       std::optional<const std::function<
           void(MatchedSExpr<sexpr::Sym>, MatchedSExpr<sexpr::SExpr>)>>
@@ -159,7 +160,7 @@ private:
     }
     const auto &[sym, rest] = unpackPartial<sexpr::Sym>(sExpr);
     for (const auto &[name, handler] : rules) {
-      if (*name == *sym.get()) {
+      if (name == *sym.get()) {
         handler(rest);
         return true;
       }
@@ -174,13 +175,13 @@ private:
   Compiler(
       const std::vector<std::string> source,
       SrcMap sourceLoc,
-      const sexpr::SExpr *param,
-      const sexpr::SExprs *body,
+      sexpr::SExpr *param,
+      sexpr::SExprs *body,
       Compiler &enclosing,
       runtime::VM &vm
   );
 
-  void updateCurSrcLoc(const sexpr::SExprs *sExpr);
+  void updateCurSrcLoc(sexpr::SExprs *sExpr);
   std::optional<const std::size_t> resolveLocal(const sexpr::Sym *sym);
   std::optional<const std::size_t>
   resolveUpvalue(Compiler &caller, const sexpr::Sym *sym);
@@ -197,27 +198,27 @@ private:
     emitCode(args...);
     return idx;
   }
-  code::InstrPtr emitConst(const sexpr::SExpr *sExpr);
+  code::InstrPtr emitConst(sexpr::SExpr *sExpr);
   void patchJump(const code::InstrPtr idx);
 
-  const sexpr::SExpr *last(const sexpr::SExpr *sExpr);
-  unsigned int visitEach(const sexpr::SExpr *sExpr, Visitor visitor);
-  void traverse(const sexpr::SExpr *sExpr, Visitor visitor);
-  void compileStmts(const sexpr::SExpr *sExpr);
-  void compileExprs(const sexpr::SExpr *sExpr);
-  void compileStmt(const sexpr::SExpr *sExpr);
-  void compileExpr(const sexpr::SExpr *sExpr);
-  void compileAtom(const sexpr::Atom *atom);
-  void compileCall(const sexpr::SExprs *sExprs);
+  sexpr::SExpr *last(sexpr::SExpr *sExpr);
+  unsigned int visitEach(sexpr::SExpr *sExpr, Visitor visitor);
+  void traverse(sexpr::SExpr *sExpr, Visitor visitor);
+  void compileStmts(sexpr::SExpr *sExpr);
+  void compileExprs(sexpr::SExpr *sExpr);
+  void compileStmt(sexpr::SExpr *sExpr);
+  void compileExpr(sexpr::SExpr *sExpr);
+  void compileAtom(sexpr::Atom *atom);
+  void compileCall(sexpr::SExprs *sExprs);
   void emitDef(const MatchedSExpr<sexpr::SExpr> matched);
   void emitSet(const MatchedSExpr<sexpr::SExpr> matched);
-  void emitSym(const sexpr::Sym *sym);
+  void emitSym(sexpr::Sym *sym);
   void emitQuote(const MatchedSExpr<sexpr::SExpr> matched);
   void emitIf(const MatchedSExpr<sexpr::SExpr> matched);
   void emitLambda(const MatchedSExpr<sexpr::SExpr> matched);
   void emitRet();
   void execDefMacro(const MatchedSExpr<sexpr::SExpr> matched);
-  const sexpr::SExpr *execMacro(const sexpr::SExpr *macro);
+  sexpr::SExpr *execMacro(sexpr::SExpr *macro);
 
   void handleInvalidDef();
   void handleTypeError(
@@ -229,7 +230,7 @@ private:
 public:
   Compiler(std::vector<std::string> source, runtime::VM &vm);
 
-  const sexpr::Prototype *compile();
+  sexpr::Prototype *compile();
 
   static void verifyLex(
       const std::string &line,

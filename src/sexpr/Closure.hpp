@@ -1,10 +1,10 @@
 #ifndef LISP_SRC_SEXPR_CLOSURE_HPP_
 #define LISP_SRC_SEXPR_CLOSURE_HPP_
 
-#include "../runtime/Upvalue.hpp"
 #include "Atom.hpp"
 #include "Prototype.hpp"
 #include "SExpr.hpp"
+#include "Upvalue.hpp"
 #include <memory>
 #include <vector>
 
@@ -16,14 +16,13 @@ protected:
   bool equals(const SExpr &other) const override;
 
 public:
-  explicit Closure(const Prototype *proto);
-  Closure(
-      const Prototype *proto,
-      const std::vector<std::shared_ptr<runtime::Upvalue>> upvalues
-  );
+  explicit Closure(Prototype *proto);
+  Closure(Prototype *proto, const std::vector<Upvalue *> upvalues);
 
-  const Prototype *proto;
-  const std::vector<std::shared_ptr<runtime::Upvalue>> upvalues;
+  Prototype *proto;
+  std::vector<Upvalue *> upvalues;
+
+  void fixupAddrs(const runtime::BreakTable &breakTable) override;
 
   void assertArity(const uint8_t arity) const;
   std::ostream &dissassemble(std::ostream &o) const;

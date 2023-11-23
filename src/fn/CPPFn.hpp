@@ -18,7 +18,7 @@ class VM;
 
 namespace fn {
 
-using CPPFn = const sexpr::SExpr *(
+using CPPFn = sexpr::SExpr *(
     runtime::StackIter params, const uint8_t argc, runtime::VM &vm
 );
 

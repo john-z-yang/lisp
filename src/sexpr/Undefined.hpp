@@ -15,6 +15,8 @@ protected:
   static Undefined instance;
 
 public:
+  void fixupAddrs(const runtime::BreakTable &breakTable) override;
+
   static Undefined *getInstance();
   static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();

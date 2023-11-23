@@ -1,6 +1,7 @@
 #ifndef LISP_SRC_SEXPR_SEXPR_HPP_
 #define LISP_SRC_SEXPR_SEXPR_HPP_
 
+#include "../runtime/BreakTable.hpp"
 #include <iostream>
 #include <string>
 
@@ -10,6 +11,12 @@ class SExpr {
   friend class SExprs;
   friend std::ostream &operator<<(std::ostream &o, const SExpr &sExpr);
   friend bool operator==(const SExpr &lhs, const SExpr &rhs);
+
+public:
+  using ID = uint64_t;
+
+private:
+  static ID curID;
 
 protected:
   virtual std::ostream &serialize(std::ostream &o) const = 0;
@@ -26,24 +33,24 @@ public:
     SEXPRS,
     PROTO,
     CLOSURE,
-    NATIVE_FN
+    NATIVE_FN,
+    UPVALUE
   };
 
-  const Type type;
+  ID id;
+  Type type;
 
   SExpr(SExpr::Type type);
   virtual ~SExpr();
 
-  SExpr(const SExpr &) = delete;
-  SExpr(const SExpr &&) = delete;
-  SExpr &operator=(const SExpr &) = delete;
+  virtual void fixupAddrs(const runtime::BreakTable &breakTable) = 0;
 
   static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();
 };
 
-std::ostream &operator<<(std::ostream &o, const SExpr &sExpr);
-bool operator==(const SExpr &lhs, const SExpr &rhs);
+std::ostream &operator<<(std::ostream &o, SExpr &sExpr);
+bool operator==(SExpr &lhs, SExpr &rhs);
 
 } // namespace sexpr
 

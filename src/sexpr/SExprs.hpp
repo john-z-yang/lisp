@@ -16,10 +16,12 @@ protected:
   bool equals(const SExpr &other) const override;
 
 public:
-  const SExpr *first;
-  const SExpr *rest;
+  SExpr *first;
+  SExpr *rest;
 
-  SExprs(const SExpr *first, const SExpr *rest);
+  SExprs(SExpr *first, SExpr *rest);
+
+  void fixupAddrs(const runtime::BreakTable &breakTable) override;
 
   static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();

@@ -13,22 +13,14 @@ protected:
   bool equals(const SExpr &other) const override;
 
 public:
-  class HashFunction {
-  public:
-    size_t operator()(const Sym *sym) const;
-  };
-
-  class EqualFunction {
-  public:
-    bool operator()(const Sym *lhs, const Sym *rhs) const;
-  };
-
   using ValueType = std::string;
 
-  const ValueType val;
-  const size_t hash;
+  ValueType val;
+  size_t hash;
 
   explicit Sym(const ValueType val);
+
+  void fixupAddrs(const runtime::BreakTable &breakTable) override;
 
   static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();

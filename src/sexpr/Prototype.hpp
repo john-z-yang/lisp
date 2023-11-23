@@ -19,10 +19,12 @@ public:
       const code::Code code
   );
 
-  const unsigned int numUpvals;
-  const uint8_t arity;
-  const bool variadic;
-  const code::Code code;
+  unsigned int numUpvals;
+  uint8_t arity;
+  bool variadic;
+  code::Code code;
+
+  void fixupAddrs(const runtime::BreakTable &breakTable) override;
 
   std::ostream &dissassemble(std::ostream &o) const;
 

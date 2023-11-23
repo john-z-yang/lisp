@@ -32,8 +32,13 @@ bool SExprs::equals(const SExpr &other) const {
   return false;
 }
 
-SExprs::SExprs(const SExpr *first, const SExpr *rest)
+SExprs::SExprs(SExpr *first, SExpr *rest)
     : SExpr(SExpr::Type::SEXPRS), first(first), rest(rest) {}
+
+void SExprs::fixupAddrs(const runtime::BreakTable &breakTable) {
+  first = breakTable.get(first);
+  rest = breakTable.get(rest);
+}
 
 bool SExprs::classOf(const SExpr *sExpr) {
   return sExpr->type == SExpr::Type::SEXPRS;

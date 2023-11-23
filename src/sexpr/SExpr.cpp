@@ -3,11 +3,13 @@
 
 using namespace sexpr;
 
-SExpr::SExpr(SExpr::Type type) : type(type) {}
+sexpr::SExpr::ID sexpr::SExpr::curID = 0;
+
+SExpr::SExpr(SExpr::Type type) : id(curID++), type(type) {}
 
 SExpr::~SExpr() {}
 
-bool SExpr::classOf([[maybe_unused]] const SExpr *sExpr) { return true; }
+bool SExpr::classOf(const SExpr *) { return true; }
 
 std::string SExpr::getTypeName() { return "<S-expression>"; }
 

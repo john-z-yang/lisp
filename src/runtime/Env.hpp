@@ -4,6 +4,7 @@
 #include "../sexpr/NatFn.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "../sexpr/Sym.hpp"
+#include "BreakTable.hpp"
 #include <functional>
 #include <initializer_list>
 #include <memory>
@@ -13,41 +14,37 @@
 namespace runtime {
 
 class Env {
-  using SymTable = std::unordered_map<
-      const sexpr::Sym *,
-      const sexpr::SExpr *,
-      sexpr::Sym::HashFunction,
-      sexpr::Sym::EqualFunction>;
+  using SymSet = std::unordered_set<sexpr::Sym *>;
 
-  using SymSet = std::unordered_set<
-      const sexpr::Sym *,
-      sexpr::Sym::HashFunction,
-      sexpr::Sym::EqualFunction>;
+public:
+  using SymTable = std::unordered_map<sexpr::Sym *, sexpr::SExpr *>;
 
 private:
   SymTable symTable;
   SymSet macros;
   SymSet natFns;
 
-  void regMacro(const sexpr::Sym *sym);
-  void regNative(const sexpr::Sym *sym);
-  void guardMutation(const sexpr::Sym *sym);
+  void regMacro(sexpr::Sym *sym);
+  void regNative(sexpr::Sym *sym);
+  void guardMutation(sexpr::Sym *sym);
 
 public:
-  void def(const sexpr::Sym *sym, const sexpr::SExpr *val);
-  void defMacro(const sexpr::Sym *sym, const sexpr::SExpr *val);
-  void defNatFn(const sexpr::Sym *sym, const sexpr::NatFn *natFn);
+  void def(sexpr::Sym *sym, sexpr::SExpr *val);
+  void defMacro(sexpr::Sym *sym, sexpr::SExpr *val);
+  void defNatFn(sexpr::Sym *sym, sexpr::NatFn *natFn);
 
   void defNatFns(const std::initializer_list<
-                 std::tuple<const sexpr::Sym *, const sexpr::NatFn *>> natFns);
+                 std::tuple<sexpr::Sym *, sexpr::NatFn *>> natFns);
 
-  void set(const sexpr::Sym *sym, const sexpr::SExpr *val);
-  const sexpr::SExpr *load(const sexpr::Sym *sym);
+  void set(sexpr::Sym *sym, sexpr::SExpr *val);
+  sexpr::SExpr *load(sexpr::Sym *sym);
 
-  bool isMacro(const sexpr::Sym *sym);
-  bool isNatFn(const sexpr::Sym *sym);
+  bool isMacro(sexpr::Sym *sym);
+  bool isNatFn(sexpr::Sym *sym);
 
   const SymTable &getSymTable() const;
+
+  void fixupAddrs(const BreakTable &breakTable);
 };
 
 } // namespace runtime

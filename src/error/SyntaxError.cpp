@@ -16,10 +16,10 @@ SyntaxError::SyntaxError(
 const char *SyntaxError::what() const noexcept { return _msg.c_str(); }
 
 std::ostream &error::operator<<(std::ostream &o, const SyntaxError &se) {
-  o << "In line " << unsigned(se.row) << ":" << std::endl
+  o << "Syntax error: " << se.what() << std::endl
+    << "In line " << unsigned(se.row) << ":" << std::endl
     << std::setw(4) << "" << se.line << std::endl
     << std::setw(4) << "" << std::setw(se.col) << ""
-    << "^" << std::endl
-    << "Syntax error: " << se.what();
+    << "^" << std::endl;
   return o;
 }

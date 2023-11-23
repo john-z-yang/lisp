@@ -1,18 +1,14 @@
 #ifndef LISP_SRC_RUNTIME_VM_HPP_
 #define LISP_SRC_RUNTIME_VM_HPP_
 
-#define LISP_GC_HEAP_GROWTH_FACTOR 2
-#define LISP_GC_INIT_HEAP_SIZE 4096
-#define LISP_INT_CACHE_MAX 256.0
-#define LISP_INT_CACHE_MIN -16.0
-
 #include "../fn/CPPFn.hpp"
 #include "../sexpr/SExpr.hpp"
+#include "../sexpr/Upvalue.hpp"
+#include "BreakTable.hpp"
 #include "CallFrame.hpp"
 #include "Env.hpp"
-#include "FreeStore.hpp"
+#include "Heap.hpp"
 #include "StackIter.hpp"
-#include "Upvalue.hpp"
 #include <deque>
 #include <functional>
 #include <memory>
@@ -29,6 +25,8 @@ CPPFn apply;
 
 namespace runtime {
 
+class Heap;
+
 class VM {
   friend fn::CPPFn fn::apply;
   friend class RuntimeError;
@@ -36,33 +34,41 @@ class VM {
 private:
   code::InstrPtr ip;
   runtime::StackPtr bp;
-  std::optional<const sexpr::Closure *> closure;
+  std::optional<sexpr::Closure *> closure;
 
-  std::vector<const sexpr::SExpr *> stack;
+  std::vector<sexpr::SExpr *> stack;
   std::vector<CallFrame> callFrames;
-  std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> openUpvals;
+  std::unordered_map<StackPtr, sexpr::Upvalue *> openUpvals;
 
-  const sexpr::SExpr *readConst();
+  sexpr::SExpr *readConst();
   uint8_t readByte();
   uint16_t readShort();
 
   void call(const uint8_t argc);
-  std::shared_ptr<Upvalue> captureUpvalue(StackPtr pos);
-  const sexpr::SExpr *peak(StackPtr distance);
-  const sexpr::SExpr *makeList(StackIter start);
-  unsigned int unpackList(const sexpr::SExpr *sexpr);
+  sexpr::Upvalue *captureUpvalue(StackPtr pos);
+  sexpr::SExpr *peak(StackPtr distance);
+  sexpr::SExpr *makeList(StackIter start);
+  unsigned int unpackList(sexpr::SExpr *sexpr);
   void reset();
 
-  const sexpr::SExpr *exec();
+  sexpr::SExpr *exec();
 
 public:
   VM();
 
-  FreeStore freeStore;
+  Heap heap;
   Env env;
 
-  const sexpr::SExpr *
-  eval(const sexpr::Prototype *main, bool disableGC = false);
+  void load(sexpr::Prototype *main);
+  sexpr::SExpr *eval();
+
+  const std::optional<sexpr::Closure *> &getClosure() const;
+  const std::vector<sexpr::SExpr *> &getStack() const;
+  const std::vector<CallFrame> &getCallFrames() const;
+  const std::unordered_map<StackPtr, sexpr::Upvalue *> &getOpenUpvals() const;
+  const Env::SymTable &getSymTable() const;
+
+  void fixupAddrs(const BreakTable &breakTable);
 };
 
 } // namespace runtime
