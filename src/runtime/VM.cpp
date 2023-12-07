@@ -6,8 +6,8 @@
 #include "../sexpr/SExprs.hpp"
 #include "../sexpr/String.hpp"
 #include "CallFrame.hpp"
-#include "FreeStore.hpp"
 #include "GCGuard.hpp"
+#include "Heap.hpp"
 #include "StackIter.hpp"
 #include "StackPtr.hpp"
 #include <algorithm>
@@ -76,9 +76,9 @@ const SExpr *VM::peak(StackPtr distance) { return stack.rbegin()[distance]; }
 
 const SExpr *VM::makeList(StackIter start) {
   if (start == stack.cend()) {
-    return freeStore.alloc<Nil>();
+    return heap.alloc<Nil>();
   }
-  return freeStore.alloc<SExprs>(*start, makeList(start + 1));
+  return heap.alloc<SExprs>(*start, makeList(start + 1));
 }
 
 unsigned int VM::unpackList(const SExpr *sexpr) {
@@ -138,7 +138,7 @@ MAKE_CLOSURE: {
       upvalues.push_back(closure.value()->upvalues[idx]);
     }
   }
-  stack.push_back(freeStore.alloc<Closure>(fnAtom, upvalues));
+  stack.push_back(heap.alloc<Closure>(fnAtom, upvalues));
 }
   goto *dispatchTable[readByte()];
 
@@ -195,13 +195,13 @@ DEF_MACRO: {
 
 DEF_SYM: {
   env.def(cast<Sym>(readConst()), stack.back());
-  stack.back() = freeStore.alloc<Nil>();
+  stack.back() = heap.alloc<Nil>();
 }
   goto *dispatchTable[readByte()];
 
 SET_SYM: {
   env.set(cast<Sym>(readConst()), stack.back());
-  stack.back() = freeStore.alloc<Nil>();
+  stack.back() = heap.alloc<Nil>();
 }
   goto *dispatchTable[readByte()];
 
@@ -215,7 +215,7 @@ LOAD_UPVALUE: {
 
 SET_UPVALUE: {
   closure.value()->upvalues[readByte()]->set(stack.back());
-  stack.back() = freeStore.alloc<Nil>();
+  stack.back() = heap.alloc<Nil>();
 }
   goto *dispatchTable[readByte()];
 
@@ -229,7 +229,7 @@ LOAD_STACK: {
 
 SET_STACK: {
   stack[bp + readByte()] = stack.back();
-  stack.back() = freeStore.alloc<Nil>();
+  stack.back() = heap.alloc<Nil>();
 }
   goto *dispatchTable[readByte()];
 
@@ -246,7 +246,7 @@ POP_JUMP_IF_FALSE: {
   goto *dispatchTable[readByte()];
 
 MAKE_LIST: {
-  auto gcGuard = freeStore.pauseGC();
+  auto gcGuard = heap.pauseGC();
 
   const auto start = stack.begin() + bp + readByte();
   const auto &list = makeList(start);
@@ -255,107 +255,92 @@ MAKE_LIST: {
 }
   goto *dispatchTable[readByte()];
 
-MAKE_NIL: { stack.push_back(freeStore.alloc<Nil>()); }
+MAKE_NIL: { stack.push_back(heap.alloc<Nil>()); }
   goto *dispatchTable[readByte()];
 }
 
-VM::VM()
-    : ip(0), bp(0), freeStore(env, closure, stack, callFrames, openUpvals) {
+VM::VM() : ip(0), bp(0), heap(env, closure, stack, callFrames, openUpvals) {
   env.defNatFns(
-      {{freeStore.alloc<Sym>("symbol?"),
-        freeStore.alloc<NatFn>(typePred<Sym>, 1, false)},
-       {freeStore.alloc<Sym>("gensym"), freeStore.alloc<NatFn>(genSym, 0, false)
-       }}
+      {{heap.alloc<Sym>("symbol?"), heap.alloc<NatFn>(typePred<Sym>, 1, false)},
+       {heap.alloc<Sym>("gensym"), heap.alloc<NatFn>(genSym, 0, false)}}
   );
   env.defNatFns(
-      {{freeStore.alloc<Sym>("number?"),
-        freeStore.alloc<NatFn>(typePred<Num>, 1, false)},
-       {freeStore.alloc<Sym>("="),
-        freeStore.alloc<NatFn>(compare<Num, std::equal_to>, 1, true)},
-       {freeStore.alloc<Sym>(">"),
-        freeStore.alloc<NatFn>(compare<Num, std::greater>, 1, true)},
-       {freeStore.alloc<Sym>(">="),
-        freeStore.alloc<NatFn>(compare<Num, std::greater_equal>, 1, true)},
-       {freeStore.alloc<Sym>("<"),
-        freeStore.alloc<NatFn>(compare<Num, std::less>, 1, true)},
-       {freeStore.alloc<Sym>("<="),
-        freeStore.alloc<NatFn>(compare<Num, std::less_equal>, 1, true)},
-       {freeStore.alloc<Sym>("+"),
-        freeStore.alloc<NatFn>(accum<Num, std::plus, 0>, 1, true)},
-       {freeStore.alloc<Sym>("*"),
-        freeStore.alloc<NatFn>(accum<Num, std::multiplies, 1>, 1, true)},
-       {freeStore.alloc<Sym>("-"),
-        freeStore.alloc<NatFn>(dimi<Num, std::minus, std::negate>, 1, true)},
-       {freeStore.alloc<Sym>("/"),
-        freeStore.alloc<NatFn>(dimi<Num, std::divides, inverse>, 1, true)},
-       {freeStore.alloc<Sym>("abs"), freeStore.alloc<NatFn>(numAbs, 1, false)},
-       {freeStore.alloc<Sym>("modulo"), freeStore.alloc<NatFn>(numMod, 2, false)
-       }}
+      {{heap.alloc<Sym>("number?"), heap.alloc<NatFn>(typePred<Num>, 1, false)},
+       {heap.alloc<Sym>("="),
+        heap.alloc<NatFn>(compare<Num, std::equal_to>, 1, true)},
+       {heap.alloc<Sym>(">"),
+        heap.alloc<NatFn>(compare<Num, std::greater>, 1, true)},
+       {heap.alloc<Sym>(">="),
+        heap.alloc<NatFn>(compare<Num, std::greater_equal>, 1, true)},
+       {heap.alloc<Sym>("<"),
+        heap.alloc<NatFn>(compare<Num, std::less>, 1, true)},
+       {heap.alloc<Sym>("<="),
+        heap.alloc<NatFn>(compare<Num, std::less_equal>, 1, true)},
+       {heap.alloc<Sym>("+"),
+        heap.alloc<NatFn>(accum<Num, std::plus, 0>, 1, true)},
+       {heap.alloc<Sym>("*"),
+        heap.alloc<NatFn>(accum<Num, std::multiplies, 1>, 1, true)},
+       {heap.alloc<Sym>("-"),
+        heap.alloc<NatFn>(dimi<Num, std::minus, std::negate>, 1, true)},
+       {heap.alloc<Sym>("/"),
+        heap.alloc<NatFn>(dimi<Num, std::divides, inverse>, 1, true)},
+       {heap.alloc<Sym>("abs"), heap.alloc<NatFn>(numAbs, 1, false)},
+       {heap.alloc<Sym>("modulo"), heap.alloc<NatFn>(numMod, 2, false)}}
   );
   env.defNatFns(
-      {{freeStore.alloc<Sym>("string?"),
-        freeStore.alloc<NatFn>(typePred<String>, 1, false)},
-       {freeStore.alloc<Sym>("string-length"),
-        freeStore.alloc<NatFn>(strLen, 1, false)},
-       {freeStore.alloc<Sym>("substring"),
-        freeStore.alloc<NatFn>(substr, 3, false)},
-       {freeStore.alloc<Sym>("string-append"),
-        freeStore.alloc<NatFn>(strApp, 1, true)},
-       {freeStore.alloc<Sym>("->str"), freeStore.alloc<NatFn>(toStr, 1, false)},
-       {freeStore.alloc<Sym>("string=?"),
-        freeStore.alloc<NatFn>(compare<String, std::equal_to>, 1, true)},
-       {freeStore.alloc<Sym>("string>?"),
-        freeStore.alloc<NatFn>(compare<String, std::greater>, 1, true)},
-       {freeStore.alloc<Sym>("string>=?"),
-        freeStore.alloc<NatFn>(compare<String, std::greater_equal>, 1, true)},
-       {freeStore.alloc<Sym>("string<?"),
-        freeStore.alloc<NatFn>(compare<String, std::less>, 1, true)},
-       {freeStore.alloc<Sym>("string<=?"),
-        freeStore.alloc<NatFn>(compare<String, std::less_equal>, 1, true)}}
+      {{heap.alloc<Sym>("string?"),
+        heap.alloc<NatFn>(typePred<String>, 1, false)},
+       {heap.alloc<Sym>("string-length"), heap.alloc<NatFn>(strLen, 1, false)},
+       {heap.alloc<Sym>("substring"), heap.alloc<NatFn>(substr, 3, false)},
+       {heap.alloc<Sym>("string-append"), heap.alloc<NatFn>(strApp, 1, true)},
+       {heap.alloc<Sym>("->str"), heap.alloc<NatFn>(toStr, 1, false)},
+       {heap.alloc<Sym>("string=?"),
+        heap.alloc<NatFn>(compare<String, std::equal_to>, 1, true)},
+       {heap.alloc<Sym>("string>?"),
+        heap.alloc<NatFn>(compare<String, std::greater>, 1, true)},
+       {heap.alloc<Sym>("string>=?"),
+        heap.alloc<NatFn>(compare<String, std::greater_equal>, 1, true)},
+       {heap.alloc<Sym>("string<?"),
+        heap.alloc<NatFn>(compare<String, std::less>, 1, true)},
+       {heap.alloc<Sym>("string<=?"),
+        heap.alloc<NatFn>(compare<String, std::less_equal>, 1, true)}}
   );
   env.defNatFns({
-      {freeStore.alloc<Sym>("null?"),
-       freeStore.alloc<NatFn>(typePred<Nil>, 1, false)},
-      {freeStore.alloc<Sym>("pair?"),
-       freeStore.alloc<NatFn>(typePred<SExprs>, 1, false)},
-      {freeStore.alloc<Sym>("cons"), freeStore.alloc<NatFn>(cons, 2, false)},
-      {freeStore.alloc<Sym>("car"), freeStore.alloc<NatFn>(car, 1, false)},
-      {freeStore.alloc<Sym>("cdr"), freeStore.alloc<NatFn>(cdr, 1, false)},
+      {heap.alloc<Sym>("null?"), heap.alloc<NatFn>(typePred<Nil>, 1, false)},
+      {heap.alloc<Sym>("pair?"), heap.alloc<NatFn>(typePred<SExprs>, 1, false)},
+      {heap.alloc<Sym>("cons"), heap.alloc<NatFn>(cons, 2, false)},
+      {heap.alloc<Sym>("car"), heap.alloc<NatFn>(car, 1, false)},
+      {heap.alloc<Sym>("cdr"), heap.alloc<NatFn>(cdr, 1, false)},
   });
   env.defNatFns(
-      {{freeStore.alloc<Sym>("display"),
-        freeStore.alloc<NatFn>(display, 1, false)},
-       {freeStore.alloc<Sym>("newline"),
-        freeStore.alloc<NatFn>(newline, 0, false)}}
+      {{heap.alloc<Sym>("display"), heap.alloc<NatFn>(display, 1, false)},
+       {heap.alloc<Sym>("newline"), heap.alloc<NatFn>(newline, 0, false)}}
   );
   env.defNatFns(
-      {{freeStore.alloc<Sym>("quit"), freeStore.alloc<NatFn>(quit, 0, false)},
-       {freeStore.alloc<Sym>("error"),
-        freeStore.alloc<NatFn>(fn::error, 1, false)}}
+      {{heap.alloc<Sym>("quit"), heap.alloc<NatFn>(quit, 0, false)},
+       {heap.alloc<Sym>("error"), heap.alloc<NatFn>(fn::error, 1, false)}}
   );
   env.defNatFns(
-      {{freeStore.alloc<Sym>("eq?"), freeStore.alloc<NatFn>(eq, 2, false)},
-       {freeStore.alloc<Sym>("eqv?"), freeStore.alloc<NatFn>(eqv, 2, false)},
-       {freeStore.alloc<Sym>("equal?"), freeStore.alloc<NatFn>(equal, 2, false)}
-      }
+      {{heap.alloc<Sym>("eq?"), heap.alloc<NatFn>(eq, 2, false)},
+       {heap.alloc<Sym>("eqv?"), heap.alloc<NatFn>(eqv, 2, false)},
+       {heap.alloc<Sym>("equal?"), heap.alloc<NatFn>(equal, 2, false)}}
   );
   env.defNatFns({
-      {freeStore.alloc<Sym>("procedure?"),
-       freeStore.alloc<NatFn>(typePred<Closure, NatFn>, 1, false)},
-      {freeStore.alloc<Sym>("apply"),
-       freeStore.alloc<NatFn>(apply, 2, true, true)},
-      {freeStore.alloc<Sym>("dis"), freeStore.alloc<NatFn>(dis, 1, false)},
+      {heap.alloc<Sym>("procedure?"),
+       heap.alloc<NatFn>(typePred<Closure, NatFn>, 1, false)},
+      {heap.alloc<Sym>("apply"), heap.alloc<NatFn>(apply, 2, true, true)},
+      {heap.alloc<Sym>("dis"), heap.alloc<NatFn>(dis, 1, false)},
   });
 }
 
 const SExpr *VM::eval(const Prototype *main, bool disableGC) {
-  closure = freeStore.alloc<Closure>(main);
+  closure = heap.alloc<Closure>(main);
   stack.push_back(closure.value());
   try {
     if (disableGC) {
       return exec();
     }
-    auto gcGuard = freeStore.startGC();
+    auto gcGuard = heap.startGC();
     return exec();
   } catch (std::exception &e) {
     std::stringstream ss;
@@ -364,5 +349,5 @@ const SExpr *VM::eval(const Prototype *main, bool disableGC) {
     reset();
     throw re;
   }
-  return freeStore.alloc<Nil>();
+  return heap.alloc<Nil>();
 }

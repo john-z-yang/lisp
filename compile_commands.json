@@ -172,12 +172,12 @@
       "-O2",
       "-c",
       "-o",
-      "bin/runtime_FreeStore.o",
-      "src/runtime/FreeStore.cpp"
+      "bin/runtime_Heap.o",
+      "src/runtime/Heap.cpp"
     ],
     "directory": "/Users/john/workspace/lisp",
-    "file": "/Users/john/workspace/lisp/src/runtime/FreeStore.cpp",
-    "output": "/Users/john/workspace/lisp/bin/runtime_FreeStore.o"
+    "file": "/Users/john/workspace/lisp/src/runtime/Heap.cpp",
+    "output": "/Users/john/workspace/lisp/bin/runtime_Heap.o"
   },
   {
     "arguments": [

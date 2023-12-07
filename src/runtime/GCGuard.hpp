@@ -4,7 +4,7 @@
 namespace runtime {
 
 class GCGuard {
-  friend class FreeStore;
+  friend class Heap;
 
 private:
   bool prevGCState;

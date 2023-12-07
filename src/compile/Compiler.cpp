@@ -65,11 +65,11 @@ const SExprs *Compiler::parse() {
 
 const SExpr *Compiler::parseLists(TokenIter &it, const TokenIter &end) {
   if (it == end) {
-    return vm.freeStore.alloc<Nil>();
+    return vm.heap.alloc<Nil>();
   }
   const auto [row, col] = it->srcLoc;
   const auto cur = parseList(it, end);
-  const auto sexprs = vm.freeStore.alloc<SExprs>(cur, parseLists(it, end));
+  const auto sexprs = vm.heap.alloc<SExprs>(cur, parseLists(it, end));
   srcMap[sexprs] = {row, col};
   return sexprs;
 }
@@ -84,11 +84,10 @@ const SExpr *Compiler::parseList(TokenIter &it, const TokenIter &end) {
   }
   if (token.str == "'" || token.str == "`" || token.str == "," ||
       token.str == ",@") {
-    const auto rest = vm.freeStore.alloc<SExprs>(
-        parseList(it, end), vm.freeStore.alloc<Nil>()
-    );
+    const auto rest =
+        vm.heap.alloc<SExprs>(parseList(it, end), vm.heap.alloc<Nil>());
     srcMap.insert({rest, {token.srcLoc.row, token.srcLoc.col}});
-    const auto sExprs = vm.freeStore.alloc<SExprs>(parseAtom(token), rest);
+    const auto sExprs = vm.heap.alloc<SExprs>(parseAtom(token), rest);
     srcMap.insert({sExprs, {token.srcLoc.row, token.srcLoc.col}});
     return sExprs;
   }
@@ -100,12 +99,12 @@ const SExpr *Compiler::parseElem(TokenIter &it, const TokenIter &end) {
   auto token = *it;
   if (token.str == ")") {
     it += 1;
-    return vm.freeStore.alloc<Nil>();
+    return vm.heap.alloc<Nil>();
   } else if (token.str == "(") {
     it += 1;
     const auto first = parseElem(it, end);
     const auto rest = parseElem(it, end);
-    const auto sExprs = vm.freeStore.alloc<SExprs>(first, rest);
+    const auto sExprs = vm.heap.alloc<SExprs>(first, rest);
     srcMap.insert({sExprs, {token.srcLoc.row, token.srcLoc.col}});
     return sExprs;
   }
@@ -122,45 +121,45 @@ const SExpr *Compiler::parseSexprs(TokenIter &it, const TokenIter &end) {
       handleTypeError(dotGrammer, "datum", rest);
     }
     it += 1;
-    const auto sExprs = vm.freeStore.alloc<SExprs>(first, rest);
+    const auto sExprs = vm.heap.alloc<SExprs>(first, rest);
     srcMap.insert({sExprs, {token.srcLoc.row, token.srcLoc.col}});
     return sExprs;
   }
   const auto rest = parseElem(it, end);
-  const auto sExprs = vm.freeStore.alloc<SExprs>(first, rest);
+  const auto sExprs = vm.heap.alloc<SExprs>(first, rest);
   srcMap.insert({sExprs, {token.srcLoc.row, token.srcLoc.col}});
   return sExprs;
 }
 
 const SExpr *Compiler::parseAtom(Token token) {
   if (isNum(token.str)) {
-    return vm.freeStore.alloc<Num>(std::stod(token.str));
+    return vm.heap.alloc<Num>(std::stod(token.str));
   }
   if (token.str.front() == '\"' && token.str.back() == '\"') {
-    return vm.freeStore.alloc<String>(token.str);
+    return vm.heap.alloc<String>(token.str);
   }
   if (token.str == "#<undefined>") {
-    return vm.freeStore.alloc<Undefined>();
+    return vm.heap.alloc<Undefined>();
   }
   if (token.str == "#t") {
-    return vm.freeStore.alloc<Bool>(true);
+    return vm.heap.alloc<Bool>(true);
   }
   if (token.str == "#f") {
-    return vm.freeStore.alloc<Bool>(false);
+    return vm.heap.alloc<Bool>(false);
   }
   if (token.str == "'") {
-    return vm.freeStore.alloc<Sym>("quote");
+    return vm.heap.alloc<Sym>("quote");
   }
   if (token.str == "`") {
-    return vm.freeStore.alloc<Sym>("quasiquote");
+    return vm.heap.alloc<Sym>("quasiquote");
   }
   if (token.str == ",") {
-    return vm.freeStore.alloc<Sym>("unquote");
+    return vm.heap.alloc<Sym>("unquote");
   }
   if (token.str == ",@") {
-    return vm.freeStore.alloc<Sym>("unquote-splicing");
+    return vm.heap.alloc<Sym>("unquote-splicing");
   }
-  return vm.freeStore.alloc<Sym>(token.str);
+  return vm.heap.alloc<Sym>(token.str);
 }
 
 void Compiler::handleUnexpectedToken(
@@ -501,7 +500,7 @@ void Compiler::execDefMacro(const MatchedSExpr<sexpr::SExpr> matched) {
     def.pushCode(def.pushConst(macroSym.get()));
     def.pushCode(OpCode::RETURN, curSrcLoc.row);
 
-    vm.eval(vm.freeStore.alloc<Prototype>(0, 0, false, def), true);
+    vm.eval(vm.heap.alloc<Prototype>(0, 0, false, def), true);
 
     emitCode(OpCode::MAKE_NIL);
     assertType<Nil>(last(macroBody.get()));
@@ -585,8 +584,7 @@ const SExpr *Compiler::execMacro(const SExpr *sExpr) {
   fExpr.pushCode(argc);
   fExpr.pushCode(OpCode::RETURN, curSrcLoc.row);
 
-  const auto res =
-      vm.eval(vm.freeStore.alloc<Prototype>(0, 0, false, fExpr), true);
+  const auto res = vm.eval(vm.heap.alloc<Prototype>(0, 0, false, fExpr), true);
 
   traverse(res, [this](const auto &sExpr) {
     srcMap.insert({sExpr, curSrcLoc});
@@ -620,7 +618,7 @@ Compiler::Compiler(std::vector<std::string> source, VM &vm)
     : vm(vm),
       source(source),
       curSrcLoc({1, 0}),
-      param(vm.freeStore.alloc<Nil>()),
+      param(vm.heap.alloc<Nil>()),
       arity(0),
       variadic(false),
       body(parse()),
@@ -634,7 +632,7 @@ const Prototype *Compiler::compile() {
   compileStmts(body);
   emitRet();
 
-  return vm.freeStore.alloc<Prototype>(upValues.size(), arity, variadic, code);
+  return vm.heap.alloc<Prototype>(upValues.size(), arity, variadic, code);
 }
 
 void Compiler::verifyLex(

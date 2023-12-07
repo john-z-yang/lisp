@@ -22,7 +22,7 @@
 
 namespace runtime {
 
-class FreeStore {
+class Heap {
 private:
   Env &globals;
   std::optional<const sexpr::Closure *> &closure;
@@ -48,7 +48,7 @@ private:
   void markOpenUpvalues();
 
 public:
-  FreeStore(
+  Heap(
       Env &globals,
       std::optional<const sexpr::Closure *> &closure,
       std::vector<const sexpr::SExpr *> &stack,
@@ -67,18 +67,17 @@ public:
     return &ref;
   }
 };
-template <> inline const sexpr::Undefined *FreeStore::alloc() {
+template <> inline const sexpr::Undefined *Heap::alloc() {
   return sexpr::Undefined::getInstance();
 }
-template <> inline const sexpr::Nil *FreeStore::alloc() {
+template <> inline const sexpr::Nil *Heap::alloc() {
   return sexpr::Nil::getInstance();
 }
 template <>
-inline const sexpr::Bool *FreeStore::alloc(sexpr::Bool::ValueType &&val) {
+inline const sexpr::Bool *Heap::alloc(sexpr::Bool::ValueType &&val) {
   return sexpr::Bool::getInstance(val);
 }
-template <>
-inline const sexpr::Num *FreeStore::alloc(sexpr::Num::ValueType &val) {
+template <> inline const sexpr::Num *Heap::alloc(sexpr::Num::ValueType &val) {
   if (val >= FREESTORE_INT_CACHE_MIN && val <= FREESTORE_INT_CACHE_MAX &&
       floor(val) == val) {
     return numCache.at(val - FREESTORE_INT_CACHE_MIN).get();
@@ -89,7 +88,7 @@ inline const sexpr::Num *FreeStore::alloc(sexpr::Num::ValueType &val) {
   heap.emplace_back(std::move(unique));
   return &ref;
 }
-template <> inline const sexpr::Num *FreeStore::alloc(double &&val) {
+template <> inline const sexpr::Num *Heap::alloc(double &&val) {
   return alloc<sexpr::Num>(val);
 }
 

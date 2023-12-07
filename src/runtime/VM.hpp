@@ -10,7 +10,7 @@
 #include "../sexpr/SExpr.hpp"
 #include "CallFrame.hpp"
 #include "Env.hpp"
-#include "FreeStore.hpp"
+#include "Heap.hpp"
 #include "StackIter.hpp"
 #include "Upvalue.hpp"
 #include <deque>
@@ -58,7 +58,7 @@ private:
 public:
   VM();
 
-  FreeStore freeStore;
+  Heap heap;
   Env env;
 
   const sexpr::SExpr *

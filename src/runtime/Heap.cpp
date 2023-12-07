@@ -1,4 +1,4 @@
-#include "FreeStore.hpp"
+#include "Heap.hpp"
 #include "../sexpr/Cast.cpp"
 #include "../sexpr/SExprs.hpp"
 #include "CallFrame.hpp"
@@ -9,7 +9,7 @@
 using namespace sexpr;
 using namespace runtime;
 
-void FreeStore::gc() {
+void Heap::gc() {
   if (!enableGC) {
     return;
   }
@@ -41,13 +41,13 @@ void FreeStore::gc() {
   gcHeapSize = heap.size() * FREESTORE_HEAP_GROWTH_FACTOR;
 }
 
-void FreeStore::mark(const SExpr *sexpr) {
+void Heap::mark(const SExpr *sexpr) {
   if (!black.contains(sexpr)) {
     grey.push_back(sexpr);
   }
 }
 
-void FreeStore::trace(const SExpr *sexpr) {
+void Heap::trace(const SExpr *sexpr) {
   if (isa<SExprs>(sexpr)) {
     const auto sexprs = cast<SExprs>(sexpr);
     mark(sexprs->first);
@@ -75,7 +75,7 @@ void FreeStore::trace(const SExpr *sexpr) {
   }
 }
 
-void FreeStore::markGlobals() {
+void Heap::markGlobals() {
   std::for_each(
       globals.getSymTable().cbegin(),
       globals.getSymTable().cend(),
@@ -87,7 +87,7 @@ void FreeStore::markGlobals() {
   );
 }
 
-void FreeStore::markStack() {
+void Heap::markStack() {
   std::transform(
       stack.cbegin(),
       stack.cend(),
@@ -96,7 +96,7 @@ void FreeStore::markStack() {
   );
 }
 
-void FreeStore::markCallFrames() {
+void Heap::markCallFrames() {
   std::transform(
       callFrames.cbegin(),
       callFrames.cend(),
@@ -105,7 +105,7 @@ void FreeStore::markCallFrames() {
   );
 }
 
-void FreeStore::markOpenUpvalues() {
+void Heap::markOpenUpvalues() {
   std::transform(
       openUpvals.cbegin(),
       openUpvals.cend(),
@@ -114,7 +114,7 @@ void FreeStore::markOpenUpvalues() {
   );
 }
 
-FreeStore::FreeStore(
+Heap::Heap(
     Env &globals,
     std::optional<const sexpr::Closure *> &closure,
     std::vector<const sexpr::SExpr *> &stack,
@@ -134,6 +134,6 @@ FreeStore::FreeStore(
   }
 }
 
-GCGuard FreeStore::startGC() { return GCGuard(enableGC, true); }
+GCGuard Heap::startGC() { return GCGuard(enableGC, true); }
 
-GCGuard FreeStore::pauseGC() { return GCGuard(enableGC, false); }
+GCGuard Heap::pauseGC() { return GCGuard(enableGC, false); }
