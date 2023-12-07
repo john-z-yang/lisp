@@ -179,6 +179,7 @@ Compiler::Compiler(
     VM &vm
 )
     : vm(vm),
+      gcGuard(vm.heap.pauseGC()),
       enclosing(enclosing),
       source(source),
       srcMap(sourceLoc),
@@ -500,7 +501,8 @@ void Compiler::execDefMacro(const MatchedSExpr<sexpr::SExpr> matched) {
     def.pushCode(def.pushConst(macroSym.get()));
     def.pushCode(OpCode::RETURN, curSrcLoc.row);
 
-    vm.eval(vm.heap.alloc<Prototype>(0, 0, false, def), true);
+    vm.load(vm.heap.alloc<Prototype>(0, 0, false, def));
+    vm.eval();
 
     emitCode(OpCode::MAKE_NIL);
     assertType<Nil>(last(macroBody.get()));
@@ -584,7 +586,8 @@ const SExpr *Compiler::execMacro(const SExpr *sExpr) {
   fExpr.pushCode(argc);
   fExpr.pushCode(OpCode::RETURN, curSrcLoc.row);
 
-  const auto res = vm.eval(vm.heap.alloc<Prototype>(0, 0, false, fExpr), true);
+  vm.load(vm.heap.alloc<Prototype>(0, 0, false, fExpr));
+  const auto res = vm.eval();
 
   traverse(res, [this](const auto &sExpr) {
     srcMap.insert({sExpr, curSrcLoc});

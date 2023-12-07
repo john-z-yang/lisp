@@ -122,8 +122,6 @@ const SExpr *VM::exec() {
       &&MAKE_NIL
   };
 
-  call(0);
-
   goto *dispatchTable[readByte()];
 
 MAKE_CLOSURE: {
@@ -333,19 +331,24 @@ VM::VM() : ip(0), bp(0), heap(env, closure, stack, callFrames, openUpvals) {
   });
 }
 
-const SExpr *VM::eval(const Prototype *main, bool disableGC) {
+void VM::load(const Prototype *main) {
+  reset();
+
+  auto gcGuard = heap.pauseGC();
   closure = heap.alloc<Closure>(main);
   stack.push_back(closure.value());
+  call(0);
+}
+
+const SExpr *VM::eval() {
+  if (!closure.has_value()) {
+    throw std::domain_error("No prototype (main) loaded");
+  }
   try {
-    if (disableGC) {
-      return exec();
-    }
-    auto gcGuard = heap.startGC();
     return exec();
   } catch (std::exception &e) {
     std::stringstream ss;
-    ss << "Runtime error: " << e.what();
-    const auto re = error::RuntimeError(ss.str(), env, stack, callFrames);
+    const auto re = error::RuntimeError(e.what(), env, stack, callFrames);
     reset();
     throw re;
   }

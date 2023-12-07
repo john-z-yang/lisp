@@ -1,18 +1,12 @@
 #ifndef LISP_SRC_RUNTIME_VM_HPP_
 #define LISP_SRC_RUNTIME_VM_HPP_
 
-#define LISP_GC_HEAP_GROWTH_FACTOR 2
-#define LISP_GC_INIT_HEAP_SIZE 4096
-#define LISP_INT_CACHE_MAX 256.0
-#define LISP_INT_CACHE_MIN -16.0
-
 #include "../fn/CPPFn.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "CallFrame.hpp"
 #include "Env.hpp"
 #include "Heap.hpp"
 #include "StackIter.hpp"
-#include "Upvalue.hpp"
 #include <deque>
 #include <functional>
 #include <memory>
@@ -28,6 +22,8 @@ CPPFn apply;
 }
 
 namespace runtime {
+
+class Heap;
 
 class VM {
   friend fn::CPPFn fn::apply;
@@ -61,8 +57,8 @@ public:
   Heap heap;
   Env env;
 
-  const sexpr::SExpr *
-  eval(const sexpr::Prototype *main, bool disableGC = false);
+  void load(const sexpr::Prototype *main);
+  const sexpr::SExpr *eval();
 };
 
 } // namespace runtime

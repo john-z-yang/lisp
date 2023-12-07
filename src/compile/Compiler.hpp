@@ -2,6 +2,7 @@
 #define LISP_SRC_COMPILE_COMPILER_HPP_
 
 #include "../code/Code.hpp"
+#include "../runtime/GCGuard.hpp"
 #include "../runtime/VM.hpp"
 #include "../sexpr/Cast.cpp"
 #include "../sexpr/Prototype.hpp"
@@ -36,6 +37,7 @@ private:
   using Visitor = std::function<void(const sexpr::SExpr *)>;
 
   runtime::VM &vm;
+  std::optional<runtime::GCGuard> gcGuard;
   const std::optional<std::reference_wrapper<Compiler>> enclosing;
 
   std::vector<std::string> source;

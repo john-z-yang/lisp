@@ -8,7 +8,6 @@
 #include "../sexpr/Undefined.hpp"
 #include "CallFrame.hpp"
 #include "Env.hpp"
-#include "GCGuard.hpp"
 #include "StackPtr.hpp"
 #include "Upvalue.hpp"
 #include <cmath>
@@ -22,7 +21,12 @@
 
 namespace runtime {
 
+class VM;
+class GCGuard;
+
 class Heap {
+  friend GCGuard;
+
 private:
   Env &globals;
   std::optional<const sexpr::Closure *> &closure;

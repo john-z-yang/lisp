@@ -134,6 +134,6 @@ Heap::Heap(
   }
 }
 
-GCGuard Heap::startGC() { return GCGuard(enableGC, true); }
+GCGuard Heap::startGC() { return GCGuard(*this); }
 
-GCGuard Heap::pauseGC() { return GCGuard(enableGC, false); }
+GCGuard Heap::pauseGC() { return GCGuard(*this); }
