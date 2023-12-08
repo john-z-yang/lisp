@@ -29,8 +29,8 @@ std::ostream &Prototype::dissassemble(std::ostream &o) const {
     << code << std::endl;
   for (auto i = code.consts.cbegin(); i != code.consts.end(); ++i) {
     if (isa<Prototype>(*i)) {
-      const auto fnAtom = cast<Prototype>(*i);
-      fnAtom->dissassemble(o);
+      const auto proto = cast<Prototype>(*i);
+      proto->dissassemble(o);
     }
   }
   return o;

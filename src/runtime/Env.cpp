@@ -72,4 +72,4 @@ bool Env::isNatFn(const sexpr::Sym *sym) {
   return natFns.find(sym) != natFns.end();
 }
 
-const Env::SymTable &Env::getSymTable() const { return symTable; }
+const SymTable &Env::getSymTable() const { return symTable; }

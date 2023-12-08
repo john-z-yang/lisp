@@ -10,6 +10,7 @@
 #include "Heap.hpp"
 #include "StackIter.hpp"
 #include "StackPtr.hpp"
+#include "Symtable.hpp"
 #include <algorithm>
 #include <exception>
 #include <functional>
@@ -125,9 +126,9 @@ const SExpr *VM::exec() {
   goto *dispatchTable[readByte()];
 
 MAKE_CLOSURE: {
-  const auto fnAtom = cast<Prototype>(readConst());
+  const auto proto = cast<Prototype>(readConst());
   std::vector<std::shared_ptr<Upvalue>> upvalues;
-  for (unsigned int i{0}; i < fnAtom->numUpvals; ++i) {
+  for (unsigned int i{0}; i < proto->numUpvals; ++i) {
     auto isLocal = readByte();
     auto idx = readByte();
     if (isLocal == 1) {
@@ -136,7 +137,7 @@ MAKE_CLOSURE: {
       upvalues.push_back(closure.value()->upvalues[idx]);
     }
   }
-  stack.push_back(heap.alloc<Closure>(fnAtom, upvalues));
+  stack.push_back(heap.alloc<Closure>(proto, upvalues));
 }
   goto *dispatchTable[readByte()];
 
@@ -257,7 +258,7 @@ MAKE_NIL: { stack.push_back(heap.alloc<Nil>()); }
   goto *dispatchTable[readByte()];
 }
 
-VM::VM() : ip(0), bp(0), heap(env, closure, stack, callFrames, openUpvals) {
+VM::VM() : ip(0), bp(0), heap(*this) {
   env.defNatFns(
       {{heap.alloc<Sym>("symbol?"), heap.alloc<NatFn>(typePred<Sym>, 1, false)},
        {heap.alloc<Sym>("gensym"), heap.alloc<NatFn>(genSym, 0, false)}}
@@ -354,3 +355,13 @@ const SExpr *VM::eval() {
   }
   return heap.alloc<Nil>();
 }
+
+const std::optional<const sexpr::Closure *> &VM::getClosure() const {
+  return closure;
+}
+
+const std::vector<const sexpr::SExpr *> &VM::getStack() const { return stack; }
+
+const std::vector<CallFrame> &VM::getCallFrames() const { return callFrames; }
+
+const SymTable &VM::getSymTable() const { return env.getSymTable(); }

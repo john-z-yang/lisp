@@ -59,6 +59,11 @@ public:
 
   void load(const sexpr::Prototype *main);
   const sexpr::SExpr *eval();
+
+  const std::optional<const sexpr::Closure *> &getClosure() const;
+  const std::vector<const sexpr::SExpr *> &getStack() const;
+  const std::vector<CallFrame> &getCallFrames() const;
+  const SymTable &getSymTable() const;
 };
 
 } // namespace runtime

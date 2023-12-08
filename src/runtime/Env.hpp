@@ -4,6 +4,7 @@
 #include "../sexpr/NatFn.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "../sexpr/Sym.hpp"
+#include "Symtable.hpp"
 #include <functional>
 #include <initializer_list>
 #include <memory>
@@ -13,21 +14,18 @@
 namespace runtime {
 
 class Env {
-  using SymTable = std::unordered_map<
-      const sexpr::Sym *,
-      const sexpr::SExpr *,
-      sexpr::Sym::HashFunction,
-      sexpr::Sym::EqualFunction>;
-
-  using SymSet = std::unordered_set<
-      const sexpr::Sym *,
-      sexpr::Sym::HashFunction,
-      sexpr::Sym::EqualFunction>;
-
 private:
   SymTable symTable;
-  SymSet macros;
-  SymSet natFns;
+  std::unordered_set<
+      const sexpr::Sym *,
+      sexpr::Sym::HashFunction,
+      sexpr::Sym::EqualFunction>
+      macros;
+  std::unordered_set<
+      const sexpr::Sym *,
+      sexpr::Sym::HashFunction,
+      sexpr::Sym::EqualFunction>
+      natFns;
 
   void regMacro(const sexpr::Sym *sym);
   void regNative(const sexpr::Sym *sym);

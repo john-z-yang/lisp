@@ -6,10 +6,6 @@
 #include "../sexpr/Num.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "../sexpr/Undefined.hpp"
-#include "CallFrame.hpp"
-#include "Env.hpp"
-#include "StackPtr.hpp"
-#include "Upvalue.hpp"
 #include <cmath>
 #include <deque>
 #include <unordered_set>
@@ -28,11 +24,7 @@ class Heap {
   friend GCGuard;
 
 private:
-  Env &globals;
-  std::optional<const sexpr::Closure *> &closure;
-  std::vector<const sexpr::SExpr *> &stack;
-  std::vector<CallFrame> &callFrames;
-  std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> &openUpvals;
+  VM &vm;
 
   bool enableGC;
   size_t gcHeapSize;
@@ -44,21 +36,12 @@ private:
   std::deque<const sexpr::SExpr *> grey;
 
   void gc();
+  void markRoots();
   void mark(const sexpr::SExpr *sexpr);
   void trace(const sexpr::SExpr *sexpr);
-  void markGlobals();
-  void markStack();
-  void markCallFrames();
-  void markOpenUpvalues();
 
 public:
-  Heap(
-      Env &globals,
-      std::optional<const sexpr::Closure *> &closure,
-      std::vector<const sexpr::SExpr *> &stack,
-      std::vector<CallFrame> &callFrames,
-      std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> &openUpvals
-  );
+  Heap(VM &vm);
 
   GCGuard startGC();
   GCGuard pauseGC();

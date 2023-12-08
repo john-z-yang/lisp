@@ -1,9 +1,8 @@
 #include "Heap.hpp"
 #include "../sexpr/Cast.cpp"
 #include "../sexpr/SExprs.hpp"
-#include "CallFrame.hpp"
-#include "Env.hpp"
 #include "GCGuard.hpp"
+#include "VM.hpp"
 #include <algorithm>
 
 using namespace sexpr;
@@ -20,12 +19,7 @@ void Heap::gc() {
 #endif
 
   black.clear();
-
-  grey.push_back(closure.value());
-  markGlobals();
-  markStack();
-  markCallFrames();
-  markOpenUpvalues();
+  markRoots();
 
   while (grey.size() > 0) {
     const auto sexpr = grey.front();
@@ -47,87 +41,49 @@ void Heap::mark(const SExpr *sexpr) {
   }
 }
 
-void Heap::trace(const SExpr *sexpr) {
-  if (isa<SExprs>(sexpr)) {
-    const auto sexprs = cast<SExprs>(sexpr);
-    mark(sexprs->first);
-    mark(sexprs->rest);
+void Heap::trace(const SExpr *sExpr) {
+  if (isa<SExprs>(sExpr)) {
+    const auto sExprs = cast<SExprs>(sExpr);
+    mark(sExprs->first);
+    mark(sExprs->rest);
     return;
   }
-  if (isa<Prototype>(sexpr)) {
-    const auto fnAtom = cast<Prototype>(sexpr);
-    std::for_each(
-        fnAtom->code.consts.cbegin(),
-        fnAtom->code.consts.cend(),
-        [&](const auto &sexpr) { mark(sexpr); }
-    );
+  if (isa<Prototype>(sExpr)) {
+    const auto proto = cast<Prototype>(sExpr);
+    for (const auto &consta : proto->code.consts) {
+      mark(consta);
+    }
     return;
   }
-  if (isa<Closure>(sexpr)) {
-    const auto closureAtom = cast<Closure>(sexpr);
-    mark(closureAtom->proto);
+  if (isa<Closure>(sExpr)) {
+    const auto closure = cast<Closure>(sExpr);
+    mark(closure->proto);
     std::for_each(
-        closureAtom->upvalues.cbegin(),
-        closureAtom->upvalues.cend(),
+        closure->upvalues.cbegin(),
+        closure->upvalues.cend(),
         [&](const auto &upvalue) { mark(upvalue->get()); }
     );
     return;
   }
 }
+void Heap::markRoots() {
+  if (vm.getClosure().has_value()) {
+    grey.push_back(vm.getClosure().value());
+  }
 
-void Heap::markGlobals() {
-  std::for_each(
-      globals.getSymTable().cbegin(),
-      globals.getSymTable().cend(),
-      [&](const auto &it) {
-        const auto &[sym, sexpr] = it;
-        grey.push_back(sym);
-        grey.push_back(sexpr);
-      }
-  );
+  for (const auto &[sym, sExpr] : vm.getSymTable()) {
+    grey.push_back(sym);
+    grey.push_back(sExpr);
+  }
+  for (const auto &sExpr : vm.getStack()) {
+    grey.push_back(sExpr);
+  }
+  for (const auto &sExpr : vm.getCallFrames()) {
+    grey.push_back(sExpr.closure);
+  }
 }
 
-void Heap::markStack() {
-  std::transform(
-      stack.cbegin(),
-      stack.cend(),
-      std::back_inserter(grey),
-      [](const auto &sexpr) { return sexpr; }
-  );
-}
-
-void Heap::markCallFrames() {
-  std::transform(
-      callFrames.cbegin(),
-      callFrames.cend(),
-      std::back_inserter(grey),
-      [](const auto &callFrame) { return callFrame.closure; }
-  );
-}
-
-void Heap::markOpenUpvalues() {
-  std::transform(
-      openUpvals.cbegin(),
-      openUpvals.cend(),
-      std::back_inserter(grey),
-      [](const auto &it) { return it.second->get(); }
-  );
-}
-
-Heap::Heap(
-    Env &globals,
-    std::optional<const sexpr::Closure *> &closure,
-    std::vector<const sexpr::SExpr *> &stack,
-    std::vector<CallFrame> &callFrames,
-    std::unordered_map<StackPtr, std::shared_ptr<Upvalue>> &openUpvals
-)
-    : globals(globals),
-      closure(closure),
-      stack(stack),
-      callFrames(callFrames),
-      openUpvals(openUpvals),
-      enableGC(false),
-      gcHeapSize(FREESTORE_INIT_HEAP_SIZE) {
+Heap::Heap(VM &vm) : vm(vm) {
   for (Num::ValueType i{FREESTORE_INT_CACHE_MIN}; i <= FREESTORE_INT_CACHE_MAX;
        i++) {
     numCache.push_back(std::make_unique<Num>(i));
