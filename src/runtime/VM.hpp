@@ -63,7 +63,8 @@ public:
   const std::optional<const sexpr::Closure *> &getClosure() const;
   const std::vector<const sexpr::SExpr *> &getStack() const;
   const std::vector<CallFrame> &getCallFrames() const;
-  const SymTable &getSymTable() const;
+  const std::unordered_map<const sexpr::Sym *, const sexpr::SExpr *> &
+  getSymTable() const;
 };
 
 } // namespace runtime

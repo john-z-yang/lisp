@@ -72,4 +72,7 @@ bool Env::isNatFn(const sexpr::Sym *sym) {
   return natFns.find(sym) != natFns.end();
 }
 
-const SymTable &Env::getSymTable() const { return symTable; }
+const std::unordered_map<const sexpr::Sym *, const sexpr::SExpr *> &
+Env::getSymTable() const {
+  return symTable;
+}

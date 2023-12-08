@@ -179,7 +179,6 @@ Compiler::Compiler(
     VM &vm
 )
     : vm(vm),
-      gcGuard(vm.heap.pauseGC()),
       enclosing(enclosing),
       source(source),
       srcMap(sourceLoc),
@@ -619,6 +618,7 @@ void Compiler::handleTypeError(
 
 Compiler::Compiler(std::vector<std::string> source, VM &vm)
     : vm(vm),
+      gcGuard(vm.heap.pauseGC()),
       source(source),
       curSrcLoc({1, 0}),
       param(vm.heap.alloc<Nil>()),

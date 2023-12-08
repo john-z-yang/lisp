@@ -13,7 +13,7 @@ void Heap::gc() {
     return;
   }
 #ifndef GC_STRESS_TEST
-  if (heap.size() < gcHeapSize) {
+  if (getBytesAlloced() < maxHeapSize) {
     return;
   }
 #endif
@@ -28,11 +28,26 @@ void Heap::gc() {
     trace(sexpr);
   }
 
-  std::erase_if(heap, [&](const auto &unique) {
-    return !black.contains(unique.get());
-  });
+  std::apply([&](auto &&...args) { (args.free(black), ...); }, allocators);
 
-  gcHeapSize = heap.size() * FREESTORE_HEAP_GROWTH_FACTOR;
+  maxHeapSize = getBytesAlloced() * HEAP_GROWTH_FACTOR;
+}
+
+void Heap::markRoots() {
+  if (vm.getClosure().has_value()) {
+    grey.push_back(vm.getClosure().value());
+  }
+
+  for (const auto &[sym, sExpr] : vm.getSymTable()) {
+    grey.push_back(sym);
+    grey.push_back(sExpr);
+  }
+  for (const auto &sExpr : vm.getStack()) {
+    grey.push_back(sExpr);
+  }
+  for (const auto &sExpr : vm.getCallFrames()) {
+    grey.push_back(sExpr.closure);
+  }
 }
 
 void Heap::mark(const SExpr *sexpr) {
@@ -66,30 +81,16 @@ void Heap::trace(const SExpr *sExpr) {
     return;
   }
 }
-void Heap::markRoots() {
-  if (vm.getClosure().has_value()) {
-    grey.push_back(vm.getClosure().value());
-  }
 
-  for (const auto &[sym, sExpr] : vm.getSymTable()) {
-    grey.push_back(sym);
-    grey.push_back(sExpr);
-  }
-  for (const auto &sExpr : vm.getStack()) {
-    grey.push_back(sExpr);
-  }
-  for (const auto &sExpr : vm.getCallFrames()) {
-    grey.push_back(sExpr.closure);
-  }
+Heap::Heap(VM &vm) : vm(vm), enableGC(true), maxHeapSize(INIT_HEAP_SIZE) {}
+
+std::size_t Heap::getBytesAlloced() {
+  std::size_t bytesAlloced = 0;
+  std::apply(
+      [&](auto &&...args) { ((bytesAlloced += args.getBytesAlloced()), ...); },
+      allocators
+  );
+  return bytesAlloced;
 }
-
-Heap::Heap(VM &vm) : vm(vm) {
-  for (Num::ValueType i{FREESTORE_INT_CACHE_MIN}; i <= FREESTORE_INT_CACHE_MAX;
-       i++) {
-    numCache.push_back(std::make_unique<Num>(i));
-  }
-}
-
-GCGuard Heap::startGC() { return GCGuard(*this); }
 
 GCGuard Heap::pauseGC() { return GCGuard(*this); }

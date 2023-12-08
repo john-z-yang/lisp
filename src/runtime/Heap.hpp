@@ -2,18 +2,17 @@
 #define LISP_SRC_RUNTIME_FREESTORE_HPP_
 
 #include "../sexpr/Bool.hpp"
+#include "../sexpr/Closure.hpp"
+#include "../sexpr/NatFn.hpp"
 #include "../sexpr/Nil.hpp"
 #include "../sexpr/Num.hpp"
 #include "../sexpr/SExpr.hpp"
+#include "../sexpr/SExprs.hpp"
+#include "../sexpr/String.hpp"
 #include "../sexpr/Undefined.hpp"
-#include <cmath>
+#include "Suballocator.hpp"
 #include <deque>
 #include <unordered_set>
-
-#define FREESTORE_HEAP_GROWTH_FACTOR 2
-#define FREESTORE_INIT_HEAP_SIZE 512
-#define FREESTORE_INT_CACHE_MAX 256.0
-#define FREESTORE_INT_CACHE_MIN -16.0
 
 namespace runtime {
 
@@ -26,11 +25,17 @@ class Heap {
 private:
   VM &vm;
 
+  std::tuple<
+      Suballocator<sexpr::Closure>,
+      Suballocator<sexpr::NatFn>,
+      Suballocator<sexpr::Num>,
+      Suballocator<sexpr::Prototype>,
+      Suballocator<sexpr::SExprs>,
+      Suballocator<sexpr::String>,
+      Suballocator<sexpr::Sym>>
+      allocators;
   bool enableGC;
-  size_t gcHeapSize;
-
-  std::vector<std::unique_ptr<const sexpr::SExpr>> heap;
-  std::vector<std::unique_ptr<const sexpr::Num>> numCache;
+  size_t maxHeapSize;
 
   std::unordered_set<const sexpr::SExpr *> black;
   std::deque<const sexpr::SExpr *> grey;
@@ -41,17 +46,18 @@ private:
   void trace(const sexpr::SExpr *sexpr);
 
 public:
+  static constexpr std::size_t INIT_HEAP_SIZE = 1;
+  static constexpr std::size_t HEAP_GROWTH_FACTOR = 2;
+
   Heap(VM &vm);
 
-  GCGuard startGC();
+  std::size_t getBytesAlloced();
   GCGuard pauseGC();
 
   template <typename T, typename... Args> const T *alloc(Args &&...args) {
     gc();
-    auto unique = std::make_unique<const T>(std::forward<Args>(args)...);
-    const auto &ref = *unique.get();
-    heap.emplace_back(std::move(unique));
-    return &ref;
+    return std::get<Suballocator<T>>(allocators)
+        .alloc(std::forward<Args>(args)...);
   }
 };
 template <> inline const sexpr::Undefined *Heap::alloc() {
@@ -63,20 +69,6 @@ template <> inline const sexpr::Nil *Heap::alloc() {
 template <>
 inline const sexpr::Bool *Heap::alloc(sexpr::Bool::ValueType &&val) {
   return sexpr::Bool::getInstance(val);
-}
-template <> inline const sexpr::Num *Heap::alloc(sexpr::Num::ValueType &val) {
-  if (val >= FREESTORE_INT_CACHE_MIN && val <= FREESTORE_INT_CACHE_MAX &&
-      floor(val) == val) {
-    return numCache.at(val - FREESTORE_INT_CACHE_MIN).get();
-  }
-  gc();
-  auto unique = std::make_unique<const sexpr::Num>(val);
-  const auto &ref = *unique;
-  heap.emplace_back(std::move(unique));
-  return &ref;
-}
-template <> inline const sexpr::Num *Heap::alloc(double &&val) {
-  return alloc<sexpr::Num>(val);
 }
 
 } // namespace runtime

@@ -10,7 +10,6 @@
 #include "Heap.hpp"
 #include "StackIter.hpp"
 #include "StackPtr.hpp"
-#include "Symtable.hpp"
 #include <algorithm>
 #include <exception>
 #include <functional>
@@ -245,7 +244,7 @@ POP_JUMP_IF_FALSE: {
   goto *dispatchTable[readByte()];
 
 MAKE_LIST: {
-  auto gcGuard = heap.pauseGC();
+  const auto gcGuard = heap.pauseGC();
 
   const auto start = stack.begin() + bp + readByte();
   const auto &list = makeList(start);
@@ -259,6 +258,7 @@ MAKE_NIL: { stack.push_back(heap.alloc<Nil>()); }
 }
 
 VM::VM() : ip(0), bp(0), heap(*this) {
+  const auto gcGuard = heap.pauseGC();
   env.defNatFns(
       {{heap.alloc<Sym>("symbol?"), heap.alloc<NatFn>(typePred<Sym>, 1, false)},
        {heap.alloc<Sym>("gensym"), heap.alloc<NatFn>(genSym, 0, false)}}
@@ -335,7 +335,7 @@ VM::VM() : ip(0), bp(0), heap(*this) {
 void VM::load(const Prototype *main) {
   reset();
 
-  auto gcGuard = heap.pauseGC();
+  const auto gcGuard = heap.pauseGC();
   closure = heap.alloc<Closure>(main);
   stack.push_back(closure.value());
   call(0);
@@ -364,4 +364,7 @@ const std::vector<const sexpr::SExpr *> &VM::getStack() const { return stack; }
 
 const std::vector<CallFrame> &VM::getCallFrames() const { return callFrames; }
 
-const SymTable &VM::getSymTable() const { return env.getSymTable(); }
+const std::unordered_map<const sexpr::Sym *, const sexpr::SExpr *> &
+VM::getSymTable() const {
+  return env.getSymTable();
+}
