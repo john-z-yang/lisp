@@ -14,8 +14,10 @@ bool Nil::equals(const SExpr &other) const { return isa<Nil>(other); }
 
 Nil Nil::instance;
 
-Nil &Nil::getInstance() { return instance; }
+Nil *Nil::getInstance() { return &instance; }
 
-bool Nil::classOf(const SExpr &sExpr) { return sExpr.type == SExpr::Type::NIL; }
+bool Nil::classOf(const SExpr *sExpr) {
+  return sExpr->type == SExpr::Type::NIL;
+}
 
 std::string Nil::getTypeName() { return "()"; }

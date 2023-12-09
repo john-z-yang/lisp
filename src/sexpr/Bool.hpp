@@ -24,9 +24,9 @@ protected:
 public:
   const ValueType val;
 
-  static Bool &getInstance(const ValueType val);
-  static bool toBool(const SExpr &sExpr);
-  static bool classOf(const SExpr &sExpr);
+  static Bool *getInstance(const ValueType val);
+  static bool toBool(const SExpr *sExpr);
+  static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();
 };
 

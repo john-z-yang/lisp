@@ -23,6 +23,8 @@ bool Num::equals(const SExpr &other) const {
 
 Num::Num(const Num::ValueType val) : Atom(SExpr::Type::NUM), val(val) {}
 
-bool Num::classOf(const SExpr &sExpr) { return sExpr.type == SExpr::Type::NUM; }
+bool Num::classOf(const SExpr *sExpr) {
+  return sExpr->type == SExpr::Type::NUM;
+}
 
 std::string Num::getTypeName() { return "<Number>"; }

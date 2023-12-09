@@ -28,16 +28,16 @@ std::ostream &Prototype::dissassemble(std::ostream &o) const {
     << ", upvalues: " << numUpvals << ">" << std::endl
     << code << std::endl;
   for (auto i = code.consts.cbegin(); i != code.consts.end(); ++i) {
-    if (isa<Prototype>(i->get())) {
-      const auto &fnAtom = cast<Prototype>(i->get());
-      fnAtom.dissassemble(o);
+    if (isa<Prototype>(*i)) {
+      const auto proto = cast<Prototype>(*i);
+      proto->dissassemble(o);
     }
   }
   return o;
 }
 
-bool Prototype::classOf(const SExpr &sExpr) {
-  return sExpr.type == SExpr::Type::PROTO;
+bool Prototype::classOf(const SExpr *sExpr) {
+  return sExpr->type == SExpr::Type::PROTO;
 }
 
 std::string Prototype::getTypeName() { return "<Prototype>"; }

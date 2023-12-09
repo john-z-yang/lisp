@@ -6,7 +6,7 @@ using namespace sexpr;
 using namespace error;
 
 TypeError::TypeError(
-    const std::string &msg, const std::string expected, const SExpr &actual
+    const std::string &msg, const std::string expected, const SExpr *actual
 )
     : _msg(msg), expected(expected), actual(actual) {}
 

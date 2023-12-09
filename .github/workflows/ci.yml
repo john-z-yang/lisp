@@ -30,6 +30,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: make with GC_STRESS_TEST flag
-      run: make CXXFLAGS_EXTRA="-DGC_STRESS_TEST=1"
+      run: make CXXFLAGS_EXTRA="-DGC_STRESS_TEST=1 -O2"
     - name: make test
       run: make test

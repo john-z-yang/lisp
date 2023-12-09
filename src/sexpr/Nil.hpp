@@ -16,8 +16,8 @@ protected:
   static Nil instance;
 
 public:
-  static Nil &getInstance();
-  static bool classOf(const SExpr &sExpr);
+  static Nil *getInstance();
+  static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();
 };
 

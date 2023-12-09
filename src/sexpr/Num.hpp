@@ -19,7 +19,7 @@ public:
 
   const ValueType val;
 
-  static bool classOf(const SExpr &sExpr);
+  static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();
 };
 

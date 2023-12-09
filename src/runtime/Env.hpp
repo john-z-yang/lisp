@@ -13,41 +13,31 @@
 namespace runtime {
 
 class Env {
-  using SymTable = std::unordered_map<
-      std::reference_wrapper<const sexpr::Sym>,
-      std::reference_wrapper<const sexpr::SExpr>,
-      sexpr::Sym::HashFunction,
-      sexpr::Sym::EqualFunction>;
-
-  using SymSet = std::unordered_set<
-      std::reference_wrapper<const sexpr::Sym>,
-      sexpr::Sym::HashFunction,
-      sexpr::Sym::EqualFunction>;
-
 private:
-  SymTable symTable;
-  SymSet macros;
-  SymSet natFns;
+  std::unordered_map<const sexpr::Sym *, const sexpr::SExpr *> symTable;
+  std::unordered_set<const sexpr::Sym *> macros;
+  std::unordered_set<const sexpr::Sym *> natFns;
 
-  void regMacro(const sexpr::Sym &sym);
-  void regNative(const sexpr::Sym &sym);
-  void guardMutation(const sexpr::Sym &sym);
+  void regMacro(const sexpr::Sym *sym);
+  void regNative(const sexpr::Sym *sym);
+  void guardMutation(const sexpr::Sym *sym);
 
 public:
-  void def(const sexpr::Sym &sym, const sexpr::SExpr &val);
-  void defMacro(const sexpr::Sym &sym, const sexpr::SExpr &val);
-  void defNatFn(const sexpr::Sym &sym, const sexpr::NatFn &natFn);
+  void def(const sexpr::Sym *sym, const sexpr::SExpr *val);
+  void defMacro(const sexpr::Sym *sym, const sexpr::SExpr *val);
+  void defNatFn(const sexpr::Sym *sym, const sexpr::NatFn *natFn);
 
   void defNatFns(const std::initializer_list<
-                 std::tuple<const sexpr::Sym &, const sexpr::NatFn &>> natFns);
+                 std::tuple<const sexpr::Sym *, const sexpr::NatFn *>> natFns);
 
-  void set(const sexpr::Sym &sym, const sexpr::SExpr &val);
-  const sexpr::SExpr &load(const sexpr::Sym &sym);
+  void set(const sexpr::Sym *sym, const sexpr::SExpr *val);
+  const sexpr::SExpr *load(const sexpr::Sym *sym);
 
-  bool isMacro(const sexpr::Sym &sym);
-  bool isNatFn(const sexpr::Sym &sym);
+  bool isMacro(const sexpr::Sym *sym);
+  bool isNatFn(const sexpr::Sym *sym);
 
-  const SymTable &getSymTable() const;
+  const std::unordered_map<const sexpr::Sym *, const sexpr::SExpr *> &
+  getSymTable() const;
 };
 
 } // namespace runtime

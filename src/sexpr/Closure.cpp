@@ -15,7 +15,7 @@ std::ostream &Closure::serialize(std::ostream &o) const {
 bool Closure::equals(const SExpr &other) const {
   if (isa<Closure>(other)) {
     const auto &closure = cast<Closure>(other);
-    if (fn != closure.fn) {
+    if (proto != closure.proto) {
       return false;
     }
     return std::equal(
@@ -29,20 +29,20 @@ bool Closure::equals(const SExpr &other) const {
   return false;
 }
 
-Closure::Closure(const Prototype &fnAtom)
-    : Atom(SExpr::Type::CLOSURE), fn(fnAtom) {}
+Closure::Closure(const Prototype *proto)
+    : Atom(SExpr::Type::CLOSURE), proto(proto) {}
 
 Closure::Closure(
-    const Prototype &fnAtom,
-    const std::vector<std::shared_ptr<Upvalue>> upvalues
+    const Prototype *proto, const std::vector<std::shared_ptr<Upvalue>> upvalues
 )
-    : Atom(SExpr::Type::CLOSURE), fn(fnAtom), upvalues(upvalues) {}
+    : Atom(SExpr::Type::CLOSURE), proto(proto), upvalues(upvalues) {}
 
 void Closure::assertArity(const uint8_t argc) const {
-  if ((!fn.variadic && fn.arity != argc) || (fn.variadic && argc < fn.arity)) {
+  if ((!proto->variadic && proto->arity != argc) ||
+      (proto->variadic && argc < proto->arity)) {
     std::stringstream ss;
-    ss << "Invalid number of arguments. Expected " << unsigned(fn.arity);
-    if (fn.variadic) {
+    ss << "Invalid number of arguments. Expected " << unsigned(proto->arity);
+    if (proto->variadic) {
       ss << " or more";
     }
     ss << " arguments, but got " << unsigned(argc) << ".";
@@ -54,12 +54,12 @@ std::ostream &Closure::dissassemble(std::ostream &o) const {
   const unsigned int PADDING_WIDTH = 4;
   o << "<Closure at " << this << ">, instance of:" << std::endl
     << std::setw(PADDING_WIDTH) << "";
-  fn.dissassemble(o);
+  proto->dissassemble(o);
   return o;
 }
 
-bool Closure::classOf(const SExpr &sExpr) {
-  return sExpr.type == SExpr::Type::CLOSURE;
+bool Closure::classOf(const SExpr *sExpr) {
+  return sExpr->type == SExpr::Type::CLOSURE;
 }
 
 std::string Closure::getTypeName() { return "<Closure>"; }

@@ -15,8 +15,8 @@ protected:
   static Undefined instance;
 
 public:
-  static Undefined &getInstance();
-  static bool classOf(const SExpr &sExpr);
+  static Undefined *getInstance();
+  static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();
 };
 

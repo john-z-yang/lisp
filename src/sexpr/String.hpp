@@ -24,7 +24,7 @@ public:
   const ValueType val;
   const ValueType escaped;
 
-  static bool classOf(const SExpr &sExpr);
+  static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();
 };
 

@@ -16,19 +16,19 @@ protected:
   bool equals(const SExpr &other) const override;
 
 public:
-  explicit Closure(const Prototype &fnAtom);
+  explicit Closure(const Prototype *proto);
   Closure(
-      const Prototype &fnAtom,
+      const Prototype *proto,
       const std::vector<std::shared_ptr<runtime::Upvalue>> upvalues
   );
 
-  const Prototype &fn;
+  const Prototype *proto;
   const std::vector<std::shared_ptr<runtime::Upvalue>> upvalues;
 
   void assertArity(const uint8_t arity) const;
   std::ostream &dissassemble(std::ostream &o) const;
 
-  static bool classOf(const SExpr &sExpr);
+  static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();
 };
 

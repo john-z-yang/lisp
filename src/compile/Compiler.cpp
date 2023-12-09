@@ -42,7 +42,8 @@ Compiler::tokenize(std::string line, const unsigned int row) {
         {
             row,
             (unsigned int)match.position(),
-        }});
+        }
+    });
   }
   return tokens;
 }
@@ -56,110 +57,109 @@ bool Compiler::isNum(const std::string s) {
   return true;
 }
 
-const SExprs &Compiler::parse() {
+const SExprs *Compiler::parse() {
   auto tokens = tokenize(source);
   auto it = tokens.cbegin();
   return cast<SExprs>(parseLists(it, tokens.cend()));
 }
 
-const SExpr &Compiler::parseLists(TokenIter &it, const TokenIter &end) {
+const SExpr *Compiler::parseLists(TokenIter &it, const TokenIter &end) {
   if (it == end) {
-    return vm.freeStore.alloc<Nil>();
+    return vm.heap.alloc<Nil>();
   }
   const auto [row, col] = it->srcLoc;
-  const auto &cur = parseList(it, end);
-  const auto &sexprs = vm.freeStore.alloc<SExprs>(cur, parseLists(it, end));
-  srcMap[&sexprs] = {row, col};
+  const auto cur = parseList(it, end);
+  const auto sexprs = vm.heap.alloc<SExprs>(cur, parseLists(it, end));
+  srcMap[sexprs] = {row, col};
   return sexprs;
 }
 
-const SExpr &Compiler::parseList(TokenIter &it, const TokenIter &end) {
+const SExpr *Compiler::parseList(TokenIter &it, const TokenIter &end) {
   auto token = *it;
   it += 1;
   if (token.str == "(") {
-    const auto &sExprs = parseElem(it, end);
-    srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col}});
+    const auto sExprs = parseElem(it, end);
+    srcMap.insert({sExprs, {token.srcLoc.row, token.srcLoc.col}});
     return sExprs;
   }
   if (token.str == "'" || token.str == "`" || token.str == "," ||
       token.str == ",@") {
-    const auto &rest = vm.freeStore.alloc<SExprs>(
-        parseList(it, end), vm.freeStore.alloc<Nil>()
-    );
-    srcMap.insert({&rest, {token.srcLoc.row, token.srcLoc.col}});
-    const auto &sExprs = vm.freeStore.alloc<SExprs>(parseAtom(token), rest);
-    srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col}});
+    const auto rest =
+        vm.heap.alloc<SExprs>(parseList(it, end), vm.heap.alloc<Nil>());
+    srcMap.insert({rest, {token.srcLoc.row, token.srcLoc.col}});
+    const auto sExprs = vm.heap.alloc<SExprs>(parseAtom(token), rest);
+    srcMap.insert({sExprs, {token.srcLoc.row, token.srcLoc.col}});
     return sExprs;
   }
-  const auto &atom = parseAtom(token);
+  const auto atom = parseAtom(token);
   return atom;
 }
 
-const SExpr &Compiler::parseElem(TokenIter &it, const TokenIter &end) {
+const SExpr *Compiler::parseElem(TokenIter &it, const TokenIter &end) {
   auto token = *it;
   if (token.str == ")") {
     it += 1;
-    return vm.freeStore.alloc<Nil>();
+    return vm.heap.alloc<Nil>();
   } else if (token.str == "(") {
     it += 1;
-    const auto &first = parseElem(it, end);
-    const auto &rest = parseElem(it, end);
-    const auto &sExprs = vm.freeStore.alloc<SExprs>(first, rest);
-    srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col}});
+    const auto first = parseElem(it, end);
+    const auto rest = parseElem(it, end);
+    const auto sExprs = vm.heap.alloc<SExprs>(first, rest);
+    srcMap.insert({sExprs, {token.srcLoc.row, token.srcLoc.col}});
     return sExprs;
   }
   return parseSexprs(it, end);
 }
 
-const SExpr &Compiler::parseSexprs(TokenIter &it, const TokenIter &end) {
+const SExpr *Compiler::parseSexprs(TokenIter &it, const TokenIter &end) {
   auto token = *it;
-  const auto &first = parseList(it, end);
+  const auto first = parseList(it, end);
   if (it->str == ".") {
     it += 1;
-    const auto &rest = parseList(it, end);
+    const auto rest = parseList(it, end);
     if (it == end) {
       handleTypeError(dotGrammer, "datum", rest);
     }
     it += 1;
-    const auto &sExprs = vm.freeStore.alloc<SExprs>(first, rest);
-    srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col}});
+    const auto sExprs = vm.heap.alloc<SExprs>(first, rest);
+    srcMap.insert({sExprs, {token.srcLoc.row, token.srcLoc.col}});
     return sExprs;
   }
-  const auto &rest = parseElem(it, end);
-  const auto &sExprs = vm.freeStore.alloc<SExprs>(first, rest);
-  srcMap.insert({&sExprs, {token.srcLoc.row, token.srcLoc.col}});
+  const auto rest = parseElem(it, end);
+  const auto sExprs = vm.heap.alloc<SExprs>(first, rest);
+  srcMap.insert({sExprs, {token.srcLoc.row, token.srcLoc.col}});
   return sExprs;
 }
 
-const SExpr &Compiler::parseAtom(Token token) {
+const SExpr *Compiler::parseAtom(Token token) {
   if (isNum(token.str)) {
-    return vm.freeStore.alloc<Num>(std::stod(token.str));
+    return vm.heap.alloc<Num>(std::stod(token.str));
   }
   if (token.str.front() == '\"' && token.str.back() == '\"') {
-    return vm.freeStore.alloc<String>(token.str);
+    return vm.heap.alloc<String>(token.str);
   }
   if (token.str == "#<undefined>") {
-    return vm.freeStore.alloc<Undefined>();
+    return vm.heap.alloc<Undefined>();
   }
   if (token.str == "#t") {
-    return vm.freeStore.alloc<Bool>(true);
+    return vm.heap.alloc<Bool>(true);
   }
   if (token.str == "#f") {
-    return vm.freeStore.alloc<Bool>(false);
+    return vm.heap.alloc<Bool>(false);
   }
   if (token.str == "'") {
-    return vm.freeStore.alloc<Sym>("quote");
+    return vm.heap.alloc<Sym>("quote");
   }
   if (token.str == "`") {
-    return vm.freeStore.alloc<Sym>("quasiquote");
+    return vm.heap.alloc<Sym>("quasiquote");
   }
   if (token.str == ",") {
-    return vm.freeStore.alloc<Sym>("unquote");
+    return vm.heap.alloc<Sym>("unquote");
   }
   if (token.str == ",@") {
-    return vm.freeStore.alloc<Sym>("unquote-splicing");
+    return vm.heap.alloc<Sym>("unquote-splicing");
   }
-  return vm.freeStore.alloc<Sym>(token.str);
+  return vm.heap.alloc<Sym>(token.str);
 }
 
 void Compiler::handleUnexpectedToken(
@@ -173,8 +173,8 @@ void Compiler::handleUnexpectedToken(
 Compiler::Compiler(
     const std::vector<std::string> source,
     SrcMap sourceLoc,
-    const SExpr &param,
-    const SExprs &body,
+    const SExpr *param,
+    const SExprs *body,
     Compiler &enclosing,
     VM &vm
 )
@@ -182,7 +182,7 @@ Compiler::Compiler(
       enclosing(enclosing),
       source(source),
       srcMap(sourceLoc),
-      curSrcLoc({srcMap[&param].row, srcMap[&param].col}),
+      curSrcLoc({srcMap[param].row, srcMap[param].col}),
       param(param),
       arity(countArity()),
       variadic(isVariadic()),
@@ -190,14 +190,14 @@ Compiler::Compiler(
       stackOffset(1) {
 
   if (isa<SExprs>(param)) {
-    visitEach(cast<SExprs>(param), [this](const auto &sExpr) {
-      const auto &sym = cast<Sym>(sExpr);
+    visitEach(cast<SExprs>(param), [this](const auto sExpr) {
+      const auto sym = cast<Sym>(sExpr);
       locals.push_back({sym, stackOffset, false});
       stackOffset += 1;
     });
   }
 
-  const auto &lastParam = last(param);
+  const auto lastParam = last(param);
 
   if (isa<Sym>(lastParam)) {
     locals.push_back({cast<Sym>(lastParam), stackOffset, false});
@@ -205,14 +205,14 @@ Compiler::Compiler(
   }
 }
 
-void Compiler::updateCurSrcLoc(const sexpr::SExprs &sExpr) {
-  curSrcLoc = srcMap[&sExpr];
+void Compiler::updateCurSrcLoc(const sexpr::SExprs *sExpr) {
+  curSrcLoc = srcMap[sExpr];
 }
 
-std::optional<const std::size_t> Compiler::resolveLocal(const Sym &sym) {
+std::optional<const std::size_t> Compiler::resolveLocal(const Sym *sym) {
   auto it =
       std::find_if(locals.rbegin(), locals.rend(), [&sym](const auto &local) {
-        return local.symbol == sym;
+        return *local.symbol == *sym;
       });
   if (it == locals.rend()) {
     return std::nullopt;
@@ -221,7 +221,7 @@ std::optional<const std::size_t> Compiler::resolveLocal(const Sym &sym) {
 }
 
 std::optional<const std::size_t>
-Compiler::resolveUpvalue(Compiler &caller, const Sym &sym) {
+Compiler::resolveUpvalue(Compiler &caller, const Sym *sym) {
   if (!enclosing.has_value()) {
     return std::nullopt;
   }
@@ -257,67 +257,67 @@ uint8_t Compiler::countArity() {
   if (isa<Nil>(param) || isa<Sym>(param)) {
     return 0;
   }
-  return visitEach(cast<SExprs>(param), [](const auto &) {});
+  return visitEach(cast<SExprs>(param), [](const auto) {});
 }
 
-code::InstrPtr Compiler::emitConst(const sexpr::SExpr &sExpr) {
+code::InstrPtr Compiler::emitConst(const sexpr::SExpr *sExpr) {
   return code.pushConst(sExpr);
 }
 
 void Compiler::patchJump(const code::InstrPtr idx) { code.patchJump(idx); }
 
-const SExpr &Compiler::last(const SExpr &sExpr) {
+const SExpr *Compiler::last(const SExpr *sExpr) {
   if (isa<Atom>(sExpr)) {
     return sExpr;
   }
-  const auto &sExprs = cast<SExprs>(sExpr);
+  const auto sExprs = cast<SExprs>(sExpr);
   updateCurSrcLoc(sExprs);
-  return last(sExprs.rest);
+  return last(sExprs->rest);
 }
 
-unsigned int Compiler::visitEach(const SExpr &sExpr, Visitor visitor) {
+unsigned int Compiler::visitEach(const SExpr *sExpr, Visitor visitor) {
   if (isa<Atom>(sExpr)) {
     return 0;
   }
-  const auto &sExprs = cast<SExprs>(sExpr);
+  const auto sExprs = cast<SExprs>(sExpr);
   updateCurSrcLoc(sExprs);
-  visitor(sExprs.first);
-  return 1 + visitEach(sExprs.rest, visitor);
+  visitor(sExprs->first);
+  return 1 + visitEach(sExprs->rest, visitor);
 }
 
-void Compiler::traverse(const SExpr &sExpr, Visitor visitor) {
+void Compiler::traverse(const SExpr *sExpr, Visitor visitor) {
   if (isa<SExprs>(sExpr)) {
-    const auto &sexprs = cast<SExprs>(sExpr);
-    traverse(sexprs.first, visitor);
-    traverse(sexprs.rest, visitor);
+    const auto sexprs = cast<SExprs>(sExpr);
+    traverse(sexprs->first, visitor);
+    traverse(sexprs->rest, visitor);
   }
   visitor(sExpr);
 }
 
-void Compiler::compileStmts(const SExpr &sExpr) {
+void Compiler::compileStmts(const SExpr *sExpr) {
   emitCode(OpCode::MAKE_NIL);
-  visitEach(sExpr, [this](const auto &sExpr) {
+  visitEach(sExpr, [this](const auto sExpr) {
     stackOffset += 1;
     compileStmt(sExpr);
   });
 }
 
-void Compiler::compileExprs(const SExpr &sExpr) {
+void Compiler::compileExprs(const SExpr *sExpr) {
   emitCode(OpCode::MAKE_NIL);
-  visitEach(sExpr, [this](const auto &sExpr) {
+  visitEach(sExpr, [this](const auto sExpr) {
     emitCode(OpCode::POP_TOP);
     compileExpr(sExpr);
   });
 }
 
-void Compiler::compileStmt(const SExpr &sExpr) {
+void Compiler::compileStmt(const SExpr *sExpr) {
   if (matchForm(
           sExpr,
           {
-              {DEFINE_SYM, [this](const auto &matched) { emitDef(matched); }},
-              {DEFMACRO_SYM,
+              {&DEFINE_SYM, [this](const auto &matched) { emitDef(matched); }},
+              {&DEFMACRO_SYM,
                [this](const auto &matched) { execDefMacro(matched); }},
-              {BEGIN_SYM,
+              {&BEGIN_SYM,
                [this](const auto &matched) { compileStmts(matched.get()); }},
           },
           [this, &sExpr](const auto &sym, const auto) {
@@ -333,16 +333,16 @@ void Compiler::compileStmt(const SExpr &sExpr) {
   compileExpr(sExpr);
 }
 
-void Compiler::compileExpr(const SExpr &sExpr) {
+void Compiler::compileExpr(const SExpr *sExpr) {
   if (matchForm(
           sExpr,
-          {{DEFINE_SYM, [this](const auto &) { handleInvalidDef(); }},
-           {DEFMACRO_SYM, [this](const auto &) { handleInvalidDef(); }},
-           {QUOTE_SYM, [this](const auto &matched) { emitQuote(matched); }},
-           {SET_SYM, [this](const auto &matched) { emitSet(matched); }},
-           {IF_SYM, [this](const auto &matched) { emitIf(matched); }},
-           {LAMBDA_SYM, [this](const auto &matched) { emitLambda(matched); }},
-           {BEGIN_SYM,
+          {{&DEFINE_SYM, [this](const auto &) { handleInvalidDef(); }},
+           {&DEFMACRO_SYM, [this](const auto &) { handleInvalidDef(); }},
+           {&QUOTE_SYM, [this](const auto &matched) { emitQuote(matched); }},
+           {&SET_SYM, [this](const auto &matched) { emitSet(matched); }},
+           {&IF_SYM, [this](const auto &matched) { emitIf(matched); }},
+           {&LAMBDA_SYM, [this](const auto &matched) { emitLambda(matched); }},
+           {&BEGIN_SYM,
             [this](const auto &matched) { compileExprs(matched.get()); }}},
           [this, &sExpr](const auto sym, const auto) {
             if (vm.env.isMacro(sym.get())) {
@@ -361,7 +361,7 @@ void Compiler::compileExpr(const SExpr &sExpr) {
   compileCall(cast<SExprs>(sExpr));
 }
 
-void Compiler::compileAtom(const Atom &atom) {
+void Compiler::compileAtom(const Atom *atom) {
   if (isa<Nil>(atom)) {
     throw error::SyntaxError(
         "Expected a non-empty list.",
@@ -377,10 +377,11 @@ void Compiler::compileAtom(const Atom &atom) {
   emitCode(OpCode::LOAD_CONST, emitConst(atom));
 }
 
-void Compiler::compileCall(const SExprs &sExprs) {
-  compileExpr(sExprs.first);
-  const auto argc =
-      visitEach(sExprs.rest, [this](const auto &sExpr) { compileExpr(sExpr); });
+void Compiler::compileCall(const SExprs *sExprs) {
+  compileExpr(sExprs->first);
+  const auto argc = visitEach(sExprs->rest, [this](const auto &sExpr) {
+    compileExpr(sExpr);
+  });
 
   try {
     cast<Nil>(last(sExprs));
@@ -409,7 +410,7 @@ void Compiler::emitLambda(const MatchedSExpr<sexpr::SExpr> matched) {
         *this,
         vm
     );
-    const auto &function = compiler.compile();
+    const auto function = compiler.compile();
 
     emitCode(OpCode::MAKE_CLOSURE, emitConst(function));
     for (const auto &upValue : compiler.upValues) {
@@ -420,7 +421,7 @@ void Compiler::emitLambda(const MatchedSExpr<sexpr::SExpr> matched) {
   }
 }
 
-void Compiler::emitSym(const sexpr::Sym &sym) {
+void Compiler::emitSym(const sexpr::Sym *sym) {
   if (vm.env.isNatFn(sym)) {
     emitCode(OpCode::LOAD_CONST, emitConst(vm.env.load(sym)));
     return;
@@ -499,7 +500,8 @@ void Compiler::execDefMacro(const MatchedSExpr<sexpr::SExpr> matched) {
     def.pushCode(def.pushConst(macroSym.get()));
     def.pushCode(OpCode::RETURN, curSrcLoc.row);
 
-    vm.eval(vm.freeStore.alloc<Prototype>(0, 0, false, def), true);
+    vm.load(vm.heap.alloc<Prototype>(0, 0, false, def));
+    vm.eval();
 
     emitCode(OpCode::MAKE_NIL);
     assertType<Nil>(last(macroBody.get()));
@@ -566,15 +568,15 @@ void Compiler::emitRet() {
   emitCode(OpCode::RETURN);
 }
 
-const SExpr &Compiler::execMacro(const SExpr &sExpr) {
+const SExpr *Compiler::execMacro(const SExpr *sExpr) {
   Code fExpr;
 
-  const auto &sExprs = cast<SExprs>(sExpr);
+  const auto sExprs = cast<SExprs>(sExpr);
 
   fExpr.pushCode(OpCode::LOAD_SYM, curSrcLoc.row);
-  fExpr.pushCode(fExpr.pushConst(sExprs.first));
+  fExpr.pushCode(fExpr.pushConst(sExprs->first));
 
-  const auto argc = visitEach(sExprs.rest, [this, &fExpr](const auto &sExpr) {
+  const auto argc = visitEach(sExprs->rest, [this, &fExpr](const auto &sExpr) {
     fExpr.pushCode(OpCode::LOAD_CONST, curSrcLoc.row);
     fExpr.pushCode(fExpr.pushConst(sExpr));
   });
@@ -583,11 +585,11 @@ const SExpr &Compiler::execMacro(const SExpr &sExpr) {
   fExpr.pushCode(argc);
   fExpr.pushCode(OpCode::RETURN, curSrcLoc.row);
 
-  const auto &res =
-      vm.eval(vm.freeStore.alloc<Prototype>(0, 0, false, fExpr), true);
+  vm.load(vm.heap.alloc<Prototype>(0, 0, false, fExpr));
+  const auto res = vm.eval();
 
   traverse(res, [this](const auto &sExpr) {
-    srcMap.insert({&sExpr, curSrcLoc});
+    srcMap.insert({sExpr, curSrcLoc});
   });
 
   return res;
@@ -605,7 +607,7 @@ void Compiler::handleInvalidDef() {
 }
 
 void Compiler::handleTypeError(
-    const std::string grammar, const std::string expected, const SExpr &actual
+    const std::string grammar, const std::string expected, const SExpr *actual
 ) {
   std::stringstream ss;
   ss << "Invalid syntax for " << grammar << "." << std::endl
@@ -616,15 +618,16 @@ void Compiler::handleTypeError(
 
 Compiler::Compiler(std::vector<std::string> source, VM &vm)
     : vm(vm),
+      gcGuard(vm.heap.pauseGC()),
       source(source),
       curSrcLoc({1, 0}),
-      param(vm.freeStore.alloc<Nil>()),
+      param(vm.heap.alloc<Nil>()),
       arity(0),
       variadic(false),
       body(parse()),
       stackOffset(1) {}
 
-const Prototype &Compiler::compile() {
+const Prototype *Compiler::compile() {
   if (variadic) {
     emitCode(OpCode::MAKE_LIST, arity + 1);
   }
@@ -632,7 +635,7 @@ const Prototype &Compiler::compile() {
   compileStmts(body);
   emitRet();
 
-  return vm.freeStore.alloc<Prototype>(upValues.size(), arity, variadic, code);
+  return vm.heap.alloc<Prototype>(upValues.size(), arity, variadic, code);
 }
 
 void Compiler::verifyLex(

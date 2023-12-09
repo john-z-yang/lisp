@@ -29,10 +29,10 @@ public:
   const bool variadic;
   const bool abandonsCont;
 
-  const SExpr &
+  const SExpr *
   invoke(runtime::StackIter params, const uint8_t argc, runtime::VM &vm) const;
 
-  static bool classOf(const SExpr &sExpr);
+  static bool classOf(const SExpr *sExpr);
   static std::string getTypeName();
 };
 
