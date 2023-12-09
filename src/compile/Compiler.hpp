@@ -37,7 +37,7 @@ private:
   using Visitor = std::function<void(const sexpr::SExpr *)>;
 
   runtime::VM &vm;
-  std::optional<runtime::GCGuard> gcGuard;
+  const std::optional<runtime::GCGuard> gcGuard;
   const std::optional<std::reference_wrapper<Compiler>> enclosing;
 
   std::vector<std::string> source;
