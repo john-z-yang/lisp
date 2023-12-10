@@ -16,19 +16,21 @@ class Env {
 private:
   std::unordered_map<const sexpr::Sym *, const sexpr::SExpr *> symTable;
   std::unordered_set<const sexpr::Sym *> macros;
-  std::unordered_set<const sexpr::Sym *> natFns;
+  std::unordered_set<const sexpr::Sym *> builtInFns;
 
   void regMacro(const sexpr::Sym *sym);
-  void regNative(const sexpr::Sym *sym);
+  void regBuiltIn(const sexpr::Sym *sym);
   void guardMutation(const sexpr::Sym *sym);
 
 public:
   void def(const sexpr::Sym *sym, const sexpr::SExpr *val);
   void defMacro(const sexpr::Sym *sym, const sexpr::SExpr *val);
-  void defNatFn(const sexpr::Sym *sym, const sexpr::NatFn *natFn);
+  void defBuiltIn(const sexpr::Sym *sym, const sexpr::NatFn *natFn);
 
-  void defNatFns(const std::initializer_list<
-                 std::tuple<const sexpr::Sym *, const sexpr::NatFn *>> natFns);
+  void
+  defBuiltInFns(const std::initializer_list<
+                std::tuple<const sexpr::Sym *, const sexpr::NatFn *>> builtInFns
+  );
 
   void set(const sexpr::Sym *sym, const sexpr::SExpr *val);
   const sexpr::SExpr *load(const sexpr::Sym *sym);

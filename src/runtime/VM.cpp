@@ -261,11 +261,11 @@ MAKE_NIL: { stack.push_back(heap.alloc<Nil>()); }
 
 VM::VM() : ip(0), bp(0), heap(*this) {
   const auto gcGuard = heap.pauseGC();
-  env.defNatFns(
+  env.defBuiltInFns(
       {{heap.alloc<Sym>("symbol?"), heap.alloc<NatFn>(typePred<Sym>, 1, false)},
        {heap.alloc<Sym>("gensym"), heap.alloc<NatFn>(genSym, 0, false)}}
   );
-  env.defNatFns(
+  env.defBuiltInFns(
       {{heap.alloc<Sym>("number?"), heap.alloc<NatFn>(typePred<Num>, 1, false)},
        {heap.alloc<Sym>("="),
         heap.alloc<NatFn>(compare<Num, std::equal_to>, 1, true)},
@@ -288,7 +288,7 @@ VM::VM() : ip(0), bp(0), heap(*this) {
        {heap.alloc<Sym>("abs"), heap.alloc<NatFn>(numAbs, 1, false)},
        {heap.alloc<Sym>("modulo"), heap.alloc<NatFn>(numMod, 2, false)}}
   );
-  env.defNatFns(
+  env.defBuiltInFns(
       {{heap.alloc<Sym>("string?"),
         heap.alloc<NatFn>(typePred<String>, 1, false)},
        {heap.alloc<Sym>("string-length"), heap.alloc<NatFn>(strLen, 1, false)},
@@ -306,27 +306,27 @@ VM::VM() : ip(0), bp(0), heap(*this) {
        {heap.alloc<Sym>("string<=?"),
         heap.alloc<NatFn>(compare<String, std::less_equal>, 1, true)}}
   );
-  env.defNatFns({
+  env.defBuiltInFns({
       {heap.alloc<Sym>("null?"), heap.alloc<NatFn>(typePred<Nil>, 1, false)},
       {heap.alloc<Sym>("pair?"), heap.alloc<NatFn>(typePred<SExprs>, 1, false)},
       {heap.alloc<Sym>("cons"), heap.alloc<NatFn>(cons, 2, false)},
       {heap.alloc<Sym>("car"), heap.alloc<NatFn>(car, 1, false)},
       {heap.alloc<Sym>("cdr"), heap.alloc<NatFn>(cdr, 1, false)},
   });
-  env.defNatFns(
+  env.defBuiltInFns(
       {{heap.alloc<Sym>("display"), heap.alloc<NatFn>(display, 1, false)},
        {heap.alloc<Sym>("newline"), heap.alloc<NatFn>(newline, 0, false)}}
   );
-  env.defNatFns(
+  env.defBuiltInFns(
       {{heap.alloc<Sym>("quit"), heap.alloc<NatFn>(quit, 0, false)},
        {heap.alloc<Sym>("error"), heap.alloc<NatFn>(fn::error, 1, false)}}
   );
-  env.defNatFns(
+  env.defBuiltInFns(
       {{heap.alloc<Sym>("eq?"), heap.alloc<NatFn>(eq, 2, false)},
        {heap.alloc<Sym>("eqv?"), heap.alloc<NatFn>(eqv, 2, false)},
        {heap.alloc<Sym>("equal?"), heap.alloc<NatFn>(equal, 2, false)}}
   );
-  env.defNatFns({
+  env.defBuiltInFns({
       {heap.alloc<Sym>("procedure?"),
        heap.alloc<NatFn>(typePred<Closure, NatFn>, 1, false)},
       {heap.alloc<Sym>("apply"), heap.alloc<NatFn>(apply, 2, true, true)},

@@ -11,7 +11,7 @@ using namespace runtime;
 
 void Env::regMacro(const Sym *sym) { macros.insert(sym); }
 
-void Env::regNative(const Sym *sym) { natFns.insert(sym); }
+void Env::regBuiltIn(const Sym *sym) { builtInFns.insert(sym); }
 
 void Env::guardMutation(const Sym *sym) {
   if (auto it = macros.find(sym); it != macros.end()) [[unlikely]] {
@@ -19,9 +19,9 @@ void Env::guardMutation(const Sym *sym) {
         "Cannot mutate macro symbol \"" + sym->val + "\'."
     );
   }
-  if (auto it = natFns.find(sym); it != natFns.end()) [[unlikely]] {
+  if (auto it = builtInFns.find(sym); it != builtInFns.end()) [[unlikely]] {
     throw std::invalid_argument(
-        "Cannot mutate native symbol \"" + sym->val + "\'."
+        "Cannot mutate symbol for built-in function \"" + sym->val + "\'."
     );
   }
 }
@@ -36,16 +36,17 @@ void Env::defMacro(const Sym *sym, const SExpr *macro) {
   regMacro(sym);
 }
 
-void Env::defNatFn(const sexpr::Sym *sym, const sexpr::NatFn *natFn) {
-  def(sym, natFn);
-  regNative(sym);
+void Env::defBuiltIn(const sexpr::Sym *sym, const sexpr::NatFn *builtIn) {
+  def(sym, builtIn);
+  regBuiltIn(sym);
 }
 
-void Env::defNatFns(const std::initializer_list<
-                    std::tuple<const sexpr::Sym *, const sexpr::NatFn *>> natFns
+void Env::defBuiltInFns(
+    const std::initializer_list<
+        std::tuple<const sexpr::Sym *, const sexpr::NatFn *>> natFns
 ) {
   for (const auto &[sym, natFn] : natFns) {
-    defNatFn(sym, natFn);
+    defBuiltIn(sym, natFn);
   }
 }
 
@@ -69,7 +70,7 @@ const SExpr *Env::load(const Sym *sym) {
 bool Env::isMacro(const Sym *sym) { return macros.find(sym) != macros.end(); }
 
 bool Env::isNatFn(const sexpr::Sym *sym) {
-  return natFns.find(sym) != natFns.end();
+  return builtInFns.find(sym) != builtInFns.end();
 }
 
 const std::unordered_map<const sexpr::Sym *, const sexpr::SExpr *> &
