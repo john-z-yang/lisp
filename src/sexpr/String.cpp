@@ -1,5 +1,5 @@
 #include "String.hpp"
-#include "Cast.cpp"
+#include "Casting.hpp"
 #include <regex>
 #include <string>
 
@@ -15,8 +15,8 @@ String::ValueType String::escape(const String::ValueType literal) {
 std::ostream &String::serialize(std::ostream &o) const { return o << val; }
 
 bool String::equals(const SExpr &other) const {
-  if (isa<String>(other)) {
-    return val == cast<String>(other).val;
+  if (const auto string = dynCast<String>(other)) {
+    return val == string->get().val;
   }
   return false;
 }

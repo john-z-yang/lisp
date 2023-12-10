@@ -1,5 +1,5 @@
 #include "Num.hpp"
-#include "Cast.cpp"
+#include "Casting.hpp"
 #include <iomanip>
 #include <limits>
 #include <sstream>
@@ -15,8 +15,8 @@ std::ostream &Num::serialize(std::ostream &o) const {
 }
 
 bool Num::equals(const SExpr &other) const {
-  if (isa<Num>(other)) {
-    return val == cast<Num>(other).val;
+  if (const auto num = dynCast<Num>(other)) {
+    return val == num->get().val;
   }
   return false;
 }

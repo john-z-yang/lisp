@@ -1,6 +1,6 @@
 #include "SExprs.hpp"
 #include "Atom.hpp"
-#include "Cast.cpp"
+#include "Casting.hpp"
 #include "Nil.hpp"
 #include <cstddef>
 #include <memory>
@@ -25,9 +25,9 @@ std::ostream &SExprs::_serialize(std::ostream &o) const {
 }
 
 bool SExprs::equals(const SExpr &other) const {
-  if (isa<SExprs>(other)) {
-    const auto &sExprs = cast<SExprs>(other);
-    return first->equals(*sExprs.first) && rest->equals(*sExprs.rest);
+  if (const auto &sExprs = dynCast<SExprs>(other)) {
+    return first->equals(*sExprs->get().first) &&
+           rest->equals(*sExprs->get().rest);
   }
   return false;
 }

@@ -3,7 +3,7 @@
 #include "../error/RuntimeError.hpp"
 #include "../error/SyntaxError.hpp"
 #include "../runtime/VM.hpp"
-#include "../sexpr/Cast.cpp"
+#include "../sexpr/Casting.hpp"
 #include "../sexpr/Nil.hpp"
 #include <cstdlib>
 #include <cstring>

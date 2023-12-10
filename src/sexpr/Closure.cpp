@@ -1,5 +1,5 @@
 #include "Closure.hpp"
-#include "Cast.cpp"
+#include "Casting.hpp"
 #include "Prototype.hpp"
 #include "SExpr.hpp"
 #include <iomanip>
@@ -13,16 +13,15 @@ std::ostream &Closure::serialize(std::ostream &o) const {
 }
 
 bool Closure::equals(const SExpr &other) const {
-  if (isa<Closure>(other)) {
-    const auto &closure = cast<Closure>(other);
-    if (proto != closure.proto) {
+  if (const auto closure = dynCast<Closure>(other)) {
+    if (proto != closure->get().proto) {
       return false;
     }
     return std::equal(
         upvalues.cbegin(),
         upvalues.cend(),
-        closure.upvalues.cbegin(),
-        closure.upvalues.cend(),
+        closure->get().upvalues.cbegin(),
+        closure->get().upvalues.cend(),
         [](const auto &self, const auto &other) { return *self == *other; }
     );
   }

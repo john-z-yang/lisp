@@ -1,7 +1,7 @@
 #include "CPPFnImpls.hpp"
 #include "../runtime/VM.hpp"
 #include "../sexpr/Bool.hpp"
-#include "../sexpr/Cast.cpp"
+#include "../sexpr/Casting.hpp"
 #include "../sexpr/Nil.hpp"
 #include "../sexpr/Num.hpp"
 #include "../sexpr/SExprs.hpp"
@@ -92,9 +92,8 @@ const SExpr *fn::dis(StackIter params, const uint8_t, VM &vm) {
   return vm.heap.alloc<Nil>();
 }
 const SExpr *fn::display(StackIter params, const uint8_t, VM &vm) {
-  if (isa<String>(*params)) {
-    const auto stringAtom = cast<String>(*params);
-    std::cout << stringAtom->escaped;
+  if (const auto string = dynCast<String>(*params)) {
+    std::cout << string.value()->escaped;
   } else {
     std::cout << **params;
   }
@@ -118,15 +117,12 @@ const SExpr *fn::error(StackIter params, const uint8_t, VM &) {
 const SExpr *fn::eq(StackIter params, const uint8_t, VM &vm) {
   const auto lhs = *params;
   const auto rhs = *(params + 1);
-  if (isa<Sym>(lhs)) {
-    return vm.heap.alloc<Bool>(*lhs == *rhs);
-  }
   return vm.heap.alloc<Bool>(lhs == rhs);
 }
 const SExpr *fn::eqv(StackIter params, const uint8_t, VM &vm) {
   const auto lhs = *params;
   const auto rhs = *(params + 1);
-  if (isa<Sym>(lhs) || isa<Num>(lhs)) {
+  if (isa<Num>(lhs)) {
     return vm.heap.alloc<Bool>(*lhs == *rhs);
   }
   return vm.heap.alloc<Bool>(lhs == rhs);

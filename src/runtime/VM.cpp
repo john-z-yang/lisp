@@ -1,7 +1,7 @@
 #include "VM.hpp"
 #include "../error/RuntimeError.hpp"
 #include "../fn/CPPFnImpls.hpp"
-#include "../sexpr/Cast.cpp"
+#include "../sexpr/Casting.hpp"
 #include "../sexpr/NatFn.hpp"
 #include "../sexpr/SExprs.hpp"
 #include "../sexpr/String.hpp"
@@ -38,27 +38,25 @@ uint16_t VM::readShort() {
 }
 
 void VM::call(const uint8_t argc) {
-  const auto callee = peak(argc);
-  if (isa<Closure>(callee)) {
+  if (const auto callee = dynCast<Closure>(peak(argc))) {
     callFrames.push_back({closure.value(), bp, ip});
     ip = 0;
     bp = stack.size() - argc - 1;
-    closure = cast<Closure>(callee);
-    closure.value()->assertArity(argc);
+    callee.value()->assertArity(argc);
+    closure = callee;
     return;
   }
-  if (isa<NatFn>(callee)) {
-    const auto natFn = cast<NatFn>(callee);
-    const auto res = natFn->invoke(stack.end() - argc, argc, *this);
-    if (!natFn->abandonsCont) {
+  if (const auto callee = dynCast<NatFn>(peak(argc))) {
+    const auto res = callee.value()->invoke(stack.end() - argc, argc, *this);
+    if (!callee.value()->abandonsCont) {
       stack.erase(stack.end() - argc - 1, stack.end());
       stack.push_back(res);
     }
     return;
   }
   std::stringstream ss;
-  ss << "Expected a closure or native function as callee, but got " << callee
-     << ".";
+  ss << "Expected a closure or native function as callee, but got "
+     << peak(argc) << ".";
   const auto re = std::invalid_argument(ss.str());
   throw re;
 }

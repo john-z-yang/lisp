@@ -3,6 +3,7 @@
 
 #include "../error/TypeError.hpp"
 #include "SExpr.hpp"
+#include <functional>
 #include <memory>
 #include <sstream>
 
@@ -49,6 +50,21 @@ template <typename T> const T *cast(const SExpr *f) {
 }
 
 template <typename T> const T &cast(const SExpr &f) { return *cast<T>(&f); }
+
+template <typename T> const std::optional<const T *> dynCast(const SExpr *f) {
+  if (isa<T>(f)) {
+    return static_cast<const T *>(f);
+  }
+  return std::nullopt;
+}
+
+template <typename T>
+const std::optional<std::reference_wrapper<const T>> dynCast(const SExpr &f) {
+  if (isa<T>(f)) {
+    return static_cast<const T &>(f);
+  }
+  return std::nullopt;
+}
 
 } // namespace sexpr
 

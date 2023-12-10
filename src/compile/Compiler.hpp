@@ -4,7 +4,7 @@
 #include "../code/Code.hpp"
 #include "../runtime/GCGuard.hpp"
 #include "../runtime/VM.hpp"
-#include "../sexpr/Cast.cpp"
+#include "../sexpr/Casting.hpp"
 #include "../sexpr/Prototype.hpp"
 #include "../sexpr/SExpr.hpp"
 #include "../sexpr/SExprs.hpp"

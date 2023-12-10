@@ -1,5 +1,5 @@
 #include "Prototype.hpp"
-#include "Cast.cpp"
+#include "Casting.hpp"
 #include <memory>
 #include <sstream>
 
@@ -28,9 +28,8 @@ std::ostream &Prototype::dissassemble(std::ostream &o) const {
     << ", upvalues: " << numUpvals << ">" << std::endl
     << code << std::endl;
   for (auto i = code.consts.cbegin(); i != code.consts.end(); ++i) {
-    if (isa<Prototype>(*i)) {
-      const auto proto = cast<Prototype>(*i);
-      proto->dissassemble(o);
+    if (const auto proto = dynCast<Prototype>(*i)) {
+      proto.value()->dissassemble(o);
     }
   }
   return o;

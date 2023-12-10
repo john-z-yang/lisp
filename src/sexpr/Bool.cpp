@@ -1,5 +1,5 @@
 #include "Bool.hpp"
-#include "Cast.cpp"
+#include "Casting.hpp"
 #include <memory>
 #include <string>
 
@@ -15,8 +15,8 @@ std::ostream &Bool::serialize(std::ostream &o) const {
 }
 
 bool Bool::equals(const SExpr &other) const {
-  if (isa<Bool>(other)) {
-    return val == cast<Bool>(other).val;
+  if (const auto boole = dynCast<Bool>(other)) {
+    return val == boole->get().val;
   }
   return false;
 }

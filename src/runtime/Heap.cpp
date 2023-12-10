@@ -1,5 +1,5 @@
 #include "Heap.hpp"
-#include "../sexpr/Cast.cpp"
+#include "../sexpr/Casting.hpp"
 #include "../sexpr/SExprs.hpp"
 #include "GCGuard.hpp"
 #include "VM.hpp"
@@ -57,27 +57,22 @@ void Heap::mark(const SExpr *sexpr) {
 }
 
 void Heap::trace(const SExpr *sExpr) {
-  if (isa<SExprs>(sExpr)) {
-    const auto sExprs = cast<SExprs>(sExpr);
-    mark(sExprs->first);
-    mark(sExprs->rest);
+  if (const auto sExprs = dynCast<SExprs>(sExpr)) {
+    mark(sExprs.value()->first);
+    mark(sExprs.value()->rest);
     return;
   }
-  if (isa<Prototype>(sExpr)) {
-    const auto proto = cast<Prototype>(sExpr);
-    for (const auto &consta : proto->code.consts) {
+  if (const auto proto = dynCast<Prototype>(sExpr)) {
+    for (const auto &consta : proto.value()->code.consts) {
       mark(consta);
     }
     return;
   }
-  if (isa<Closure>(sExpr)) {
-    const auto closure = cast<Closure>(sExpr);
-    mark(closure->proto);
-    std::for_each(
-        closure->upvalues.cbegin(),
-        closure->upvalues.cend(),
-        [&](const auto &upvalue) { mark(upvalue->get()); }
-    );
+  if (const auto closure = dynCast<Closure>(sExpr)) {
+    mark(closure.value()->proto);
+    for (const auto &upvalue : closure.value()->upvalues) {
+      mark(upvalue->get());
+    }
     return;
   }
 }

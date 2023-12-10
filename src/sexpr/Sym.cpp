@@ -1,5 +1,5 @@
 #include "Sym.hpp"
-#include "Cast.cpp"
+#include "Casting.hpp"
 #include <memory>
 #include <string>
 
@@ -8,8 +8,8 @@ using namespace sexpr;
 std::ostream &Sym::serialize(std::ostream &o) const { return o << val; }
 
 bool Sym::equals(const SExpr &other) const {
-  if (isa<Sym>(other)) {
-    return val == cast<Sym>(other).val;
+  if (const auto sym = dynCast<Sym>(other)) {
+    return val == sym->get().val;
   }
   return false;
 }

@@ -2,7 +2,7 @@
 #include "../code/OpCode.hpp"
 #include "../error/SyntaxError.hpp"
 #include "../runtime/VM.hpp"
-#include "../sexpr/Cast.cpp"
+#include "../sexpr/Casting.hpp"
 #include "../sexpr/String.hpp"
 #include "Grammar.hpp"
 #include "SrcLoc.hpp"
@@ -189,8 +189,8 @@ Compiler::Compiler(
       body(body),
       stackOffset(1) {
 
-  if (isa<SExprs>(param)) {
-    visitEach(cast<SExprs>(param), [this](const auto sExpr) {
+  if (const auto sExprs = dynCast<SExprs>(param)) {
+    visitEach(sExprs.value(), [this](const auto sExpr) {
       const auto sym = cast<Sym>(sExpr);
       locals.push_back({sym, stackOffset, false});
       stackOffset += 1;
@@ -199,8 +199,8 @@ Compiler::Compiler(
 
   const auto lastParam = last(param);
 
-  if (isa<Sym>(lastParam)) {
-    locals.push_back({cast<Sym>(lastParam), stackOffset, false});
+  if (const auto sym = dynCast<Sym>(lastParam)) {
+    locals.push_back({sym.value(), stackOffset, false});
     stackOffset += 1;
   }
 }
@@ -354,8 +354,8 @@ void Compiler::compileExpr(const SExpr *sExpr) {
       )) {
     return;
   };
-  if (isa<Atom>(sExpr)) {
-    compileAtom(cast<Atom>(sExpr));
+  if (const auto atom = dynCast<Atom>(sExpr)) {
+    compileAtom(atom.value());
     return;
   }
   compileCall(cast<SExprs>(sExpr));
@@ -370,8 +370,8 @@ void Compiler::compileAtom(const Atom *atom) {
         curSrcLoc.col
     );
   }
-  if (isa<Sym>(atom)) {
-    emitSym(cast<Sym>(atom));
+  if (const auto sym = dynCast<Sym>(atom)) {
+    emitSym(sym.value());
     return;
   }
   emitCode(OpCode::LOAD_CONST, emitConst(atom));
