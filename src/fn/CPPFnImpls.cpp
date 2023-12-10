@@ -58,8 +58,8 @@ const SExpr *fn::strApp(StackIter params, const uint8_t argc, VM &vm) {
 const SExpr *
 fn::substr(StackIter params, [[maybe_unused]] const uint8_t argc, VM &vm) {
   const auto str = cast<String>(*params);
-  const auto &pos = cast<Num>(*(params + 1))->val;
-  const auto &end = cast<Num>(*(params + 2))->val;
+  const auto pos = cast<Num>(*(params + 1))->val;
+  const auto end = cast<Num>(*(params + 2))->val;
   std::stringstream ss;
   try {
     ss << "\"" << str->escaped.substr(pos, end - pos) << "\"";
@@ -112,7 +112,7 @@ fn::dis(StackIter params, [[maybe_unused]] const uint8_t argc, VM &vm) {
 const SExpr *
 fn::display(StackIter params, [[maybe_unused]] const uint8_t argc, VM &vm) {
   if (isa<String>(*params)) {
-    const auto &stringAtom = cast<String>(*params);
+    const auto stringAtom = cast<String>(*params);
     std::cout << stringAtom->escaped;
   } else {
     std::cout << **params;

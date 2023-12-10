@@ -38,7 +38,7 @@ uint16_t VM::readShort() {
 }
 
 void VM::call(const uint8_t argc) {
-  const auto &callee = peak(argc);
+  const auto callee = peak(argc);
   if (isa<Closure>(callee)) {
     callFrames.push_back({closure.value(), bp, ip});
     ip = 0;
@@ -249,7 +249,7 @@ MAKE_LIST: {
   const auto gcGuard = heap.pauseGC();
 
   const auto start = stack.begin() + bp + readByte();
-  const auto &list = makeList(start);
+  const auto list = makeList(start);
   stack.erase(start, stack.end());
   stack.push_back(list);
 }

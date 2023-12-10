@@ -393,7 +393,7 @@ void Compiler::compileCall(const SExprs *sExprs) {
 
 void Compiler::emitLambda(const MatchedSExpr<sexpr::SExpr> matched) {
   try {
-    const auto &[lambdaParam, lambdaBody] = unpackPartial<SExpr>(matched.get());
+    const auto [lambdaParam, lambdaBody] = unpackPartial<SExpr>(matched.get());
 
     if (isa<SExprs>(lambdaParam.get())) {
       visitEach(lambdaParam.get(), [](const auto &argName) {
@@ -439,7 +439,7 @@ void Compiler::emitSym(const sexpr::Sym *sym) {
 
 void Compiler::emitQuote(const MatchedSExpr<sexpr::SExpr> matched) {
   try {
-    const auto &[expr] = unpack<SExpr>(matched.get());
+    const auto [expr] = unpack<SExpr>(matched.get());
 
     emitCode(OpCode::LOAD_CONST, emitConst(expr.get()));
   } catch (error::TypeError &te) {
@@ -449,7 +449,7 @@ void Compiler::emitQuote(const MatchedSExpr<sexpr::SExpr> matched) {
 
 void Compiler::emitDef(const MatchedSExpr<sexpr::SExpr> matched) {
   try {
-    const auto &[sym, expr] = unpack<Sym, SExpr>(matched.get());
+    const auto [sym, expr] = unpack<Sym, SExpr>(matched.get());
 
     compileExpr(expr.get());
     if (enclosing.has_value()) {
@@ -473,7 +473,7 @@ void Compiler::execDefMacro(const MatchedSExpr<sexpr::SExpr> matched) {
     );
   }
   try {
-    const auto &[macroSym, macroArgNames, macroBody] =
+    const auto [macroSym, macroArgNames, macroBody] =
         unpackPartial<Sym, SExpr>(matched.get());
 
     Compiler compiler(
@@ -484,7 +484,7 @@ void Compiler::execDefMacro(const MatchedSExpr<sexpr::SExpr> matched) {
         *this,
         vm
     );
-    const auto &function = compiler.compile();
+    const auto function = compiler.compile();
 
     Code def;
 
@@ -512,7 +512,7 @@ void Compiler::execDefMacro(const MatchedSExpr<sexpr::SExpr> matched) {
 
 void Compiler::emitSet(const MatchedSExpr<sexpr::SExpr> matched) {
   try {
-    const auto &[sym, expr] = unpack<Sym, SExpr>(matched.get());
+    const auto [sym, expr] = unpack<Sym, SExpr>(matched.get());
 
     compileExpr(expr.get());
     if (const auto idx = resolveLocal(sym.get()); idx.has_value()) {
@@ -531,8 +531,7 @@ void Compiler::emitSet(const MatchedSExpr<sexpr::SExpr> matched) {
 
 void Compiler::emitIf(const MatchedSExpr<sexpr::SExpr> matched) {
   try {
-    const auto &[test, conseq, alt] =
-        unpack<SExpr, SExpr, SExpr>(matched.get());
+    const auto [test, conseq, alt] = unpack<SExpr, SExpr, SExpr>(matched.get());
 
     compileExpr(test.get());
     const auto jifIdx =

@@ -159,7 +159,7 @@ private:
     if (!check<sexpr::Sym>(sExpr)) {
       return false;
     }
-    const auto &[sym, rest] = unpackPartial<sexpr::Sym>(sExpr);
+    const auto [sym, rest] = unpackPartial<sexpr::Sym>(sExpr);
     for (const auto &[name, handler] : rules) {
       if (*name == *sym.get()) {
         handler(rest);
