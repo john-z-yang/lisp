@@ -5,6 +5,7 @@
 #include "SExpr.hpp"
 #include <functional>
 #include <memory>
+#include <optional>
 #include <sstream>
 
 namespace sexpr {
