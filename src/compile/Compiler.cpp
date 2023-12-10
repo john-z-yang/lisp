@@ -556,15 +556,12 @@ void Compiler::emitRet() {
     handleTypeError(lambdaGrammar, te.expected, te.actual);
   }
 
-  emitCode(OpCode::SET_STACK, 0);
-
   for (const auto &local : locals) {
     if (local.isCaptured) {
       emitCode(OpCode::CLOSE_UPVALUE, local.stackOffset);
     }
   }
 
-  emitCode(OpCode::POP, stackOffset);
   emitCode(OpCode::RETURN);
 }
 
