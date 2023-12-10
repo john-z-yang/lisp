@@ -14,12 +14,12 @@ void Env::regMacro(const Sym *sym) { macros.insert(sym); }
 void Env::regBuiltIn(const Sym *sym) { builtInFns.insert(sym); }
 
 void Env::guardMutation(const Sym *sym) {
-  if (auto it = macros.find(sym); it != macros.end()) [[unlikely]] {
+  if (macros.contains(sym)) [[unlikely]] {
     throw std::invalid_argument(
         "Cannot mutate macro symbol \"" + sym->val + "\'."
     );
   }
-  if (auto it = builtInFns.find(sym); it != builtInFns.end()) [[unlikely]] {
+  if (builtInFns.contains(sym)) [[unlikely]] {
     throw std::invalid_argument(
         "Cannot mutate symbol for built-in function \"" + sym->val + "\'."
     );
@@ -67,11 +67,9 @@ const SExpr *Env::load(const Sym *sym) {
   return it->second;
 }
 
-bool Env::isMacro(const Sym *sym) { return macros.find(sym) != macros.end(); }
+bool Env::isMacro(const Sym *sym) { return macros.contains(sym); }
 
-bool Env::isNatFn(const sexpr::Sym *sym) {
-  return builtInFns.find(sym) != builtInFns.end();
-}
+bool Env::isNatFn(const sexpr::Sym *sym) { return builtInFns.contains(sym); }
 
 const std::unordered_map<const sexpr::Sym *, const sexpr::SExpr *> &
 Env::getSymTable() const {
