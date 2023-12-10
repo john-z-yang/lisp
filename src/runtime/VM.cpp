@@ -127,7 +127,7 @@ const SExpr *VM::exec() {
 MAKE_CLOSURE: {
   const auto proto = cast<Prototype>(readConst());
   std::vector<std::shared_ptr<Upvalue>> upvalues;
-  for (unsigned int i{0}; i < proto->numUpvals; ++i) {
+  for (auto i = 0U; i < proto->numUpvals; ++i) {
     auto isLocal = readByte();
     auto idx = readByte();
     if (isLocal == 1) {
@@ -144,15 +144,17 @@ CALL: { call(readByte()); }
   goto *dispatchTable[readByte()];
 
 RETURN: {
+  const auto res = stack.back();
   if (callFrames.size() == 1) [[unlikely]] {
-    const auto res = stack.back();
     reset();
     return res;
   }
+  stack.erase(stack.end() - (stack.size() - bp - 1), stack.end());
   ip = callFrames.back().ip;
   bp = callFrames.back().bp;
   closure = callFrames.back().closure;
   callFrames.pop_back();
+  stack.back() = res;
 }
   goto *dispatchTable[readByte()];
 
