@@ -1,5 +1,5 @@
-#ifndef LISP_SRC_SEXPR_CAST_CPP_
-#define LISP_SRC_SEXPR_CAST_CPP_
+#ifndef LISP_SRC_SEXPR_CASTING_HPP_
+#define LISP_SRC_SEXPR_CASTING_HPP_
 
 #include "../error/TypeError.hpp"
 #include "SExpr.hpp"
