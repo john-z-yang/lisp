@@ -23,7 +23,7 @@ To set it to the /lib folder of this project.
 endef
 
 _DEPS = code/Code.hpp \
-	compile/Compiler.hpp \
+	compile/CodeGenerator.hpp compile/Parser.hpp \
 	error/RuntimeError.hpp error/SyntaxError.hpp error/TypeError.hpp \
 	fn/CPPFnImpls.hpp \
 	repl/repl.hpp \

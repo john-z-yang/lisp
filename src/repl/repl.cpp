@@ -1,5 +1,6 @@
 #include "repl.hpp"
-#include "../compile/Compiler.hpp"
+#include "../compile/CodeGenerator.hpp"
+#include "../compile/Parser.hpp"
 #include "../error/RuntimeError.hpp"
 #include "../error/SyntaxError.hpp"
 #include "../runtime/VM.hpp"
@@ -38,7 +39,7 @@ bool getConsoleInput(
       continue;
     }
     add_history(line.c_str());
-    Compiler::verifyLex(line, lines.size() + 1, openParen, closedParen);
+    Parser::verifyLex(line, lines.size() + 1, openParen, closedParen);
     lines.push_back(line + " ");
     if (openParen == closedParen) {
       return true;
@@ -55,7 +56,7 @@ bool getFileInput(std::istream &in, std::vector<std::string> &lines) {
     line = std::regex_replace(
         line, std::regex("(\\\\\"|\"(?:\\\\\"|[^\"])*\")|(;.*$)"), "$1"
     );
-    Compiler::verifyLex(line, lines.size() + 1, openParen, closedParen);
+    Parser::verifyLex(line, lines.size() + 1, openParen, closedParen);
     lines.push_back(line + " ");
   }
   return lines.size() > 0;
@@ -75,8 +76,12 @@ int execFile(const std::string filePath, VM &vm) {
   try {
     if (getFileInput(fs, lines)) {
       {
-        Compiler compiler(lines, vm);
-        vm.load(compiler.compile());
+        Parser parser(vm, lines);
+        auto parsedSrc = parser.getParsed();
+        CodeGenerator codeGenerator(vm, parsedSrc);
+        auto main = codeGenerator.getGenerated();
+
+        vm.load(main);
       }
       vm.eval();
     }
@@ -127,8 +132,12 @@ int repl::repl() {
     try {
       if (getConsoleInput(lines, "lisp> ", "  ... ")) {
         {
-          Compiler compiler(lines, vm);
-          vm.load(compiler.compile());
+          Parser parser(vm, lines);
+          auto parsedSrc = parser.getParsed();
+          CodeGenerator codeGenerator(vm, parsedSrc);
+          auto main = codeGenerator.getGenerated();
+
+          vm.load(main);
         }
         const auto res = vm.eval();
         if (!isa<Nil>(res)) {
